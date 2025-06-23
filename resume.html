@@ -153,7 +153,7 @@
                     <p><span style="color:#fe8a71; font-weight:bold;">●</span> Internship</p>
                 </div>
                 <div id="plot"></div>
-                <div id="details">Hover over a bubble to see more info here.</div>
+                <div id="details">Hover over or click a bubble to see more info here.</div>
                 <div class="navigation">
                     <a href="#" class="nav-link">
                         <svg class="chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -226,17 +226,33 @@
         const plotElement = document.getElementById('plot');
         const detailsElement = document.getElementById('details');
 
+        let lastClicked = null;
+
         plotElement.on('plotly_hover', function(data) {
+            if (!lastClicked) {
+                const point = data.points[0].customdata;
+                detailsElement.innerHTML = `
+                    <strong>${point.experience}</strong><br>
+                    <em>${point.dimension}</em><br>
+                    ${point.description}
+                `;
+            }
+        });
+
+        plotElement.on('plotly_unhover', function(data) {
+            if (!lastClicked) {
+                detailsElement.innerHTML = 'Hover over or click a bubble to see more info here.';
+            }
+        });
+
+        plotElement.on('plotly_click', function(data) {
             const point = data.points[0].customdata;
+            lastClicked = point;
             detailsElement.innerHTML = `
                 <strong>${point.experience}</strong><br>
                 <em>${point.dimension}</em><br>
                 ${point.description}
             `;
-        });
-
-        plotElement.on('plotly_unhover', function(data) {
-            detailsElement.innerHTML = 'Hover over a bubble to see more info here.';
         });
     </script>
 </body>
