@@ -20,22 +20,15 @@
         }
 
         .container {
-            max-width: 1280px;
+            max-width: 100%;
             margin: 0 auto;
             padding: 3rem 1.5rem;
         }
 
         .grid {
             display: grid;
-            grid-template-columns: 1fr;
+            grid-template-columns: 1fr 2fr 1fr;
             gap: 2rem;
-        }
-
-        @media (min-width: 1024px) {
-            .grid {
-                grid-template-columns: 1fr 2fr 1fr;
-                gap: 4rem;
-            }
         }
 
         .author-name {
@@ -103,10 +96,9 @@
         }
 
         #plot {
-            width: 100%;
-            height: 450px;
-            margin-left: -10%;
-            max-width: 120%;
+            width: 140%;
+            height: 400px;
+            margin-left: -20%;
         }
 
         #details {
@@ -114,21 +106,26 @@
             font-size: 1rem;
             color: #333;
         }
+
+        .legend-container {
+            margin-top: 2rem;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="grid">
-            <!-- Left Column - Author Name -->
             <div>
                 <a href="index.html" class="author-name">Philo Katzman</a>
             </div>
 
-            <!-- Center Column - Main Content -->
             <div class="main-content">
                 <div id="plot"></div>
                 <div id="details">Hover over a bubble to see more info here.</div>
-
+                <div class="legend-container">
+                    <p><strong>Legend:</strong></p>
+                    <p><span style="color:#3da4ab; font-weight:bold;">●</span> Activities &nbsp; <span style="color:#f6cd61; font-weight:bold;">●</span> Work Experience &nbsp; <span style="color:#fe8a71; font-weight:bold;">●</span> Internship</p>
+                </div>
                 <div class="navigation">
                     <a href="#" class="nav-link">
                         <svg class="chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -146,7 +143,6 @@
                 </div>
             </div>
 
-            <!-- Right Column - Navigation Menu -->
             <nav class="sidebar">
                 <a href="projects.html" class="sidebar-link">Projects</a>
                 <a href="resume.html" class="sidebar-link active">Resume</a>
@@ -194,13 +190,7 @@
             xaxis: { title: 'Project Management Rating', range: [0, 10], fixedrange: true },
             yaxis: { title: 'Research Rating', range: [0, 10], fixedrange: true },
             margin: { l: 60, r: 30, t: 60, b: 60 },
-            legend: {
-                itemsizing: 'constant',
-                orientation: 'h',
-                y: -0.2,
-                x: 0.5,
-                xanchor: 'center'
-            }
+            showlegend: false
         };
 
         Plotly.newPlot('plot', [trace], layout, { displayModeBar: false });
