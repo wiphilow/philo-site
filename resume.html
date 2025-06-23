@@ -46,7 +46,7 @@
         .main-content {
             display: flex;
             flex-direction: column;
-            gap: 2rem;
+            gap: 1.2rem;
             margin-top: 6rem;
             min-width: 600px;
             position: relative;
@@ -118,7 +118,7 @@
             gap: 2rem;
             justify-content: flex-start;
             font-size: 0.95rem;
-            padding-bottom: 1rem;
+            padding-bottom: 0.5rem;
         }
 
         .legend-container p {
@@ -154,7 +154,7 @@
             </div>
 
             <div class="main-content">
-                <p>I am a recent graduate with a background in computational neuroscience, cognitive science, and biomedical signal processing. My work bridges technical development and human-centered research, focusing on wearable technologies, experimental design, and data-driven health tools.</p>
+                <p style="margin-left: calc(-35%); max-width: 140%;">I am a recent graduate with a background in computational neuroscience, cognitive science, and biomedical signal processing. My work bridges technical development and human-centered research, focusing on wearable technologies, experimental design, and data-driven health tools.</p>
                 <div class="legend-container">
                     <p><span style="color:#3da4ab; font-weight:bold;">●</span> Activities</p>
                     <p><span style="color:#f6cd61; font-weight:bold;">●</span> Work Experience</p>
@@ -207,7 +207,6 @@
         };
 
         let selectedPointIndex = null;
-
         const plotElement = document.getElementById('plot');
         const detailsElement = document.getElementById('details');
 
@@ -224,7 +223,7 @@
                     color: experiences.map(d => colorMap[d.dimension]),
                     line: {
                         width: experiences.map((_, i) => (i === selectedIndex ? 3 : 0)),
-                        color: experiences.map((_, i) => (i === selectedIndex ? 'black' : 'black'))
+                        color: experiences.map(() => 'black')
                     }
                 },
                 hovertemplate: '%{text}<extra></extra>'
