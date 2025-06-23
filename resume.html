@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Philo Katzman | Interactive Portfolio</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: white;
+            color: #111827;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        header {
+            background: #20232a;
+            color: white;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        nav {
+            background: #444;
+            padding: 0.5rem 0;
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 3rem 1.5rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+
+        @media (min-width: 1024px) {
+            .grid {
+                grid-template-columns: 1fr 2fr 1fr;
+                gap: 4rem;
+            }
+        }
+
+        .author-name {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #111827;
+            text-decoration: none;
+        }
+
+        .author-name:hover {
+            color: #6b7280;
+        }
+
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .page-title {
+            font-size: 1.875rem;
+            font-weight: bold;
+            color: #111827;
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .sidebar-link {
+            font-size: 1.125rem;
+            color: #111827;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .sidebar-link:hover {
+            color: #6b7280;
+        }
+
+        .sidebar-link.active {
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Philo Katzman</h1>
+        <p>Interactive Portfolio Dashboard</p>
+    </header>
+
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="projects.html">Projects</a>
+        <a href="resume.html">Resume</a>
+        <a href="tangents.html">Tangents and 'Ted Talks'</a>
+        <a href="about.html">About Me</a>
+        <a href="linkedin.html">LinkedIn</a>
+        <a href="more.html">More</a>
+    </nav>
+
+    <div class="container">
+        <div class="grid">
+            <!-- Left Column - Author Name -->
+            <div>
+                <a href="index.html" class="author-name">Philo Katzman</a>
+            </div>
+
+            <!-- Center Column - Main Content -->
+            <div class="main-content">
+                <h1 class="page-title">Resume</h1>
+                <div id="plot" style="width: 100%; height: 500px;"></div>
+                <script>
+                    const experiences = [
+                        { experience: "Research Coordinator", dimension: "Work Experience", research: 6, pm: 9, bubble: 3 },
+                        { experience: "Teaching Assistant", dimension: "Work Experience", research: 3, pm: 2, bubble: 3 },
+                        { experience: "MRI Research Assistant", dimension: "Internship", research: 8, pm: 3, bubble: 3 },
+                        { experience: "Bioelectronics Research Volunteer", dimension: "Activities", research: 9, pm: 2, bubble: 3 },
+                        { experience: "Director of Events Planning", dimension: "Work Experience", research: 0, pm: 10, bubble: 3 },
+                        { experience: "Japanese Club President", dimension: "Activities", research: 1, pm: 9, bubble: 3 },
+                        { experience: "Physical Therapy Aide", dimension: "Work Experience", research: 1, pm: 2, bubble: 3 }
+                    ];
+
+                    const trace = {
+                        x: experiences.map(d => d.pm),
+                        y: experiences.map(d => d.research),
+                        text: experiences.map(d => `${d.experience} (${d.dimension})`),
+                        mode: 'markers',
+                        type: 'scatter',
+                        marker: {
+                            size: experiences.map(d => d.bubble * 10),
+                            color: '#2a72b9'
+                        },
+                        hovertemplate: '%{text}<extra></extra>'
+                    };
+
+                    const layout = {
+                        title: 'Experience Ratings',
+                        xaxis: { title: 'Project Management Rating', range: [0, 10], fixedrange: true },
+                        yaxis: { title: 'Research Rating', range: [0, 10], fixedrange: true },
+                        margin: { l: 60, r: 30, t: 60, b: 60 }
+                    };
+
+                    Plotly.newPlot('plot', [trace], layout, { displayModeBar: false });
+                </script>
+            </div>
+
+            <!-- Right Column - Navigation Menu -->
+            <nav class="sidebar">
+                <a href="projects.html" class="sidebar-link">Projects</a>
+                <a href="resume.html" class="sidebar-link active">Resume</a>
+                <a href="tangents.html" class="sidebar-link">Tangents and 'Ted Talks'</a>
+                <a href="about.html" class="sidebar-link">About Me</a>
+                <a href="linkedin.html" class="sidebar-link">LinkedIn</a>
+                <a href="more.html" class="sidebar-link">More</a>
+            </nav>
+        </div>
+    </div>
+</body>
+</html>
