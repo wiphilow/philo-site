@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Resume - Philo Katzman</title>
+    <title>Philo Katzman - Resume</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <style>
         * {
@@ -121,15 +121,13 @@
 
         #plot {
             width: 100%;
-            height: 500px;
+            height: 400px;
         }
 
         #details {
             margin-top: 1rem;
-            background: #f9f9f9;
-            padding: 1rem;
-            border-radius: 5px;
-            font-size: 0.95rem;
+            font-size: 1rem;
+            color: #333;
         }
     </style>
 </head>
@@ -144,19 +142,23 @@
             <!-- Center Column - Main Content -->
             <div class="main-content">
                 <div class="post-header">
-        
+                    <time class="post-date">6/22/2025</time>
+                    <h1 class="post-title">Resume</h1>
                 </div>
 
                 <div id="plot"></div>
-                <div id="details">Hover or click a point to see more info here.</div>
+                <div id="details">Hover over a bubble to see more info here.</div>
 
                 <div class="navigation">
                     <a href="#" class="nav-link">
                         <svg class="chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                         </svg>
+                        Previous Page
+                    </a>
 
-
+                    <a href="#" class="nav-link">
+                        Next Page
                         <svg class="chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                         </svg>
@@ -178,14 +180,20 @@
 
     <script>
         const experiences = [
-            { experience: "Research Coordinator", dimension: "Work Experience", description: "Assisted in behavioral tasks & MRI setup for toddlers", research: 6, pm: 9, bubble: 3 },
-            { experience: "Teaching Assistant", dimension: "Work Experience", description: "Led end-to-end development of wearable + API integration", research: 3, pm: 2, bubble: 3 },
-            { experience: "MRI Research Assistant", dimension: "Internship", description: "Designed and analyzed visual attention EEG study", research: 8, pm: 3, bubble: 3 },
-            { experience: "Bioelectronics Research Volunteer", dimension: "Activities", description: "Analyzed patient data for tumor DNA structure and behavior", research: 9, pm: 2, bubble: 3 },
-            { experience: "Director of Events Planning", dimension: "Work Experience", description: "Designed social connectedness experiment, ran EMG recordings", research: 0, pm: 10, bubble: 3 },
-            { experience: "Japanese Club President", dimension: "Activities", description: "Organized presentation for interdisciplinary audience", research: 1, pm: 9, bubble: 3 },
-            { experience: "Physical Therapy Aide", dimension: "Work Experience", description: "Led recruitment & protocol for 3 AI + health studies", research: 1, pm: 2, bubble: 3 }
+            { experience: "Research Coordinator", dimension: "Work Experience", research: 6, pm: 9, bubble: 3, description: "Assisted in behavioral tasks & MRI setup for toddlers" },
+            { experience: "Teaching Assistant", dimension: "Work Experience", research: 3, pm: 2, bubble: 3, description: "Led end-to-end development of wearable + API integration" },
+            { experience: "MRI Research Assistant", dimension: "Internship", research: 8, pm: 3, bubble: 3, description: "Designed and analyzed visual attention EEG study" },
+            { experience: "Bioelectronics Research Volunteer", dimension: "Activities", research: 9, pm: 2, bubble: 3, description: "Analyzed patient data for tumor DNA structure and behavior" },
+            { experience: "Director of Events Planning", dimension: "Work Experience", research: 0, pm: 10, bubble: 3, description: "Designed social connectedness experiment, ran EMG recordings" },
+            { experience: "Japanese Club President", dimension: "Activities", research: 1, pm: 9, bubble: 3, description: "Organized presentation for interdisciplinary audience" },
+            { experience: "Physical Therapy Aide", dimension: "Work Experience", research: 1, pm: 2, bubble: 3, description: "Led recruitment & protocol for 3 AI + health studies" }
         ];
+
+        const colorMap = {
+            "Activities": "#3da4ab",
+            "Work Experience": "#f6cd61",
+            "Internship": "#fe8a71"
+        };
 
         const trace = {
             x: experiences.map(d => d.pm),
@@ -196,7 +204,7 @@
             type: 'scatter',
             marker: {
                 size: experiences.map(d => d.bubble * 10),
-                color: '#2a72b9'
+                color: experiences.map(d => colorMap[d.dimension])
             },
             hovertemplate: '%{text}<extra></extra>'
         };
@@ -210,20 +218,20 @@
 
         Plotly.newPlot('plot', [trace], layout, { displayModeBar: false });
 
-        const details = document.getElementById('details');
-        const plot = document.getElementById('plot');
+        const plotElement = document.getElementById('plot');
+        const detailsElement = document.getElementById('details');
 
-        plot.on('plotly_hover', data => {
+        plotElement.on('plotly_hover', function(data) {
             const point = data.points[0].customdata;
-            details.innerHTML = `
+            detailsElement.innerHTML = `
                 <strong>${point.experience}</strong><br>
                 <em>${point.dimension}</em><br>
                 ${point.description}
             `;
         });
 
-        plot.on('plotly_unhover', () => {
-            details.innerHTML = 'Hover or click a point to see more info here.';
+        plotElement.on('plotly_unhover', function(data) {
+            detailsElement.innerHTML = 'Hover over a bubble to see more info here.';
         });
     </script>
 </body>
