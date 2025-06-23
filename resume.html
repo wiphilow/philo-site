@@ -47,8 +47,9 @@
             display: flex;
             flex-direction: column;
             gap: 2rem;
-            margin-top: 4rem;
+            margin-top: 6rem;
             min-width: 600px;
+            position: relative;
         }
 
         .navigation {
@@ -99,9 +100,9 @@
         }
 
         #plot {
-            width: 120%;
-            height: 380px;
-            margin-left: -20%;
+            width: 140%;
+            height: 400px;
+            margin-left: -35%;
         }
 
         #details {
@@ -111,10 +112,10 @@
         }
 
         .legend-container {
-            position: relative;
-            margin-top: -380px;
-            margin-left: 100%;
-            width: 200px;
+            position: absolute;
+            top: 0;
+            right: -180px;
+            width: 150px;
             background: #f9f9f9;
             padding: 1rem;
             border: 1px solid #ddd;
@@ -126,7 +127,7 @@
             margin: 0.25rem 0;
         }
 
-        @media (max-width: 900px) {
+        @media (max-width: 1100px) {
             .grid {
                 grid-template-columns: 1fr;
             }
@@ -157,6 +158,12 @@
             <div class="main-content">
                 <div id="plot"></div>
                 <div id="details">Hover over a bubble to see more info here.</div>
+                <div class="legend-container">
+                    <p><strong>Legend</strong></p>
+                    <p><span style="color:#3da4ab; font-weight:bold;">●</span> Activities</p>
+                    <p><span style="color:#f6cd61; font-weight:bold;">●</span> Work Experience</p>
+                    <p><span style="color:#fe8a71; font-weight:bold;">●</span> Internship</p>
+                </div>
                 <div class="navigation">
                     <a href="#" class="nav-link">
                         <svg class="chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -182,12 +189,6 @@
                 <a href="linkedin.html" class="sidebar-link">LinkedIn</a>
                 <a href="more.html" class="sidebar-link">More</a>
             </nav>
-        </div>
-        <div class="legend-container">
-            <p><strong>Legend</strong></p>
-            <p><span style="color:#3da4ab; font-weight:bold;">●</span> Activities</p>
-            <p><span style="color:#f6cd61; font-weight:bold;">●</span> Work Experience</p>
-            <p><span style="color:#fe8a71; font-weight:bold;">●</span> Internship</p>
         </div>
     </div>
 
