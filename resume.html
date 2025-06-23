@@ -159,11 +159,9 @@
                         <svg class="chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                         </svg>
-                        Previous Page
-                    </a>
+        
 
-                    <a href="#" class="nav-link">
-                        Next Page
+             
                         <svg class="chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                         </svg>
@@ -185,12 +183,12 @@
     <script>
         const experiences = [
             { experience: "Research Coordinator", dimension: "Work Experience", research: 6, pm: 9, bubble: 3, description: "Assisted in behavioral tasks & MRI setup for toddlers" },
-            { experience: "Teaching Assistant", dimension: "Work Experience", research: 3, pm: 2, bubble: 3, description: "Led end-to-end development of wearable + API integration" },
+            { experience: "Teaching Assistant", dimension: "Work Experience", research: 3, pm: 2.2, bubble: 3, description: "Led end-to-end development of wearable + API integration" },
             { experience: "MRI Research Assistant", dimension: "Internship", research: 8, pm: 3, bubble: 3, description: "Designed and analyzed visual attention EEG study" },
             { experience: "Bioelectronics Research Volunteer", dimension: "Activities", research: 9, pm: 2, bubble: 3, description: "Analyzed patient data for tumor DNA structure and behavior" },
             { experience: "Director of Events Planning", dimension: "Work Experience", research: 0, pm: 10, bubble: 3, description: "Designed social connectedness experiment, ran EMG recordings" },
             { experience: "Japanese Club President", dimension: "Activities", research: 1, pm: 9, bubble: 3, description: "Organized presentation for interdisciplinary audience" },
-            { experience: "Physical Therapy Aide", dimension: "Work Experience", research: 1, pm: 2, bubble: 3, description: "Led recruitment & protocol for 3 AI + health studies" }
+            { experience: "Physical Therapy Aide", dimension: "Work Experience", research: 1, pm: 1.5, bubble: 3, description: "Led recruitment & protocol for 3 AI + health studies" }
         ];
 
         const colorMap = {
@@ -199,22 +197,27 @@
             "Internship": "#fe8a71"
         };
 
+        let selectedPointIndex = null;
+
         const trace = {
             x: experiences.map(d => d.pm),
             y: experiences.map(d => d.research),
             text: experiences.map(d => d.experience),
-            customdata: experiences.map(d => d),
+            customdata: experiences.map((d, i) => ({ ...d, index: i })),
             mode: 'markers',
             type: 'scatter',
             marker: {
                 size: experiences.map(d => d.bubble * 10),
-                color: experiences.map(d => colorMap[d.dimension])
+                color: experiences.map(d => colorMap[d.dimension]),
+                line: {
+                    width: experiences.map((_, i) => i === selectedPointIndex ? 3 : 0),
+                    color: experiences.map((_, i) => i === selectedPointIndex ? 'black' : '')
+                }
             },
             hovertemplate: '%{text}<extra></extra>'
         };
 
         const layout = {
-            title: 'Experience Ratings',
             xaxis: { title: 'Project Management Rating', range: [0, 10], fixedrange: true },
             yaxis: { title: 'Research Rating', range: [0, 10], fixedrange: true },
             margin: { l: 60, r: 60, t: 60, b: 60 },
@@ -247,12 +250,19 @@
 
         plotElement.on('plotly_click', function(data) {
             const point = data.points[0].customdata;
+            selectedPointIndex = point.index;
             lastClicked = point;
             detailsElement.innerHTML = `
                 <strong>${point.experience}</strong><br>
                 <em>${point.dimension}</em><br>
                 ${point.description}
             `;
+
+            const newTrace = JSON.parse(JSON.stringify(trace));
+            newTrace.marker.line.width = experiences.map((_, i) => i === selectedPointIndex ? 3 : 0);
+            newTrace.marker.line.color = experiences.map((_, i) => i === selectedPointIndex ? 'black' : '');
+
+            Plotly.react('plot', [newTrace], layout, { displayModeBar: false });
         });
     </script>
 </body>
