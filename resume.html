@@ -29,6 +29,7 @@
             display: grid;
             grid-template-columns: 1fr 2fr 1fr;
             gap: 2rem;
+            min-width: 950px;
         }
 
         .author-name {
@@ -46,7 +47,8 @@
             display: flex;
             flex-direction: column;
             gap: 2rem;
-            margin-top: 2rem;
+            margin-top: 4rem;
+            min-width: 600px;
         }
 
         .navigation {
@@ -97,9 +99,9 @@
         }
 
         #plot {
-            width: 110%;
-            height: 400px;
-            margin-left: -10%;
+            width: 120%;
+            height: 380px;
+            margin-left: -20%;
         }
 
         #details {
@@ -109,9 +111,10 @@
         }
 
         .legend-container {
-            position: absolute;
-            right: 3rem;
-            top: 10rem;
+            position: relative;
+            margin-top: -380px;
+            margin-left: 100%;
+            width: 200px;
             background: #f9f9f9;
             padding: 1rem;
             border: 1px solid #ddd;
@@ -121,6 +124,26 @@
 
         .legend-container p {
             margin: 0.25rem 0;
+        }
+
+        @media (max-width: 900px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .main-content, .sidebar {
+                min-width: 100%;
+            }
+
+            #plot {
+                width: 100%;
+                margin-left: 0;
+            }
+
+            .legend-container {
+                position: static;
+                margin-top: 1rem;
+            }
         }
     </style>
 </head>
@@ -203,7 +226,7 @@
             title: 'Experience Ratings',
             xaxis: { title: 'Project Management Rating', range: [0, 10], fixedrange: true },
             yaxis: { title: 'Research Rating', range: [0, 10], fixedrange: true },
-            margin: { l: 60, r: 30, t: 60, b: 60 },
+            margin: { l: 60, r: 60, t: 60, b: 60 },
             showlegend: false
         };
 
