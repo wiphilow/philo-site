@@ -109,6 +109,8 @@
             margin-top: 1rem;
             font-size: 1rem;
             color: #333;
+            max-width: 140%;
+            margin-left: -35%;
         }
 
         .legend-container {
@@ -134,6 +136,11 @@
 
             #plot {
                 width: 100%;
+                margin-left: 0;
+            }
+
+            #details {
+                max-width: 100%;
                 margin-left: 0;
             }
         }
@@ -224,13 +231,13 @@
             };
 
             const layout = {
-                xaxis: { title: 'Project Management Rating', range: [0, 10], fixedrange: true },
+                xaxis: { title: 'Project Management Rating', range: [0, 10], fixedrange: true, showspikes: false },
                 yaxis: { title: 'Research Rating', range: [0, 10], fixedrange: true },
                 margin: { l: 60, r: 60, t: 60, b: 60 },
                 showlegend: false
             };
 
-            Plotly.newPlot('plot', [trace], layout, { displayModeBar: false });
+            Plotly.react('plot', [trace], layout, { displayModeBar: false });
         }
 
         renderPlot();
