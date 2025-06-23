@@ -147,6 +147,7 @@
             </div>
 
             <div class="main-content">
+                <p>I am a recent graduate with a background in computational neuroscience, cognitive science, and biomedical signal processing. My work bridges technical development and human-centered research, focusing on wearable technologies, experimental design, and data-driven health tools.</p>
                 <div class="legend-container">
                     <p><span style="color:#3da4ab; font-weight:bold;">●</span> Activities</p>
                     <p><span style="color:#f6cd61; font-weight:bold;">●</span> Work Experience</p>
@@ -159,9 +160,10 @@
                         <svg class="chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                         </svg>
-        
-
-             
+                        Previous Page
+                    </a>
+                    <a href="#" class="nav-link">
+                        Next Page
                         <svg class="chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                         </svg>
@@ -199,41 +201,47 @@
 
         let selectedPointIndex = null;
 
-        const trace = {
-            x: experiences.map(d => d.pm),
-            y: experiences.map(d => d.research),
-            text: experiences.map(d => d.experience),
-            customdata: experiences.map((d, i) => ({ ...d, index: i })),
-            mode: 'markers',
-            type: 'scatter',
-            marker: {
-                size: experiences.map(d => d.bubble * 10),
-                color: experiences.map(d => colorMap[d.dimension]),
-                line: {
-                    width: experiences.map((_, i) => i === selectedPointIndex ? 3 : 0),
-                    color: experiences.map((_, i) => i === selectedPointIndex ? 'black' : '')
-                }
-            },
-            hovertemplate: '%{text}<extra></extra>'
-        };
-
-        const layout = {
-            xaxis: { title: 'Project Management Rating', range: [0, 10], fixedrange: true },
-            yaxis: { title: 'Research Rating', range: [0, 10], fixedrange: true },
-            margin: { l: 60, r: 60, t: 60, b: 60 },
-            showlegend: false
-        };
-
-        Plotly.newPlot('plot', [trace], layout, { displayModeBar: false });
-
         const plotElement = document.getElementById('plot');
         const detailsElement = document.getElementById('details');
+
+        function renderPlot(selectedIndex = null) {
+            const trace = {
+                x: experiences.map(d => d.pm),
+                y: experiences.map(d => d.research),
+                text: experiences.map(d => d.experience),
+                customdata: experiences.map((d, i) => ({ ...d, index: i })),
+                mode: 'markers',
+                type: 'scatter',
+                marker: {
+                    size: experiences.map(d => d.bubble * 10),
+                    color: experiences.map(d => colorMap[d.dimension]),
+                    line: {
+                        width: experiences.map((_, i) => (i === selectedIndex ? 3 : 0)),
+                        color: experiences.map((_, i) => (i === selectedIndex ? 'black' : 'black'))
+                    }
+                },
+                hovertemplate: '%{text}<extra></extra>'
+            };
+
+            const layout = {
+                xaxis: { title: 'Project Management Rating', range: [0, 10], fixedrange: true },
+                yaxis: { title: 'Research Rating', range: [0, 10], fixedrange: true },
+                margin: { l: 60, r: 60, t: 60, b: 60 },
+                showlegend: false
+            };
+
+            Plotly.newPlot('plot', [trace], layout, { displayModeBar: false });
+        }
+
+        renderPlot();
 
         let lastClicked = null;
 
         plotElement.on('plotly_hover', function(data) {
             if (!lastClicked) {
                 const point = data.points[0].customdata;
+                selectedPointIndex = point.index;
+                renderPlot(selectedPointIndex);
                 detailsElement.innerHTML = `
                     <strong>${point.experience}</strong><br>
                     <em>${point.dimension}</em><br>
@@ -244,6 +252,8 @@
 
         plotElement.on('plotly_unhover', function(data) {
             if (!lastClicked) {
+                selectedPointIndex = null;
+                renderPlot();
                 detailsElement.innerHTML = 'Hover over or click a bubble to see more info here.';
             }
         });
@@ -252,17 +262,12 @@
             const point = data.points[0].customdata;
             selectedPointIndex = point.index;
             lastClicked = point;
+            renderPlot(selectedPointIndex);
             detailsElement.innerHTML = `
                 <strong>${point.experience}</strong><br>
                 <em>${point.dimension}</em><br>
                 ${point.description}
             `;
-
-            const newTrace = JSON.parse(JSON.stringify(trace));
-            newTrace.marker.line.width = experiences.map((_, i) => i === selectedPointIndex ? 3 : 0);
-            newTrace.marker.line.color = experiences.map((_, i) => i === selectedPointIndex ? 'black' : '');
-
-            Plotly.react('plot', [newTrace], layout, { displayModeBar: false });
         });
     </script>
 </body>
