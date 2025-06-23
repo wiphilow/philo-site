@@ -55,23 +55,6 @@
             gap: 2rem;
         }
 
-        .post-header {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        .post-date {
-            font-size: 1.125rem;
-            color: #6b7280;
-        }
-
-        .post-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: #111827;
-        }
-
         .navigation {
             display: flex;
             align-items: center;
@@ -121,7 +104,9 @@
 
         #plot {
             width: 100%;
-            height: 400px;
+            height: 450px;
+            margin-left: -10%;
+            max-width: 120%;
         }
 
         #details {
@@ -141,11 +126,6 @@
 
             <!-- Center Column - Main Content -->
             <div class="main-content">
-                <div class="post-header">
-                    <time class="post-date">6/22/2025</time>
-                    <h1 class="post-title">Resume</h1>
-                </div>
-
                 <div id="plot"></div>
                 <div id="details">Hover over a bubble to see more info here.</div>
 
@@ -198,7 +178,7 @@
         const trace = {
             x: experiences.map(d => d.pm),
             y: experiences.map(d => d.research),
-            text: experiences.map(d => `${d.experience} (${d.dimension})`),
+            text: experiences.map(d => d.experience),
             customdata: experiences.map(d => d),
             mode: 'markers',
             type: 'scatter',
@@ -213,7 +193,14 @@
             title: 'Experience Ratings',
             xaxis: { title: 'Project Management Rating', range: [0, 10], fixedrange: true },
             yaxis: { title: 'Research Rating', range: [0, 10], fixedrange: true },
-            margin: { l: 60, r: 30, t: 60, b: 60 }
+            margin: { l: 60, r: 30, t: 60, b: 60 },
+            legend: {
+                itemsizing: 'constant',
+                orientation: 'h',
+                y: -0.2,
+                x: 0.5,
+                xanchor: 'center'
+            }
         };
 
         Plotly.newPlot('plot', [trace], layout, { displayModeBar: false });
