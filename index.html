@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Philo Katzman | Interactive Dashboard</title>
 
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
   <style>
     body {
       font-family: sans-serif;
@@ -36,29 +38,48 @@
 
     #main {
       display: flex;
-      flex-direction: row;
+      flex-direction: column;
       padding: 2rem;
       gap: 2rem;
       flex-wrap: wrap;
     }
 
-    #looker-container {
-      flex: 3;
-      min-width: 600px;
+    #controls {
+      text-align: center;
     }
 
-    iframe {
+    #dimensionFilter {
+      padding: 0.5rem;
+      font-size: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    #plot-container {
       width: 100%;
-      height: 600px;
-      border: none;
+      height: 70vh;
     }
 
     #metadata {
-      flex: 1;
-      min-width: 250px;
       background: #f0f0f0;
       padding: 1rem;
-      border-left: 2px solid #ccc;
+      border-top: 2px solid #ccc;
+      max-width: 100%;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    table th, table td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: left;
+    }
+
+    table th {
+      background-color: #f2f2f2;
     }
 
     footer {
@@ -71,11 +92,6 @@
     @media (max-width: 800px) {
       #main {
         flex-direction: column;
-      }
-
-      #metadata {
-        border-left: none;
-        border-top: 2px solid #ccc;
       }
     }
   </style>
@@ -95,32 +111,158 @@
   </nav>
 
   <div id="main">
-    <div id="looker-container">
+    <div id="controls">
+      <label for="dimensionFilter"><strong>Filter by Dimension:</strong></label>
+      <select id="dimensionFilter">
+        <option value="All">All</option>
+        <option value="Work Experience">Work Experience</option>
+        <option value="Activities">Activities</option>
+        <option value="Internship">Internship</option>
+      </select>
+    </div>
 
-      <iframe 
-        src="https://lookerstudio.google.com/embed/reporting/30131869-9e9a-48c0-ab2e-f45b5a5517d2/page/iCyOF"
-        allowfullscreen
-        scrolling="no"
-        frameboarder ="0"
-    style="
-      display: block;
-      width: 100vw;
-      height: 100vh;
-      border: none;
-      overflow: hidden;
-    ">
-  </iframe>
-      </iframe>
+    <div id="plot-container">
+      <div id="plot" style="width: 100%; height: 100%;"></div>
     </div>
 
     <div id="metadata">
-      <h2>Details</h2>
+      <h2>Selected Experience Info</h2>
+      <table id="info-table">
+        <thead>
+          <tr>
+            <th>Experience</th>
+            <th>Dimension</th>
+            <th>Date</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td colspan="4" style="text-align:center;">Click a bubble to view details</td></tr>
+        </tbody>
+      </table>
     </div>
   </div>
 
   <footer>
     &copy; 2025 Philo Katzman • Hosted on GitHub Pages
   </footer>
+
+  <script>
+    const allExperiences = [
+      {
+        experience: "Research Coordinator",
+        dimension: "Work Experience",
+        description: "Assisted in behavioral tasks & MRI setup for toddlers",
+        research: 6,
+        pm: 9,
+        bubble: 3,
+        date: ""
+      },
+      {
+        experience: "Teaching Assistant",
+        dimension: "Work Experience",
+        description: "Led end-to-end development of wearable + API integration",
+        research: 3,
+        pm: 2,
+        bubble: 3,
+        date: ""
+      },
+      {
+        experience: "MRI Research Assistant",
+        dimension: "Internship",
+        description: "Designed and analyzed visual attention EEG study",
+        research: 8,
+        pm: 3,
+        bubble: 3,
+        date: ""
+      },
+      {
+        experience: "Bioelectronics Research Volunteer",
+        dimension: "Activities",
+        description: "Analyzed patient data for tumor DNA structure and behavior",
+        research: 9,
+        pm: 2,
+        bubble: 3,
+        date: ""
+      },
+      {
+        experience: "Director of Events Planning",
+        dimension: "Work Experience",
+        description: "Designed social connectedness experiment, ran EMG recordings",
+        research: 0,
+        pm: 10,
+        bubble: 3,
+        date: ""
+      },
+      {
+        experience: "Japanese Club President",
+        dimension: "Activities",
+        description: "Organized presentation for interdisciplinary audience",
+        research: 1,
+        pm: 9,
+        bubble: 3,
+        date: ""
+      },
+      {
+        experience: "Physical Therapy Aide",
+        dimension: "Work Experience",
+        description: "Led recruitment & protocol for 3 AI + health studies",
+        research: 1,
+        pm: 2,
+        bubble: 3,
+        date: ""
+      }
+    ];
+
+    function renderPlot(filteredExperiences) {
+      const trace = {
+        x: filteredExperiences.map(d => d.pm),
+        y: filteredExperiences.map(d => d.research),
+        text: filteredExperiences.map(d => `${d.experience} (${d.dimension})`),
+        customdata: filteredExperiences.map(d => d),
+        mode: 'markers',
+        type: 'scatter',
+        marker: {
+          size: filteredExperiences.map(d => d.bubble * 10),
+          color: '#2a72b9'
+        },
+        hovertemplate: '%{text}<extra></extra>'
+      };
+
+      const layout = {
+        title: 'Experience Ratings',
+        xaxis: { title: 'Project Management Rating', range: [0, 10], fixedrange: true },
+        yaxis: { title: 'Research Rating', range: [0, 10], fixedrange: true },
+        margin: { l: 60, r: 30, t: 60, b: 60 }
+      };
+
+      Plotly.newPlot('plot', [trace], layout, { displayModeBar: false });
+
+      document.getElementById('plot').on('plotly_click', function(event) {
+        const pointData = event.points[0].customdata;
+        const tableBody = document.querySelector('#info-table tbody');
+        tableBody.innerHTML = `
+          <tr>
+            <td>${pointData.experience}</td>
+            <td>${pointData.dimension}</td>
+            <td>${pointData.date || '—'}</td>
+            <td>${pointData.description}</td>
+          </tr>
+        `;
+      });
+    }
+
+
+    renderPlot(allExperiences);
+
+    document.getElementById('dimensionFilter').addEventListener('change', function () {
+      const selected = this.value;
+      const filtered = selected === "All"
+        ? allExperiences
+        : allExperiences.filter(d => d.dimension === selected);
+      renderPlot(filtered);
+    });
+  </script>
 
 </body>
 </html>
