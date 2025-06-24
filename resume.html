@@ -20,15 +20,20 @@
         }
 
         .container {
-            max-width: 100%;
-            margin: 0 auto;
-            padding: 3rem 1.5rem 2rem 1.5rem;
+            display: flex;
+            flex-direction: row;
+            width: 100%;
+            min-height: 100vh;
         }
 
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr 2fr 1fr;
-            gap: 2rem;
+        .sidebar {
+            width: 200px;
+            padding: 2rem 1rem;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            transition: transform 0.4s ease;
         }
 
         .author-name {
@@ -36,48 +41,13 @@
             font-weight: bold;
             color: #111827;
             text-decoration: none;
-        }
-
-        .author-name:hover {
-            color: #6b7280;
-        }
-
-        .main-content {
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-            margin-top: 6rem;
+            cursor: pointer;
+            margin-bottom: 1rem;
             position: relative;
         }
 
-        .navigation {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 2rem;
-            padding-top: 2rem;
-        }
-
-        .nav-link {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            color: #6b7280;
-            text-decoration: none;
-            transition: color 0.2s;
-        }
-
-        .nav-link:hover {
-            color: #111827;
-        }
-
-        .chevron {
-            width: 1.25rem;
-            height: 1.25rem;
-        }
-
-        .sidebar {
-            display: flex;
+        .sidebar-links {
+            display: none;
             flex-direction: column;
             gap: 1rem;
         }
@@ -93,8 +63,31 @@
             color: #6b7280;
         }
 
-        .sidebar-link.active {
-            font-weight: 600;
+        .author-name:hover + .sidebar-links,
+        .sidebar-links:hover {
+            display: flex;
+        }
+
+        .main-content {
+            flex-grow: 1;
+            padding: 3rem 2rem;
+        }
+
+        .intro-paragraph {
+            max-width: 100%;
+            margin-bottom: 1rem;
+        }
+
+        .legend-container {
+            display: flex;
+            gap: 2rem;
+            justify-content: flex-start;
+            font-size: 0.95rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .legend-container p {
+            margin: 0;
         }
 
         #plot {
@@ -107,74 +100,56 @@
             font-size: 1rem;
             color: #333;
             width: 100%;
+            margin-top: 1rem;
         }
 
-        .legend-container {
-            display: flex;
-            gap: 2rem;
-            justify-content: flex-start;
-            font-size: 0.95rem;
-        }
-
-        .legend-container p {
-            margin: 0;
-        }
-
-        .intro-paragraph {
-            max-width: 100%;
-        }
-
-        @media (max-width: 900px) {
-            .grid {
-                grid-template-columns: 1fr;
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
             }
 
-            .main-content, .sidebar {
-                min-width: 100%;
+            .sidebar {
+                width: 100%;
+                flex-direction: row;
+                justify-content: center;
+            }
+
+            .sidebar-links {
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+                width: 100%;
+                margin-top: 1rem;
+            }
+
+            .main-content {
+                padding: 2rem 1rem;
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="grid">
-            <div>
-                <a href="index.html" class="author-name">Philo Katzman</a>
-            </div>
-
-            <div class="main-content">
-                <p class="intro-paragraph">I am a recent graduate with a background in computational neuroscience, cognitive science, and biomedical signal processing. My work bridges technical development and human-centered research, focusing on wearable technologies, experimental design, and data-driven health tools.</p>
-                <div class="legend-container">
-                    <p><span style="color:#3da4ab; font-weight:bold;">●</span> Activities</p>
-                    <p><span style="color:#f6cd61; font-weight:bold;">●</span> Work Experience</p>
-                    <p><span style="color:#fe8a71; font-weight:bold;">●</span> Internship</p>
-                </div>
-                <div id="plot"></div>
-                <div id="details">Hover over or click a bubble to see more info here.</div>
-                <div class="navigation">
-                    <a href="#" class="nav-link">
-                        <svg class="chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                        </svg>
-                        Previous Page
-                    </a>
-                    <a href="#" class="nav-link">
-                        Next Page
-                        <svg class="chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                        </svg>
-                    </a>
-                </div>
-            </div>
-
-            <nav class="sidebar">
+        <div class="sidebar">
+            <div class="author-name">Philo Katzman</div>
+            <div class="sidebar-links">
                 <a href="projects.html" class="sidebar-link">Projects</a>
                 <a href="resume.html" class="sidebar-link active">Resume</a>
                 <a href="tangents.html" class="sidebar-link">Tangents and 'Ted Talks'</a>
                 <a href="about.html" class="sidebar-link">About Me</a>
                 <a href="linkedin.html" class="sidebar-link">LinkedIn</a>
                 <a href="more.html" class="sidebar-link">More</a>
-            </nav>
+            </div>
+        </div>
+        <div class="main-content">
+            <p class="intro-paragraph">I am a recent graduate with a background in computational neuroscience, cognitive science, and biomedical signal processing. My work bridges technical development and human-centered research, focusing on wearable technologies, experimental design, and data-driven health tools.</p>
+            <div class="legend-container">
+                <p><span style="color:#3da4ab; font-weight:bold;">●</span> Activities</p>
+                <p><span style="color:#f6cd61; font-weight:bold;">●</span> Work Experience</p>
+                <p><span style="color:#fe8a71; font-weight:bold;">●</span> Internship</p>
+            </div>
+            <div id="plot"></div>
+            <div id="details">Hover over or click a bubble to see more info here.</div>
         </div>
     </div>
 
@@ -212,7 +187,7 @@
                     color: experiences.map(d => colorMap[d.dimension]),
                     line: {
                         width: experiences.map((_, i) => (i === selectedIndex ? 3 : 0)),
-                        color: experiences.map(() => 'black')
+                        color: 'black'
                     }
                 },
                 hovertemplate: '%{text}<extra></extra>'
