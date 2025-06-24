@@ -70,6 +70,7 @@
             gap: 1rem;
             padding-top: 4rem;
             min-width: 0; /* Allow shrinking */
+            padding-left: 3rem;
         }
 
         .sidebar-link {
@@ -478,13 +479,15 @@
                     range: [0, 10], 
                     fixedrange: true, 
                     showspikes: false, 
+                    showgrid: false,
                     showline: true, 
                     showticklabels: true 
                 },
                 yaxis: { 
                     title: 'Research Rating', 
                     range: [0, 10], 
-                    fixedrange: true 
+                    fixedrange: true,
+                    showgrid: false
                 },
                 margin: { l: 60, r: 60, t: 60, b: 60 },
                 showlegend: false,
