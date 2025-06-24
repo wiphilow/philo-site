@@ -29,7 +29,6 @@
             display: grid;
             grid-template-columns: 1fr 2fr 1fr;
             gap: 2rem;
-            min-width: 950px;
         }
 
         .author-name {
@@ -46,9 +45,8 @@
         .main-content {
             display: flex;
             flex-direction: column;
-            gap: 1rem;
+            gap: 1.5rem;
             margin-top: 6rem;
-            min-width: 600px;
             position: relative;
         }
 
@@ -100,17 +98,15 @@
         }
 
         #plot {
-            width: 140%;
-            height: 400px;
-            margin-left: -35%;
+            width: 100%;
+            height: auto;
+            min-height: 400px;
         }
 
         #details {
-            margin-top: 1rem;
             font-size: 1rem;
             color: #333;
-            max-width: 140%;
-            margin-left: -35%;
+            width: 100%;
         }
 
         .legend-container {
@@ -118,7 +114,6 @@
             gap: 2rem;
             justify-content: flex-start;
             font-size: 0.95rem;
-            margin-bottom: -0.5rem;
         }
 
         .legend-container p {
@@ -126,24 +121,16 @@
         }
 
         .intro-paragraph {
-            margin-left: -35%;
-            max-width: 140%;
-            margin-bottom: 2rem;
+            max-width: 100%;
         }
 
-        @media (max-width: 1100px) {
+        @media (max-width: 900px) {
             .grid {
                 grid-template-columns: 1fr;
             }
 
             .main-content, .sidebar {
                 min-width: 100%;
-            }
-
-            #plot, #details, .intro-paragraph {
-                width: 100%;
-                margin-left: 0;
-                max-width: 100%;
             }
         }
     </style>
