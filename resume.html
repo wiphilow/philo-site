@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Philo Katzman - Resume</title>
-    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -29,7 +29,7 @@
 
         .grid {
             display: grid;
-            grid-template-columns: 2fr auto;
+            grid-template-columns: 2fr 1fr;
             gap: 2rem;
             max-width: 100%;
         }
@@ -38,7 +38,7 @@
             display: flex;
             flex-direction: column;
             gap: 1.5rem;
-            min-width: 0;
+            min-width: 0; /* Allow shrinking */
             overflow: hidden;
         }
 
@@ -60,7 +60,7 @@
             gap: 1.5rem;
             margin-top: 2rem;
             position: relative;
-            min-width: 0;
+            min-width: 0; /* Allow shrinking */
             max-width: 100%;
         }
 
@@ -69,8 +69,7 @@
             flex-direction: column;
             gap: 1rem;
             padding-top: 4rem;
-            min-width: 0;
-            width: 12rem;
+            min-width: 0; /* Allow shrinking */
         }
 
         .sidebar-link {
@@ -90,6 +89,7 @@
             font-weight: 600;
         }
 
+        /* Special handling for the "Tangents and 'Ted Talks'" link */
         .sidebar-link.tangents {
             line-height: 1.4;
         }
@@ -116,26 +116,6 @@
             font-weight: bold;
             color: #111827;
             margin-bottom: 0.5rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .selection-indicator {
-            font-size: 0.75rem;
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
-            font-weight: normal;
-        }
-
-        .selection-indicator.hover {
-            background-color: #e5e7eb;
-            color: #6b7280;
-        }
-
-        .selection-indicator.selected {
-            background-color: #dbeafe;
-            color: #2563eb;
         }
 
         .details-subtitle {
@@ -293,7 +273,6 @@
 
             .sidebar {
                 padding-top: 2rem;
-                width: auto;
             }
 
             .legend-container {
@@ -309,12 +288,6 @@
             }
 
             .ratings-section {
-                gap: 0.5rem;
-            }
-
-            .details-header {
-                flex-direction: column;
-                align-items: flex-start;
                 gap: 0.5rem;
             }
         }
@@ -356,6 +329,7 @@
             }
         }
 
+        /* Ensure plot responsiveness */
         @media (max-width: 500px) {
             #plot {
                 min-height: 180px;
@@ -378,9 +352,7 @@
                     </div>
                     <div id="plot"></div>
                     <div class="details-container" id="details">
-                        <div class="details-header">
-                            <span>Select an Experience</span>
-                        </div>
+                        <div class="details-header">Select an Experience</div>
                         <div class="details-subtitle">Click on a point to see detailed information about that experience</div>
                     </div>
                 </div>
@@ -478,11 +450,10 @@
         };
 
         let selectedPointIndex = null;
-        let selectedExperience = null;
         const plotElement = document.getElementById('plot');
         const detailsElement = document.getElementById('details');
 
-        function renderPlot(highlightIndex = null) {
+        function renderPlot(selectedIndex = null) {
             const trace = {
                 x: experiences.map(d => d.pm),
                 y: experiences.map(d => d.research),
@@ -494,31 +465,26 @@
                     size: experiences.map(d => d.bubble * 10),
                     color: experiences.map(d => colorMap[d.dimension]),
                     line: {
-                        width: experiences.map((_, i) => (i === highlightIndex ? 3 : 0)),
+                        width: experiences.map((_, i) => (i === selectedIndex ? 3 : 0)),
                         color: experiences.map(() => 'black')
                     }
                 },
-                hoverinfo: 'skip',
-                hovertemplate: null
+                hovertemplate: '%{text}<extra></extra>'
             };
 
             const layout = {
-                xaxis: {
-                    title: 'Project Management Rating',
-                    range: [0, 10],
-                    fixedrange: true,
-                    showspikes: false,
-                    showline: true,
-                    showticklabels: true,
-                    showgrid: false,
-                    zeroline: false
+                xaxis: { 
+                    title: 'Project Management Rating', 
+                    range: [0, 10], 
+                    fixedrange: true, 
+                    showspikes: false, 
+                    showline: true, 
+                    showticklabels: true 
                 },
-                yaxis: {
-                    title: 'Research Rating',
-                    range: [0, 10],
-                    fixedrange: true,
-                    showgrid: false,
-                    zeroline: false
+                yaxis: { 
+                    title: 'Research Rating', 
+                    range: [0, 10], 
+                    fixedrange: true 
                 },
                 margin: { l: 60, r: 60, t: 60, b: 60 },
                 showlegend: false,
@@ -532,59 +498,28 @@
                 responsive: true
             };
 
-            Plotly.newPlot('plot', [trace], layout, config).then(setupEventListeners);
-        }
-
-        function setupEventListeners() {
-            plotElement.on('plotly_click', function (data) {
-                const point = data.points[0].customdata;
-
-                if (selectedExperience && selectedExperience.index === point.index) {
-                    selectedExperience = null;
-                    selectedPointIndex = null;
-                    updatePlotHighlight(null);
-                    showDefaultDetails();
-                } else {
-                    selectedExperience = point;
-                    selectedPointIndex = point.index;
-                    updatePlotHighlight(selectedPointIndex);
-                    showExperienceDetails(point);
-                }
-            });
-        }
-
-        function updatePlotHighlight(highlightIndex) {
-            const update = {
-                'marker.line.width': experiences.map((_, i) => (i === highlightIndex ? 3 : 0))
-            };
-
-            Plotly.restyle('plot', update, 0);
+            Plotly.react('plot', [trace], layout, config);
         }
 
         function showDefaultDetails() {
             detailsElement.innerHTML = `
-                <div class="details-header">
-                    <span>Select an Experience</span>
-                </div>
+                <div class="details-header">Select an Experience</div>
                 <div class="details-subtitle">Click on a point to see detailed information about that experience</div>
             `;
         }
 
         function showExperienceDetails(point) {
-            const skillBubbles = point.keySkills.map(skill =>
+            const skillBubbles = point.keySkills.map(skill => 
                 `<span class="skill-bubble">${skill}</span>`
             ).join('');
 
             detailsElement.innerHTML = `
-                <div class="details-header">
-                    <span>Experience Details</span>
-                    <span class="selection-indicator selected">Selected - Click outside to deselect</span>
-                </div>
+                <div class="details-header">Experience Details</div>
                 <div class="experience-details">
                     <div class="experience-name">${point.experience}</div>
                     <div class="experience-date">${point.dateRange}</div>
                     <div class="experience-description">${point.description}</div>
-
+                    
                     <div class="ratings-section">
                         <div class="rating-item">
                             <div class="rating-label">
@@ -619,23 +554,47 @@
         // Initial render
         renderPlot();
 
-        // Resize plot on window change
-        window.addEventListener('resize', () => Plotly.Plots.resize('plot'));
+        // Handle window resize for plot responsiveness
+        window.addEventListener('resize', function() {
+            Plotly.Plots.resize('plot');
+        });
 
-        // Deselect on outside click
-        document.addEventListener('click', function (event) {
-            if (!plotElement.contains(event.target) && !detailsElement.contains(event.target)) {
-                if (selectedExperience) {
-                    selectedExperience = null;
-                    selectedPointIndex = null;
-                    updatePlotHighlight(null);
-                    showDefaultDetails();
-                }
+        let lastClicked = null;
+
+        plotElement.on('plotly_hover', function(data) {
+            if (!lastClicked) {
+                const point = data.points[0].customdata;
+                selectedPointIndex = point.index;
+                renderPlot(selectedPointIndex);
+                showExperienceDetails(point);
             }
         });
 
-        // Prevent deselect when clicking inside details
-        detailsElement.addEventListener('click', event => event.stopPropagation());
+        plotElement.on('plotly_unhover', function(data) {
+            if (!lastClicked) {
+                selectedPointIndex = null;
+                renderPlot();
+                showDefaultDetails();
+            }
+        });
+
+        plotElement.on('plotly_click', function(data) {
+            const point = data.points[0].customdata;
+            selectedPointIndex = point.index;
+            lastClicked = point;
+            renderPlot(selectedPointIndex);
+            showExperienceDetails(point);
+        });
+
+        // Click outside to deselect
+        document.addEventListener('click', function(event) {
+            if (!plotElement.contains(event.target) && !detailsElement.contains(event.target)) {
+                lastClicked = null;
+                selectedPointIndex = null;
+                renderPlot();
+                showDefaultDetails();
+            }
+        });
     </script>
 </body>
 </html>
