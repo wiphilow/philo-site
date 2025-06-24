@@ -6,6 +6,119 @@
     <title>Philo Katzman - Resume</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <style>
+    
+      .page-layout {
+        display: flex;
+        max-width: 100%;
+      }
+    
+      .left-name {
+        padding-left: 1.5rem;
+        padding-top: 3rem;
+      }
+    
+      .author-name {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #111827;
+        text-decoration: none;
+      }
+    
+      .author-name:hover {
+        color: #6b7280;
+      }
+    
+      .main-body {
+        flex: 1;
+        padding-left: 2rem;
+      }
+    
+      .container {
+        max-width: 100%;
+        padding: 3rem 1.5rem 2rem 0;
+      }
+    
+      .grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 2rem;
+        max-width: 100%;
+      }
+    
+      .main-content {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        margin-top: 4rem;
+      }
+    
+      .intro-paragraph {
+        font-size: 1rem;
+        color: #111827;
+      }
+    
+      .legend-container {
+        display: flex;
+        gap: 2rem;
+        flex-wrap: wrap;
+        font-size: 0.95rem;
+      }
+    
+      .legend-container p {
+        margin: 0;
+        white-space: nowrap;
+      }
+    
+      #plot {
+        width: 100%;
+        min-height: 300px;
+      }
+    
+      .details-container {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 1.5rem;
+        border: 1px solid #e5e7eb;
+      }
+    
+      .details-header {
+        font-size: 1.25rem;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+      }
+    
+      .details-subtitle {
+        font-size: 0.9rem;
+        color: #6b7280;
+      }
+    
+      .sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        padding-top: 4rem;
+        padding-left: 5rem;
+      }
+    
+      .sidebar-link {
+        font-size: 1.125rem;
+        color: #111827;
+        text-decoration: none;
+        transition: color 0.2s;
+      }
+    
+      .sidebar-link:hover {
+        color: #6b7280;
+      }
+    
+      .sidebar-link.active {
+        font-weight: 600;
+      }
+    
+      .sidebar-link.tangents {
+        line-height: 1.4;
+      }
+
         * {
             margin: 0;
             padding: 0;
@@ -16,7 +129,7 @@
           display: flex;
           max-width: 100%;
           align-items: flex-start;
-
+        
         }
         
         .left-name {
@@ -353,22 +466,19 @@
 </head>
 <body>
   <div class="page-layout">
+    <!-- Left-side name -->
     <div class="left-name">
       <a href="index.html" class="author-name">Philo Katzman</a>
-
-      <nav class="sidebar">
-        <a href="projects.html" class="sidebar-link">Projects</a>
-        <a href="resume.html" class="sidebar-link active">Resume</a>
-        <a href="tangents.html" class="sidebar-link tangents">Tangents and 'Ted Talks'</a>
-        <a href="about.html" class="sidebar-link">About Me</a>
-        <a href="linkedin.html" class="sidebar-link">LinkedIn</a>
-        <a href="more.html" class="sidebar-link">More</a>
-      </nav>
     </div>
 
+    <!-- Right-side grid with main content and sidebar -->
     <div class="main-body">
-      <div class="main-content">
-        <p class="intro-paragraph">
+      <div class="container">
+        <div class="grid">
+          <!-- Main content -->
+          <div class="main-content">
+            <!-- Put your intro, plot, and table here -->
+            <p class="intro-paragraph">
           I am a recent graduate with a background in computational neuroscience, cognitive science, and biomedical signal processing. My work bridges technical development and human-centered research, focusing on wearable technologies, experimental design, and data-driven health tools.
         </p>
         
@@ -615,5 +725,26 @@
         }
     });
 </script>
+          </div>
+
+          <!-- Sidebar -->
+          <nav class="sidebar">
+            <a href="projects.html" class="sidebar-link">Projects</a>
+            <a href="resume.html" class="sidebar-link active">Resume</a>
+            <a href="tangents.html" class="sidebar-link tangents">Tangents and 'Ted Talks'</a>
+            <a href="about.html" class="sidebar-link">About Me</a>
+            <a href="linkedin.html" class="sidebar-link">LinkedIn</a>
+            <a href="more.html" class="sidebar-link">More</a>
+          </nav>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+
+
+    
+    
+        
 </body>
 
