@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Philo Katzman - Resume</title>
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
@@ -25,16 +25,11 @@
       padding: 3rem 1.5rem 2rem 1.5rem;
     }
 
-    .header-grid {
-      display: flex;
-      align-items: flex-start;
-    }
-
-    .name-container {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      min-width: 200px;
+    .grid {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 2rem;
+      align-items: start;
     }
 
     .author-name {
@@ -42,58 +37,33 @@
       font-weight: bold;
       color: #111827;
       text-decoration: none;
-      margin-bottom: 1rem;
     }
 
     .author-name:hover {
       color: #6b7280;
     }
 
-    .sidebar {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-
-    .sidebar-link {
-      font-size: 1.125rem;
-      color: #111827;
-      text-decoration: none;
-      transition: color 0.2s;
-    }
-
-    .sidebar-link:hover {
-      color: #6b7280;
-    }
-
-    .sidebar-link.active {
-      font-weight: 600;
-    }
-
     .main-content {
-      margin-left: 0;
-      padding-left: calc(1.5rem + 200px);
-      padding-top: 2rem;
+      grid-column: 1 / span 2; /* Extend content to align with name */
+      padding-left: 0.25rem; /* Align left edge to "Philo" */
       display: flex;
       flex-direction: column;
       gap: 1.5rem;
-      position: relative;
+      margin-top: 6rem;
     }
 
     .navigation {
       display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 2rem;
-      padding-top: 2rem;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 1rem;
+      padding-top: 0.5rem;
     }
 
     .nav-link {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
       color: #6b7280;
       text-decoration: none;
+      font-size: 1rem;
       transition: color 0.2s;
     }
 
@@ -134,58 +104,59 @@
     }
 
     @media (max-width: 900px) {
+      .grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+
+      .navigation {
+        flex-direction: row;
+        justify-content: space-around;
+      }
+
       .main-content {
-        padding-left: 1.5rem;
-      }
-
-      .header-grid {
-        flex-direction: column;
-      }
-
-      .name-container {
-        align-items: flex-start;
+        padding-left: 0;
+        margin-top: 2rem;
       }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="header-grid">
-      <div class="name-container">
+    <div class="grid">
+      <!-- Left: Name -->
+      <div>
         <a href="index.html" class="author-name">Philo Katzman</a>
-        <nav class="sidebar">
-          <a href="projects.html" class="sidebar-link">Projects</a>
-          <a href="resume.html" class="sidebar-link active">Resume</a>
-          <a href="tangents.html" class="sidebar-link">Tangents and 'Ted Talks'</a>
-          <a href="about.html" class="sidebar-link">About Me</a>
-          <a href="linkedin.html" class="sidebar-link">LinkedIn</a>
-          <a href="more.html" class="sidebar-link">More</a>
-        </nav>
       </div>
-    </div>
 
-    <div class="main-content">
-      <p class="intro-paragraph">I am a recent graduate with a background in computational neuroscience, cognitive science, and biomedical signal processing. My work bridges technical development and human-centered research, focusing on wearable technologies, experimental design, and data-driven health tools.</p>
-      <div class="legend-container">
-        <p><span style="color:#3da4ab; font-weight:bold;">●</span> Activities</p>
-        <p><span style="color:#f6cd61; font-weight:bold;">●</span> Work Experience</p>
-        <p><span style="color:#fe8a71; font-weight:bold;">●</span> Internship</p>
+      <!-- Center: Main Content (starts aligned with name) -->
+      <div class="main-content">
+        <p class="intro-paragraph">I am a recent graduate with a background in computational neuroscience, cognitive science, and biomedical signal processing. My work bridges technical development and human-centered research, focusing on wearable technologies, experimental design, and data-driven health tools.</p>
+        <div class="legend-container">
+          <p><span style="color:#3da4ab; font-weight:bold;">●</span> Activities</p>
+          <p><span style="color:#f6cd61; font-weight:bold;">●</span> Work Experience</p>
+          <p><span style="color:#fe8a71; font-weight:bold;">●</span> Internship</p>
+        </div>
+        <div id="plot"></div>
+        <div id="details">Hover over or click a bubble to see more info here.</div>
+        <div class="navigation">
+          <a href="#" class="nav-link">
+            ← Previous Page
+          </a>
+          <a href="#" class="nav-link">
+            Next Page →
+          </a>
+        </div>
       </div>
-      <div id="plot"></div>
-      <div id="details">Hover over or click a bubble to see more info here.</div>
+
+      <!-- Right: Navigation Links -->
       <div class="navigation">
-        <a href="#" class="nav-link">
-          <svg class="chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-          </svg>
-          Previous Page
-        </a>
-        <a href="#" class="nav-link">
-          Next Page
-          <svg class="chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-          </svg>
-        </a>
+        <a href="projects.html" class="nav-link">Projects</a>
+        <a href="resume.html" class="nav-link">Resume</a>
+        <a href="tangents.html" class="nav-link">Tangents and 'Ted Talks'</a>
+        <a href="about.html" class="nav-link">About Me</a>
+        <a href="linkedin.html" class="nav-link">LinkedIn</a>
+        <a href="more.html" class="nav-link">More</a>
       </div>
     </div>
   </div>
