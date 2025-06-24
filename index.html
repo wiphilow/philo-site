@@ -1,132 +1,143 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Philo Katzman - Blog</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        .left-align {
-            padding-left: 1.5rem;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Philo Katzman - Blog</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background-color: white;
-            color: #111827;
-            line-height: 1.6;
-            overflow-x: hidden;
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: white;
+      color: #111827;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
 
-        }
+    .page-layout {
+      display: flex;
+      max-width: 100%;
+    }
 
-        .container {
-            max-width: 100%;
-            margin: 0 auto;
-            padding: 3rem 1.5rem 2rem 1.5rem;
-            min-height: 100vh;
-        }
+    .left-name {
+      flex: 0 0 150px;
+      padding-left: 1.5rem;
+      padding-top: 3rem;
+    }
 
-        .grid {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 2rem;
-            max-width: 100%;
-        }
+    .author-name {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #111827;
+      text-decoration: none;
+    }
 
-        .left-column {
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-            min-width: 0; /* Allow shrinking */
-            overflow: hidden;
-        }
+    .author-name:hover {
+      color: #6b7280;
+    }
 
-                .author-name {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #111827;
-            text-decoration: none;
-            flex-shrink: 0;
-        }
+    .main-body {
+      flex: 1;
+      padding-left: 2rem;
+    }
 
-        .author-name:hover {
-            color: #6b7280;
-        }
+    .container {
+      max-width: 100%;
+      padding: 3rem 1.5rem 2rem 0;
+    }
 
-        .main-content {
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-            margin-top: 2rem;
-            position: relative;
-            min-width: 0; /* Allow shrinking */
-            max-width: 100%;
-        }
+    .grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 2rem;
+      max-width: 100%;
+    }
 
-        .sidebar {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            padding-top: 4rem;
-            min-width: 0; /* Allow shrinking */
-            padding-left: 5rem;
-        }
+    .main-content {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
 
-        .sidebar-link {
-            font-size: 1.125rem;
-            color: #111827;
-            text-decoration: none;
-            transition: color 0.2s;
-            word-wrap: break-word;
-            hyphens: auto;
-        }
+    .post-header {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
 
-        .sidebar-link:hover {
-            color: #6b7280;
-        }
+    .post-date {
+      font-size: 1.125rem;
+      color: #6b7280;
+    }
 
-        .sidebar-link.active {
-            font-weight: 600;
-        }
+    .post-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #111827;
+    }
 
-        /* Special handling for the "Tangents and 'Ted Talks'" link */
-        .sidebar-link.tangents {
-            line-height: 1.4;
-        }
-        
-    </style>
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      padding-top: 4rem;
+      padding-left: 5rem;
+    }
+
+    .sidebar-link {
+      font-size: 1.125rem;
+      color: #111827;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .sidebar-link:hover {
+      color: #6b7280;
+    }
+
+    .sidebar-link.active {
+      font-weight: 600;
+    }
+
+    .sidebar-link.tangents {
+      line-height: 1.4;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <div class="grid">
-            <!-- Left Column - Author Name -->
-            <div>
-                <a href="index.html" class="author-name">Philo Katzman</a>
-            </div>
-
-            <!-- Center Column - Main Content -->
-            <div class="main-content">
-                <div class="post-header">
-                    <time class="post-date">6/22/2025</time>
-                    <h1 class="post-title">Hello World!</h1>
-                </div>
-
-                
-
-            <!-- Right Column - Navigation Menu -->
-            <nav class="sidebar">
-                <a href="projects.html" class="sidebar-link">Projects</a>
-                <a href="resume.html" class="sidebar-link">Resume</a>
-                <a href="tangents.html" class="sidebar-link">Tangents and 'Ted Talks'</a>
-                <a href="about.html" class="sidebar-link">About Me</a>
-                <a href="linkedin.html" class="sidebar-link">LinkedIn</a>
-                <a href="more.html" class="sidebar-link">More</a>
-            </nav>
-        </div>
+  <div class="page-layout">
+    <div class="left-name">
+      <a href="index.html" class="author-name">Philo Katzman</a>
     </div>
+
+    <div class="main-body">
+      <div class="container">
+        <div class="grid">
+          <!-- Main Content -->
+          <div class="main-content">
+            <div class="post-header">
+              <time class="post-date">6/22/2025</time>
+              <h1 class="post-title">Hello World!</h1>
+            </div>
+          </div>
+
+          <!-- Sidebar -->
+          <nav class="sidebar">
+            <a href="projects.html" class="sidebar-link">Projects</a>
+            <a href="resume.html" class="sidebar-link">Resume</a>
+            <a href="tangents.html" class="sidebar-link tangents">Tangents and 'Ted Talks'</a>
+            <a href="about.html" class="sidebar-link">About Me</a>
+            <a href="linkedin.html" class="sidebar-link">LinkedIn</a>
+            <a href="more.html" class="sidebar-link">More</a>
+          </nav>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
