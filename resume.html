@@ -118,7 +118,7 @@
             gap: 2rem;
             justify-content: flex-start;
             font-size: 0.95rem;
-            padding-bottom: 0.2rem;
+            margin-bottom: -0.5rem;
         }
 
         .legend-container p {
@@ -128,7 +128,7 @@
         .intro-paragraph {
             margin-left: -35%;
             max-width: 140%;
-            margin-bottom: 1.2rem;
+            margin-bottom: 2rem;
         }
 
         @media (max-width: 1100px) {
@@ -232,7 +232,7 @@
             };
 
             const layout = {
-                xaxis: { title: 'Project Management Rating', range: [0, 10], fixedrange: true, showspikes: false, showline: true },
+                xaxis: { title: 'Project Management Rating', range: [0, 10], fixedrange: true, showspikes: false, showline: true, showticklabels: true },
                 yaxis: { title: 'Research Rating', range: [0, 10], fixedrange: true },
                 margin: { l: 60, r: 60, t: 60, b: 60 },
                 showlegend: false,
