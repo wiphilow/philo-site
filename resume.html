@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Philo Katzman - Resume</title>
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -397,174 +397,245 @@
         </div>
     </div>
 
-    <!-- No change to <head> or <style> section above -->
+    <script>
+        const experiences = [
+            { 
+                experience: "Research Coordinator", 
+                dimension: "Work Experience", 
+                research: 6, 
+                pm: 9, 
+                bubble: 3, 
+                description: "Assisted in behavioral tasks & MRI setup for toddlers",
+                dateRange: "June 2023 - Present",
+                keySkills: ["Project Management", "MRI Operations", "Child Psychology", "Data Collection", "Team Leadership"]
+            },
+            { 
+                experience: "Teaching Assistant", 
+                dimension: "Work Experience", 
+                research: 3, 
+                pm: 2.2, 
+                bubble: 3, 
+                description: "Led end-to-end development of wearable + API integration",
+                dateRange: "September 2022 - May 2023",
+                keySkills: ["Teaching", "Curriculum Development", "Student Mentoring", "Academic Support"]
+            },
+            { 
+                experience: "MRI Research Assistant", 
+                dimension: "Internship", 
+                research: 8, 
+                pm: 3, 
+                bubble: 3, 
+                description: "Designed and analyzed visual attention EEG study",
+                dateRange: "May 2022 - August 2022",
+                keySkills: ["MRI Technology", "EEG Analysis", "Visual Attention Research", "Data Analysis", "MATLAB"]
+            },
+            { 
+                experience: "Bioelectronics Research Volunteer", 
+                dimension: "Activities", 
+                research: 9, 
+                pm: 2, 
+                bubble: 3, 
+                description: "Analyzed patient data for tumor DNA structure and behavior",
+                dateRange: "January 2022 - December 2022",
+                keySkills: ["Bioelectronics", "DNA Analysis", "Patient Data", "Research Methods", "Laboratory Techniques"]
+            },
+            { 
+                experience: "Director of Events Planning", 
+                dimension: "Work Experience", 
+                research: 0, 
+                pm: 10, 
+                bubble: 3, 
+                description: "Designed social connectedness experiment, ran EMG recordings",
+                dateRange: "August 2021 - May 2022",
+                keySkills: ["Event Planning", "Budget Management", "Team Coordination", "Vendor Relations", "Timeline Management"]
+            },
+            { 
+                experience: "Japanese Club President", 
+                dimension: "Activities", 
+                research: 1, 
+                pm: 9, 
+                bubble: 3, 
+                description: "Organized presentation for interdisciplinary audience",
+                dateRange: "September 2020 - May 2021",
+                keySkills: ["Leadership", "Cultural Programming", "Public Speaking", "Event Organization", "Cross-cultural Communication"]
+            },
+            { 
+                experience: "Physical Therapy Aide", 
+                dimension: "Work Experience", 
+                research: 1, 
+                pm: 1.5, 
+                bubble: 3, 
+                description: "Led recruitment & protocol for 3 AI + health studies",
+                dateRange: "June 2020 - August 2021",
+                keySkills: ["Patient Care", "Physical Rehabilitation", "Medical Equipment", "Patient Communication", "Healthcare Support"]
+            }
+        ];
 
-<script>
-    const experiences = [/* your experience data here (unchanged) */];
+        const colorMap = {
+            "Activities": "#3da4ab",
+            "Work Experience": "#f6cd61",
+            "Internship": "#fe8a71"
+        };
 
-    const colorMap = {
-        "Activities": "#3da4ab",
-        "Work Experience": "#f6cd61",
-        "Internship": "#fe8a71"
-    };
+        let selectedPointIndex = null;
+        let selectedExperience = null;
+        const plotElement = document.getElementById('plot');
+        const detailsElement = document.getElementById('details');
 
-    let selectedPointIndex = null;
-    let selectedExperience = null;
-    const plotElement = document.getElementById('plot');
-    const detailsElement = document.getElementById('details');
+        function renderPlot(highlightIndex = null) {
+            const trace = {
+                x: experiences.map(d => d.pm),
+                y: experiences.map(d => d.research),
+                text: experiences.map(d => d.experience),
+                customdata: experiences.map((d, i) => ({ ...d, index: i })),
+                mode: 'markers',
+                type: 'scatter',
+                marker: {
+                    size: experiences.map(d => d.bubble * 10),
+                    color: experiences.map(d => colorMap[d.dimension]),
+                    line: {
+                        width: experiences.map((_, i) => (i === highlightIndex ? 3 : 0)),
+                        color: experiences.map(() => 'black')
+                    }
+                },
+                hoverinfo: 'skip',
+                hovertemplate: null
+            };
 
-    function renderPlot(highlightIndex = null) {
-        const trace = {
-            x: experiences.map(d => d.pm),
-            y: experiences.map(d => d.research),
-            text: experiences.map(d => d.experience),
-            customdata: experiences.map((d, i) => ({ ...d, index: i })),
-            mode: 'markers',
-            type: 'scatter',
-            marker: {
-                size: experiences.map(d => d.bubble * 10),
-                color: experiences.map(d => colorMap[d.dimension]),
-                line: {
-                    width: experiences.map((_, i) => (i === highlightIndex ? 3 : 0)),
-                    color: experiences.map(() => 'black')
+            const layout = {
+                xaxis: {
+                    title: 'Project Management Rating',
+                    range: [0, 10],
+                    fixedrange: true,
+                    showspikes: false,
+                    showline: true,
+                    showticklabels: true,
+                    showgrid: false,
+                    zeroline: false
+                },
+                yaxis: {
+                    title: 'Research Rating',
+                    range: [0, 10],
+                    fixedrange: true,
+                    showgrid: false,
+                    zeroline: false
+                },
+                margin: { l: 60, r: 60, t: 60, b: 60 },
+                showlegend: false,
+                hovermode: false,
+                responsive: true,
+                autosize: true
+            };
+
+            const config = {
+                displayModeBar: false,
+                responsive: true
+            };
+
+            Plotly.newPlot('plot', [trace], layout, config).then(setupEventListeners);
+        }
+
+        function setupEventListeners() {
+            plotElement.on('plotly_click', function (data) {
+                const point = data.points[0].customdata;
+
+                if (selectedExperience && selectedExperience.index === point.index) {
+                    selectedExperience = null;
+                    selectedPointIndex = null;
+                    updatePlotHighlight(null);
+                    showDefaultDetails();
+                } else {
+                    selectedExperience = point;
+                    selectedPointIndex = point.index;
+                    updatePlotHighlight(selectedPointIndex);
+                    showExperienceDetails(point);
                 }
-            },
-            hoverinfo: 'skip',
-            hovertemplate: null
-        };
+            });
+        }
 
-        const layout = {
-            xaxis: {
-                title: 'Project Management Rating',
-                range: [0, 10],
-                fixedrange: true,
-                showspikes: false,
-                showline: true,
-                showticklabels: true,
-                showgrid: false,
-                zeroline: false
-            },
-            yaxis: {
-                title: 'Research Rating',
-                range: [0, 10],
-                fixedrange: true,
-                showgrid: false,
-                zeroline: false
-            },
-            margin: { l: 60, r: 60, t: 60, b: 60 },
-            showlegend: false,
-            hovermode: false,
-            responsive: true,
-            autosize: true
-        };
+        function updatePlotHighlight(highlightIndex) {
+            const update = {
+                'marker.line.width': experiences.map((_, i) => (i === highlightIndex ? 3 : 0))
+            };
 
-        const config = {
-            displayModeBar: false,
-            responsive: true
-        };
+            Plotly.restyle('plot', update, 0);
+        }
 
-        Plotly.newPlot('plot', [trace], layout, config).then(setupEventListeners);
-    }
+        function showDefaultDetails() {
+            detailsElement.innerHTML = `
+                <div class="details-header">
+                    <span>Select an Experience</span>
+                </div>
+                <div class="details-subtitle">Click on a point to see detailed information about that experience</div>
+            `;
+        }
 
-    function setupEventListeners() {
-        plotElement.on('plotly_click', function (data) {
-            const point = data.points[0].customdata;
+        function showExperienceDetails(point) {
+            const skillBubbles = point.keySkills.map(skill =>
+                `<span class="skill-bubble">${skill}</span>`
+            ).join('');
 
-            if (selectedExperience && selectedExperience.index === point.index) {
-                selectedExperience = null;
-                selectedPointIndex = null;
-                updatePlotHighlight(null);
-                showDefaultDetails();
-            } else {
-                selectedExperience = point;
-                selectedPointIndex = point.index;
-                updatePlotHighlight(selectedPointIndex);
-                showExperienceDetails(point);
+            detailsElement.innerHTML = `
+                <div class="details-header">
+                    <span>Experience Details</span>
+                    <span class="selection-indicator selected">Selected - Click outside to deselect</span>
+                </div>
+                <div class="experience-details">
+                    <div class="experience-name">${point.experience}</div>
+                    <div class="experience-date">${point.dateRange}</div>
+                    <div class="experience-description">${point.description}</div>
+
+                    <div class="ratings-section">
+                        <div class="rating-item">
+                            <div class="rating-label">
+                                Research Experience
+                                <span class="rating-value">${point.research}/10</span>
+                            </div>
+                            <div class="rating-bar">
+                                <div class="rating-fill research" style="width: ${(point.research / 10) * 100}%"></div>
+                            </div>
+                        </div>
+                        <div class="rating-item">
+                            <div class="rating-label">
+                                Project Management
+                                <span class="rating-value">${point.pm}/10</span>
+                            </div>
+                            <div class="rating-bar">
+                                <div class="rating-fill project-management" style="width: ${(point.pm / 10) * 100}%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="skills-section">
+                        <div class="skills-label">Key Skills:</div>
+                        <div class="skills-container">
+                            ${skillBubbles}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Initial render
+        renderPlot();
+
+        // Resize plot on window change
+        window.addEventListener('resize', () => Plotly.Plots.resize('plot'));
+
+        // Deselect on outside click
+        document.addEventListener('click', function (event) {
+            if (!plotElement.contains(event.target) && !detailsElement.contains(event.target)) {
+                if (selectedExperience) {
+                    selectedExperience = null;
+                    selectedPointIndex = null;
+                    updatePlotHighlight(null);
+                    showDefaultDetails();
+                }
             }
         });
-    }
 
-    function updatePlotHighlight(highlightIndex) {
-        const update = {
-            'marker.line.width': experiences.map((_, i) => (i === highlightIndex ? 3 : 0))
-        };
-
-        Plotly.restyle('plot', update, 0);
-    }
-
-    function showDefaultDetails() {
-        detailsElement.innerHTML = `
-            <div class="details-header">
-                <span>Select an Experience</span>
-            </div>
-            <div class="details-subtitle">Click on a point to see detailed information about that experience</div>
-        `;
-    }
-
-    function showExperienceDetails(point) {
-        const skillBubbles = point.keySkills.map(skill =>
-            `<span class="skill-bubble">${skill}</span>`
-        ).join('');
-
-        detailsElement.innerHTML = `
-            <div class="details-header">
-                <span>Experience Details</span>
-                <span class="selection-indicator selected">Selected - Click outside to deselect</span>
-            </div>
-            <div class="experience-details">
-                <div class="experience-name">${point.experience}</div>
-                <div class="experience-date">${point.dateRange}</div>
-                <div class="experience-description">${point.description}</div>
-
-                <div class="ratings-section">
-                    <div class="rating-item">
-                        <div class="rating-label">
-                            Research Experience
-                            <span class="rating-value">${point.research}/10</span>
-                        </div>
-                        <div class="rating-bar">
-                            <div class="rating-fill research" style="width: ${(point.research / 10) * 100}%"></div>
-                        </div>
-                    </div>
-                    <div class="rating-item">
-                        <div class="rating-label">
-                            Project Management
-                            <span class="rating-value">${point.pm}/10</span>
-                        </div>
-                        <div class="rating-bar">
-                            <div class="rating-fill project-management" style="width: ${(point.pm / 10) * 100}%"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="skills-section">
-                    <div class="skills-label">Key Skills:</div>
-                    <div class="skills-container">
-                        ${skillBubbles}
-                    </div>
-                </div>
-            </div>
-        `;
-    }
-
-    // Initial render
-    renderPlot();
-
-    // Resize plot on window change
-    window.addEventListener('resize', () => Plotly.Plots.resize('plot'));
-
-    // Deselect on outside click
-    document.addEventListener('click', function (event) {
-        if (!plotElement.contains(event.target) && !detailsElement.contains(event.target)) {
-            if (selectedExperience) {
-                selectedExperience = null;
-                selectedPointIndex = null;
-                updatePlotHighlight(null);
-                showDefaultDetails();
-            }
-        }
-    });
-
-    // Prevent deselect when clicking inside details
-    detailsElement.addEventListener('click', event => event.stopPropagation());
-</script>
+        // Prevent deselect when clicking inside details
+        detailsElement.addEventListener('click', event => event.stopPropagation());
+    </script>
+</body>
+</html>
