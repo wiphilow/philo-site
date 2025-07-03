@@ -13,10 +13,16 @@
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(to bottom right, #dbeafe, #e0e7ff);
+            background: linear-gradient(to bottom right, #fafafa, #f8f8f8);
+            opacity: 0;
+            transition: opacity 1s ease-in;
             min-height: 100vh;
             color: #1f2937;
         }
+
+        body.fade-in {
+  opacity: 1;
+}
 
         .container {
             max-width: 1200px;
@@ -46,7 +52,7 @@
         .page-header {
             position: fixed;
             top: 80px;
-            left: max(24px, 5vw);
+            left: 40px;
             display: flex;
             align-items: center;
             z-index: 10;
@@ -65,7 +71,6 @@
             font-weight: 900;
             color: #3b82f6;
             font-family: 'Inter', sans-serif;
-            text-shadow: 0 0 8px #3b82f6;
         }
 
         .frequency {
@@ -125,6 +130,15 @@
 
         }
 
+
+        @media (max-width: 768px) {
+        .circle-float {
+            float: none;
+            display: block;
+            margin: 0 auto 1rem auto;
+        }
+        }
+
         .timeline-container {
             position: relative;
             padding: 3rem 0 4rem 0; /* add vertical space above/below */
@@ -152,28 +166,23 @@
 
 
 
-.timeline-event:hover .tooltip {
+
+
+.tooltip {
+display:none;
+}
+
+
+.tooltip.show {
   opacity: 1;
   transform: translate(-50%, -140%);
   pointer-events: auto;
 }
 
-.tooltip {
-  position: absolute;
-  top: -20px;
-  left: 50%;
-  transform: translate(-50%, -100%);
-  background: white;
-  color: #1f2937;
-  font-size: 0.85rem;
-  padding: 0.4rem 0.6rem;
-  border-radius: 6px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
-  transition: all 0.2s ease;
-  z-index: 10;
+        @media (max-width: 768px) {
+  .timeline-container {
+    margin-bottom: 3rem;
+  }
 }
 
 
@@ -213,6 +222,7 @@
     background-color: #9ca3af; /* Tailwind gray-400 */
     z-index: 1;
 }
+
 
 
 .tooltip {
@@ -262,6 +272,73 @@
                 left: 24px;
             }
         }
+
+
+        @media (max-width: 768px) {
+  .card {
+    padding: 1.5rem;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+
+  .page-title {
+    font-size: 28px;
+  }
+
+  .frequency {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 2rem 1rem;
+  }
+}
+
+
+.timeline-details-display {
+  display: none;
+
+  position: absolute;
+  top: -3.25rem; /* slightly above timeline */
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255, 255, 255, 0.95);
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #1f2937;
+  max-width: 90vw;
+  width: fit-content;
+  text-align: center;
+  word-wrap: break-word;
+  line-height: 1.4;
+  z-index: 5;
+}
+
+@media (min-width: 768px) {
+  .timeline-details-display {
+    max-width: 500px;
+    font-size: 1rem;
+    padding: 0.75rem 1.25rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .timeline-container {
+    margin-top: 5rem; /* or adjust to taste */
+  }
+}
+
+
+
     </style>
 </head>
 <body>
@@ -276,7 +353,7 @@
                 ← Back to Signal
             </a>
 
-<div class="grid" style="display: flex; align-items: stretch; gap: 2rem;">
+<div class="grid">
 
 <div class="card" style="flex: 1; display: flex; flex-direction: column; justify-content: space-between; height: auto;">
   <h2>Howdy!</h2>
@@ -294,7 +371,7 @@
       I spend my personal time rock climbing, playing basketball, backpacking, and curating musics playlists. See
       
       <a href="noise.html" style="color: #9ca3af; font-family: 'Inter', sans-serif;
-font-size: 1.1em; font-weight: 900; text-decoration: none; text-shadow: 0 0 8px #9ca3af"">Noise</a>
+font-size: 1.1em; font-weight: 900; text-decoration: none; ">Noise</a>
       
       for my interests and hobbies.
     </p>
@@ -324,7 +401,7 @@ font-size: 1.1em; font-weight: 900; text-decoration: none; text-shadow: 0 0 8px 
         <p style="color: #4b5563;">
 
       See <a href="tangents.html" style="color: #10b981; font-family: 'Inter', sans-serif;
-font-size: 1.1em; font-weight: 900; text-decoration: none; text-shadow: 0 0 8px #10b981"">Tangents</a> for my thoughts on these topics
+font-size: 1.1em; font-weight: 900; text-decoration: none; ">Tangents</a> for my thoughts on these topics
        </p>
     </div>
 
@@ -337,7 +414,7 @@ font-size: 1.1em; font-weight: 900; text-decoration: none; text-shadow: 0 0 8px 
       </div>
       <ul style="margin-top: 0.75rem; padding-left: 2rem; color: #4b5563; line-height: 1.6;">
         <li><a href="construction.html" style="color: #ef4444; font-family: 'Inter', sans-serif;
-font-size: 1.1em; font-weight: 900; text-decoration: none; text-shadow: 0 0 8px #ef4444"">Projects</a> exploring seamless tech interaction
+font-size: 1.1em; font-weight: 900; text-decoration: none; ">Projects</a> exploring seamless tech interaction
 
 
 
@@ -345,7 +422,7 @@ font-size: 1.1em; font-weight: 900; text-decoration: none; text-shadow: 0 0 8px 
 
        </li>
         <li>Tools, scripts, and pipelines for my <a href="experience.html" style="color: #f59e0b; font-family: 'Inter', sans-serif;
-font-size: 1.1em; font-weight: 900; text-decoration: none; text-shadow: 0 0 8px #f59e0b"">Experiences</a>  </li>
+font-size: 1.1em; font-weight: 900; text-decoration: none; ">Experiences</a>  </li>
 
       </ul>
     </div>
@@ -364,6 +441,18 @@ font-size: 1.1em; font-weight: 900; text-decoration: none; text-shadow: 0 0 8px 
         <h3>My journey</h3>
                 </div>
                 <div class="timeline-container">
+                  <div class="timeline-details-display" id="timeline-details-display"></div>
+
+                  <svg id="timeline-arrow" width="100%" height="80" style="position: absolute; top: -1.5rem; left: 0; pointer-events: none; z-index: 1;">
+  <path id="arrow-path" fill="none" stroke="#3b82f6" stroke-width="2" marker-end="url(#arrowhead)" />
+  <defs>
+    <marker id="arrowhead" markerWidth="8" markerHeight="8" refX="5" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L6,3 z" fill="#3b82f6" />
+    </marker>
+  </defs>
+</svg>
+
+
                     <div class="timeline-line"></div>
 
                     <div class="timeline-event" style="left: 5%;">
@@ -398,5 +487,74 @@ font-size: 1.1em; font-weight: 900; text-decoration: none; text-shadow: 0 0 8px 
             </div>
         </div>
     </div>
+
+   <script>
+const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+const detailDisplay = document.getElementById('timeline-details-display');
+const arrow = document.getElementById('timeline-arrow');
+
+document.querySelectorAll('.timeline-event').forEach(event => {
+  const tooltip = event.querySelector('.tooltip');
+
+  const showDetails = () => {
+    detailDisplay.style.display = 'block';
+    detailDisplay.textContent = tooltip.textContent;
+    drawArrow(detailDisplay, event);
+  };
+
+  if (isTouchDevice) {
+    event.addEventListener('click', showDetails);
+  } else {
+    event.addEventListener('mouseenter', showDetails);
+  }
+});
+
+
+function drawArrow(fromEl, toEl) {
+  const arrow = document.getElementById("arrow-path");
+
+  const fromRect = fromEl.getBoundingClientRect();
+  const toRect = toEl.getBoundingClientRect();
+
+  // Get positions relative to SVG
+  const svg = document.getElementById("timeline-arrow");
+  const svgRect = svg.getBoundingClientRect();
+
+  const startX = fromRect.left + fromRect.width / 2 - svgRect.left;
+  const startY = fromRect.bottom - svgRect.top;
+
+  const endX = toRect.left + toRect.width / 2 - svgRect.left;
+  const endY = toRect.top - svgRect.top;
+
+  const controlX = (startX + endX) / 2;
+  const controlY = startY + 30;
+
+  const d = `M ${startX},${startY} Q ${controlX},${controlY} ${endX},${endY}`;
+  arrow.setAttribute("d", d);
+  arrow.style.display = "block";
+}
+
+if (isTouchDevice) {
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.timeline-event')) {
+      detailDisplay.style.display = 'none';
+      arrow.style.display = 'none';
+    }
+  });
+}
+
+
+
+</script>
+
+
+<script>
+  window.addEventListener('DOMContentLoaded', () => {
+    document.body.classList.add('fade-in');
+  });
+</script>
+
+
+
 </body>
 </html>

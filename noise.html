@@ -93,7 +93,7 @@
         .page-header {
             position: fixed;
             top: 80px;
-            left: max(24px, 5vw);
+            left: 40px;
             display: flex;
             align-items: center;
             z-index: 10;
@@ -238,9 +238,7 @@
                 font-size: 32px;
             }
             
-            .page-header {
-                left: 24px;
-            }
+          
         }
         .song-list {
             display: flex;
@@ -316,7 +314,9 @@
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      grid-template-columns: repeat(3, 1fr); /* or use 4 for 4x3 */
+
+      
       gap: 1.5rem;
       margin-bottom: 1rem;
       margin-top: 1rem;
@@ -539,6 +539,39 @@ background: none;
 
 .carousel-description h4 {
   margin-bottom: 1rem; /* creates a visible blank line */
+}
+
+@media (max-width: 768px) {
+  .carousel-container {
+    flex-direction: column;
+  }
+
+  .carousel-image-wrapper {
+    width: 100%;
+    height: auto;
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .carousel-image {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    padding-top: 0;
+  }
+
+  .carousel-description {
+    width: 100%;
+    padding: 1rem;
+  }
+
+    .carousel-button.left {
+    left: 8px;
+  }
+
+  .carousel-button.right {
+    right: 8px;
+  }
 }
 
 

@@ -40,6 +40,49 @@
     display: none;
         }
 
+@media (max-width: 768px) {
+  .toggle-switch.noise-toggle {
+    font-size: 0; /* hide text but preserve toggle */
+  }
+
+  .toggle-switch.noise-toggle .slider {
+    font-size: initial; /* restore size of slider if affected */
+  }
+}
+
+
+ .name-title {
+  font-size: clamp(3rem, 8vw, 8rem);
+  font-weight: 900;
+  color: rgba(17, 24, 39, 0.1);
+  margin-bottom: 1rem;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  text-align: center;
+}
+
+@media (max-width: 600px) {
+  .name-title {
+    font-size: clamp(1.5rem, 5vw, 3.5rem);
+    max-width: 70vw;
+    margin: 0 auto;
+  }
+
+  .overlay.title {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+  }
+}
+
+
+
+
         #instruction-button:hover {
             background-color: #111827; /* even darker on hover */
         }
@@ -75,7 +118,7 @@
         }
 
         .title h1 {
-            font-size: clamp(4rem, 8vw, 8rem);
+            font-size: clamp(3rem, 8vw, 8rem);
             font-weight: 900;
             color: rgba(17, 24, 39, 0.1);
             margin-bottom: 1rem;
@@ -117,6 +160,28 @@
             display: none;
             align-items: center;
             gap: 0.75rem;
+        }
+
+        @media (max-width: 600px) {
+        .filter-progress {
+            bottom: 6rem;
+            padding: 0.5rem 1rem;            /* less padding */
+            transform: translateX(-50%) scale(0.9); /* slightly smaller */
+        }
+
+        .filter-dot {
+            width: 0.5rem;
+            height: 0.5rem;
+        }
+
+        .filter-text {
+            font-size: 0.75rem;
+        }
+
+        .progress-bar {
+            width: 3rem;
+            height: 0.4rem;
+        }
         }
 
         .filter-dot {
@@ -212,6 +277,40 @@
             transform: translateX(20px);
         }
 
+        .noise-toggle {
+            position: fixed;
+            bottom: 60px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-family: sans-serif;
+            color: #1f2937;
+        }
+
+
+        @media (max-width: 600px) {
+            .noise-toggle {
+                top: 1rem;
+                bottom: auto;
+                right: 1rem;
+            }
+    }
+        @media (max-width: 600px) {
+            #instruction-button {
+                font-size: 0.75rem;
+                padding: 8px 12px;
+                left: 50%;
+                right: auto;
+                transform: translateX(-50%);
+                background-color: rgba(17, 24, 39, 0.1); /* same as Philo Katzman text */
+                color: #1f2937; /* dark text for contrast */
+            }
+}
+
+
     </style>
 </head>
 <body>
@@ -221,9 +320,9 @@
         <span id="instruction-text">Hover over the wave to decompose • Click text waves to navigate</span>
     </div>
 
-    <div class="overlay title">
-        <h1 style="white-space: nowrap;">Philo Katzman</h1>
-    </div>
+        <div class="overlay title">
+<h1 id="name-title" class="name-title">Philo Katzman</h1>
+        </div>
     
     <div class="overlay filter-progress" id="filter-progress">
         <div class="filter-dot" id="filter-dot"></div>
@@ -234,6 +333,9 @@
     </div>
 
     <script>
+
+        const isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
+
         class WavePortfolio {
             constructor() {
                 this.canvas = document.getElementById('canvas');
@@ -264,7 +366,7 @@
                         color: "#3b82f6",
                         label: "About Me",
                         page: "about.html",
-                        yOffset: -140
+                        yOffset: isTouchDevice ? -160 : -140
                     },
                     {
                         frequency: 0.8,
@@ -273,7 +375,7 @@
                         color: "#ef4444",
                         label: "Projects",
                         page: "construction.html",      <!-- Revert to projects.html-->
-                        yOffset: -80
+                        yOffset: isTouchDevice ? -100 : -80
                     },
                     {
                         frequency: 1.2,
@@ -282,7 +384,7 @@
                         color: "#10b981",
                         label: "Tangents",
                         page: "tangents.html",
-                        yOffset: 240
+                        yOffset: isTouchDevice ? 200 : 240
                     },
                     {
                         frequency: 1.4,
@@ -291,17 +393,18 @@
                         color: "#f59e0b",
                         label: "Experience",
                         page: "experience.html",
-                        yOffset: 80
+                        yOffset: isTouchDevice ? 120 : 80
+
                     },
                    
                     {
-                        frequency: 12.3,
+                        frequency: isTouchDevice ? 8 : 9, // lower frequency on mobile
                         amplitude: 0,
                         phase: Math.PI / 11,
                         color: "#9ca3af",
                         label: "Noise",
                         page: "noise.html",
-                        yOffset: 0,
+                        yOffset: isTouchDevice ?  15: 0,
                         hasText: false,
                         isNoise: true
                     }
@@ -334,27 +437,34 @@
                 this.canvas.style.width = window.innerWidth + 'px';
                 this.canvas.style.height = window.innerHeight + 'px';
                 this.ctx.scale(dpr, dpr);
+                if (isTouchDevice) {
+                this.mousePos = {
+                    x: window.innerWidth / 2,
+                    y: window.innerHeight / 2
+                };
+    }
             }
 
             bindEvents() {
                 window.addEventListener('resize', () => this.resizeCanvas());
-                
-                this.canvas.addEventListener('mousemove', (e) => {
-                    if (this.isFiltering) return;
-                    
-                    const rect = this.canvas.getBoundingClientRect();
-                    this.mousePos = {
-                        x: e.clientX - rect.left,
-                        y: e.clientY - rect.top
-                    };
-                });
+                            
+                if (!isTouchDevice) {
+                    this.canvas.addEventListener('mousemove', (e) => {
+                        if (this.isFiltering) return;
+
+                        const rect = this.canvas.getBoundingClientRect();
+                        this.mousePos = {
+                            x: e.clientX - rect.left,
+                            y: e.clientY - rect.top
+                        };
+                    });
 
                 this.canvas.addEventListener('mouseleave', () => {
                     if (this.isFiltering) return;
                     this.mousePos = { x: -1, y: -1 };
                     this.hoveredWave = -1;
                 });
-
+}
                 this.canvas.addEventListener('click', (e) => {
                     if (this.isFiltering) return;
                     
@@ -395,7 +505,6 @@
                 this.animatedTitleElement.textContent = component.label;
                 this.animatedTitleElement.style.color = component.color;
                 this.animatedTitleElement.style.fontSize = '22px';
-                this.animatedTitleElement.style.textShadow = `0 0 8px ${component.color}`;
                 
                 // Set initial position (where it was clicked)
                 this.titleStartPos = { x: startX, y: startY };
@@ -408,9 +517,18 @@
                 const headerLeftMargin = Math.max(24, window.innerWidth * 0.05); // Responsive margin
                 const headerTopMargin = 80; // Standard header top position
                 this.titleEndPos = { 
-                    x: headerLeftMargin + 55, // Account for frequency dot and spacing
-                    y: headerTopMargin +30
+                    x: headerLeftMargin + 80, // Account for frequency dot and spacing
+                    y: headerTopMargin +40
+                    
                 };
+
+                sessionStorage.setItem('waveNavTransition', JSON.stringify({
+                label: component.label,
+                color: component.color,
+                x: this.titleEndPos.x,
+                y: this.titleEndPos.y
+                }));
+
                 
                 document.body.appendChild(this.animatedTitleElement);
                 
@@ -431,10 +549,21 @@
                 // Create animated title that moves to header position
                 this.createAnimatedTitle(waveIndex, clickX, clickY);
 
-                // Store the original decomposition bounds
-                const decompositionRadius = 150;
-                this.originalDecompositionStart = Math.max(0, this.mousePos.x - decompositionRadius);
-                this.originalDecompositionEnd = Math.min(window.innerWidth, this.mousePos.x + decompositionRadius);
+                let decompositionStart, decompositionEnd;
+
+if (isTouchDevice) {
+  // Mobile: start from center and expand wide enough to cover name
+  decompositionStart = window.innerWidth * 0.25;
+  decompositionEnd = window.innerWidth * 0.75;
+} else {
+  // Desktop: follow mouse-centered decomposition
+  const decompositionRadius = 150;
+  decompositionStart = Math.max(0, this.mousePos.x - decompositionRadius);
+  decompositionEnd = Math.min(window.innerWidth, this.mousePos.x + decompositionRadius);
+}
+
+this.originalDecompositionStart = decompositionStart;
+this.originalDecompositionEnd = decompositionEnd;
 
                 // Update UI
                 document.getElementById('instruction-text').textContent = `Applying bandpass filter for ${this.waveComponents[waveIndex].label}...`;
@@ -445,7 +574,7 @@
 
                 filterProgress.style.display = 'flex';
                 filterDot.style.backgroundColor = this.waveComponents[waveIndex].color;
-                filterText.textContent = `Filtering Signal`;
+                filterText.textContent = `Filtering`;
                 progressFill.style.backgroundColor = this.waveComponents[waveIndex].color;
 
                 // Animate smooth transition
@@ -479,15 +608,16 @@
             animate() {
                 const width = window.innerWidth;
                 const height = window.innerHeight;
-                const centerY = height / 2;
-                const waveSpeed = this.time * .03;
-                const decompositionRadius = 150;
+                const centerY = isTouchDevice ? height * 0.48 : height / 2;
+
+                const waveSpeed = this.time * (isTouchDevice ? 0.05 : 0.04);
+                const decompositionRadius = window.innerWidth < 600 ? 120 : 150;
 
                 this.ctx.clearRect(0, 0, width, height);
 
                 // Check hover detection
                 let newHoveredWave = -1;
-                const isDecomposing = this.mousePos.x >= 0 && this.mousePos.y >= 0;
+                const isDecomposing = isTouchDevice || (this.mousePos.x >= 0 && this.mousePos.y >= 0);
 
                 if (isDecomposing && !this.isFiltering) {
                     // Check if hovering over a link first
@@ -527,14 +657,7 @@
                     this.drawCombinedWave(width, height, centerY, waveSpeed);
                 }
 
-                // Draw cursor indicator
-                if (isDecomposing && !this.isFiltering) {
-                    this.ctx.fillStyle = "rgba(59, 130, 246, 0.2)";
-                    this.ctx.globalAlpha = 0.6;
-                    this.ctx.beginPath();
-                    this.ctx.arc(this.mousePos.x, this.mousePos.y, 10, 0, 2 * Math.PI);
-                    this.ctx.fill();
-                }
+         
 
                 this.time++;
                 this.animationId = requestAnimationFrame(() => this.animate());
@@ -627,7 +750,6 @@
                 
                 // Add enhanced glow effect during transition
                 this.ctx.shadowColor = selectedComponent.color;
-                this.ctx.shadowBlur = 8 + this.filterProgress * 12;
 
                 this.ctx.beginPath();
                 for (let x = selectedStart; x <= selectedEnd; x += 2) {
@@ -646,7 +768,7 @@
                 // Don't draw canvas text during filtering since we have the animated DOM element
                 if (!hideCanvasText) {
                     // Draw the expanding text at center
-                    const textWaveSpeed = this.time * 0.03;
+                    const textWaveSpeed = this.time * (isTouchDevice ? 0.05 : 0.04);
                     const textX = width / 2;
                     const waveX = (textX / width) * 8 * Math.PI - textWaveSpeed;
                     const waveY = centerY + selectedComponent.amplitude * 60 * Math.sin(selectedComponent.frequency * waveX + selectedComponent.phase);
@@ -655,7 +777,6 @@
                     this.ctx.font = `bold ${18 + this.filterProgress * 8}px Inter, sans-serif`;
                     this.ctx.globalAlpha = 1;
                     this.ctx.shadowColor = selectedComponent.color;
-                    this.ctx.shadowBlur = 4 + this.filterProgress * 8;
 
                     const textMetrics = this.ctx.measureText(selectedComponent.label);
                     this.ctx.fillText(selectedComponent.label, textX - textMetrics.width / 2, waveY);
@@ -762,7 +883,7 @@
             drawComponentWave(component, index, decompositionStart, decompositionEnd, width, centerY) {
                 const isHovered = index === this.hoveredWave;
                 const componentY = centerY + component.yOffset;
-                const textWaveSpeed = this.time * 0.03;
+                const textWaveSpeed = this.time * (isTouchDevice ? 0.05 : 0.04);
 
                 // Style settings
                 const fontSize = isHovered ? 22 : 14;
@@ -805,7 +926,6 @@
                 // Add glow effects
                 if (isHovered) {
                     this.ctx.shadowColor = component.color;
-                    this.ctx.shadowBlur = 8;
                 }
 
                 // Draw left part of wave (before gap)
@@ -847,9 +967,7 @@
                 this.ctx.globalAlpha = baseAlpha;
 
                 if (isHovered) {
-                    this.ctx.shadowColor = component.color;
-                    this.ctx.shadowBlur = 4;
-                }
+                    this.ctx.shadowColor = component.color;                }
 
                 // Keep text horizontal (no rotation) but position at wave height
                 this.ctx.fillText(component.label, centerX - exactTextWidth / 2, waveY);
@@ -872,24 +990,63 @@
 
         });
     </script>
-    <a href="blog_fourier.html" id="instruction-button">
-  What is a Fourier Transform?
+<a href="blog_fourier.html" id="instruction-button">
+  <span id="fourier-button-text">What is a Fourier Transform?</span>
 </a>
-<label class="toggle-switch" style="
-    position: fixed;
-    bottom: 60px;
-    right: 20px;
-    z-index: 1000;
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-    font-size: 0.875rem;
-    font-family: sans-serif;
-    color: #1f2937;">
+<label class="toggle-switch noise-toggle">
     Noise
     <input type="checkbox" id="toggle-noise" style="display: none;">
     <span class="slider"></span>
 </label>
+
+
+<script>
+  window.addEventListener('DOMContentLoaded', () => {
+    if (window.innerWidth <= 600) {
+      const buttonText = document.getElementById('fourier-button-text');
+      if (buttonText) {
+        buttonText.textContent = "What's this?";
+      }
+    }
+  });
+</script>
+
+
+<script>
+function resizeNameToFit() {
+  const nameEl = document.getElementById("name-title");
+  if (!nameEl || window.innerWidth > 600) return; // Only apply on mobile
+
+  const targetWidth = window.innerWidth * 0.5; // 50% decomposition window
+  let fontSize = 40; // Start font size in px
+  nameEl.style.fontSize = fontSize + "px";
+
+  while (nameEl.offsetWidth > targetWidth && fontSize > 10) {
+    fontSize -= 1;
+    nameEl.style.fontSize = fontSize + "px";
+  }
+}
+
+window.addEventListener("DOMContentLoaded", resizeNameToFit);
+window.addEventListener("resize", resizeNameToFit);
+</script>
+
+
+<script>
+  document.querySelectorAll('a[href]').forEach(link => {
+    const url = link.getAttribute('href');
+    if (!url || url.startsWith('#') || url.startsWith('mailto:')) return;
+
+    link.addEventListener('click', e => {
+      e.preventDefault();
+      document.body.classList.remove('fade-in');
+      document.body.style.opacity = 0;
+      setTimeout(() => {
+        window.location.href = url;
+      }, 1000); // match transition duration
+    });
+  });
+</script>
 
 
 </body>
