@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Me Signal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(to bottom right, #dbeafe, #e0e7ff);
+            min-height: 100vh;
+            color: #1f2937;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 3rem 1.5rem;
+        }
+
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            background: white;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            text-decoration: none;
+            color: #374151;
+            margin-bottom: 2rem;
+            transition: all 0.2s;
+        }
+
+        .back-button:hover {
+            background: #f9fafb;
+            transform: translateY(-1px);
+        }
+
+        /* Header that matches the animation target */
+        .page-header {
+            position: fixed;
+            top: 80px;
+            left: max(24px, 5vw);
+            display: flex;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .frequency-dot {
+            width: 1rem;
+            height: 1rem;
+            background: #3b82f6;
+            border-radius: 50%;
+            margin-right: 1rem;
+        }
+
+        .page-title {
+            font-size: 40px;
+            font-weight: 900;
+            color: #3b82f6;
+            font-family: 'Inter', sans-serif;
+            text-shadow: 0 0 8px #3b82f6;
+        }
+
+        .frequency {
+            margin-left: 1rem;
+            color: #3b82f6;
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        /* Content starts below the fixed header */
+        .content {
+            margin-top: 160px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            height: 100%;
+
+        }
+
+        .card h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: #1f2937;
+        }
+
+        .card h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0rem;
+            color: #1f2937;
+        }
+
+        .circle-float {
+            float: left;
+            shape-outside: circle();
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            object-position: center 60%;
+       
+            margin: 0 2rem 2rem 0; /* Increase spacing on right and bottom */
+
+        }
+
+        .timeline-container {
+            position: relative;
+            padding: 3rem 0 4rem 0; /* add vertical space above/below */
+            height: auto; /* let it expand with contents */
+
+        }
+
+
+
+.timeline-event {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 16px;
+  height: 16px;
+  background: #3b82f6;
+  border: 3px solid white;
+  border-radius: 50%;
+  cursor: pointer;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+
+
+.timeline-event:hover .tooltip {
+  opacity: 1;
+  transform: translate(-50%, -140%);
+  pointer-events: auto;
+}
+
+.tooltip {
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translate(-50%, -100%);
+  background: white;
+  color: #1f2937;
+  font-size: 0.85rem;
+  padding: 0.4rem 0.6rem;
+  border-radius: 6px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+
+
+        .prose p {
+            margin-bottom: 1rem;
+            line-height: 1.7;
+            color: #4b5563;
+        }
+        
+        .icon {
+            width: 1.5rem;
+            height: 1.5rem;
+            color: #3b82f6;
+            margin-right: 0.75rem;
+        }
+
+        .icon-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+            margin-left: -2rem;
+        }
+     
+        .timeline-container {
+    position: relative;
+    height: 100px; /* adjust as needed */
+    margin-top: 2rem;
+}
+
+.timeline-line {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background-color: #9ca3af; /* Tailwind gray-400 */
+    z-index: 1;
+}
+
+
+.tooltip {
+    background-color: #1f2937;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    margin-bottom: 6px;
+}
+
+.year {
+    margin-top: 20px;
+    font-size: 0.75rem;
+    color: black;
+}
+
+
+        .list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .list li {
+            margin-bottom: 0.5rem;
+            color: #4b5563;
+        }
+
+        .list li::before {
+            content: "•";
+            color: #3b82f6;
+            margin-right: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .page-title {
+                font-size: 32px;
+            }
+            
+            .page-header {
+                left: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-header">
+        <h1 class="page-title">About Me</h1>
+        <span class="frequency">f = 0.5Hz</span>
+    </div>
+
+    <div class="container">
+        <div class="content">
+            <a href="index.html" class="back-button">
+                ← Back to Signal
+            </a>
+
+<div class="grid" style="display: flex; align-items: stretch; gap: 2rem;">
+
+<div class="card" style="flex: 1; display: flex; flex-direction: column; justify-content: space-between; height: auto;">
+  <h2>Howdy!</h2>
+
+  <div class="prose" style="overflow: hidden;">
+    <img src="images/headshot.jpg"
+         alt="Headshot"
+         class="circle-float"
+         style="width: 200px; height: 200px; border-radius: 50%; object-fit: cover; object-position: center 40%; float: left; margin: 0 1rem 1rem 0;">
+
+    <p>
+      My name is Philo and I currently live in Houston, Texas. I work in R&D at Starling Medical where we're developing at-home urology diagnostic and health devices. I’m broadly interested in systems that integrate physiology with electronics — things like biosignal-driven devices, neural interfaces, and tools that respond to the body in real time.
+    </p>
+    <p>
+      I spend my personal time rock climbing, playing basketball, backpacking, and curating musics playlists. See
+      
+      <a href="noise.html" style="color: #9ca3af; font-family: 'Inter', sans-serif;
+font-size: 1.1em; font-weight: 900; text-decoration: none; text-shadow: 0 0 8px #9ca3af"">Noise</a>
+      
+      for my interests and hobbies.
+    </p>
+  </div>
+</div>
+
+
+  <!-- RIGHT COLUMN: Two stacked cards, total height = height of left column -->
+  <div style="flex: 1; display: flex; flex-direction: column; justify-content: space-between; gap: 1.5rem;">
+
+    <div class="card" style="flex: 1;">
+      <div class="icon-header">
+        <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d=🧠></path>
+        </svg>
+        <h3>I'm curious about</h3>
+      </div>
+      <ul style="margin-top: 0.75rem; padding-left: 2rem; color: #4b5563; line-height: 1.6;">
+        <li>Consciousness</li>
+        <li>Learning + synaptic plasticity</li>
+        <li>What makes innovation purposeful </li>
+        <li>Effective Altruism</li>
+        <li>Optimizing daily habits without becoming a 'machine'</li>
+        <li>How to live up to my own notions of morality</li>
+      </ul>
+      <br>
+        <p style="color: #4b5563;">
+
+      See <a href="tangents.html" style="color: #10b981; font-family: 'Inter', sans-serif;
+font-size: 1.1em; font-weight: 900; text-decoration: none; text-shadow: 0 0 8px #10b981"">Tangents</a> for my thoughts on these topics
+       </p>
+    </div>
+
+    <div class="card" style="flex: 1;">
+      <div class="icon-header">
+        <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" ></path>
+        </svg>
+        <h3>I like to build</h3>
+      </div>
+      <ul style="margin-top: 0.75rem; padding-left: 2rem; color: #4b5563; line-height: 1.6;">
+        <li><a href="construction.html" style="color: #ef4444; font-family: 'Inter', sans-serif;
+font-size: 1.1em; font-weight: 900; text-decoration: none; text-shadow: 0 0 8px #ef4444"">Projects</a> exploring seamless tech interaction
+
+
+
+
+
+       </li>
+        <li>Tools, scripts, and pipelines for my <a href="experience.html" style="color: #f59e0b; font-family: 'Inter', sans-serif;
+font-size: 1.1em; font-weight: 900; text-decoration: none; text-shadow: 0 0 8px #f59e0b"">Experiences</a>  </li>
+
+      </ul>
+    </div>
+
+  </div>
+</div>
+
+
+            
+
+                <div class="card" style="flex: 1;">
+                <div class="icon-header">
+            <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" ></path>
+        </svg>                    
+        <h3>My journey</h3>
+                </div>
+                <div class="timeline-container">
+                    <div class="timeline-line"></div>
+
+                    <div class="timeline-event" style="left: 5%;">
+                        <div class="tooltip">Graduated from Stevenson Highschool</div>
+                        <div class="year">2019</div>
+                    </div>
+                    <div class="timeline-event" style="left: 20%;">
+                        <div class="tooltip">Started Undergrad at Boston Univeristy Studying Physical Therapy and Architecture</div>
+                        <div class="year">2020</div>
+                    </div>
+                    <div class="timeline-event" style="left: 35%;">
+                        <div class="tooltip">Gap Year Working as a Physical Therapy Aide</div>
+                        <div class="year">2021</div>
+                    </div>
+                    <div class="timeline-event" style="left: 50%;">
+                        <div class="tooltip">Transferred to Rice University </div>
+                        <div class="year">2022</div>
+                    </div>
+                        <div class="timeline-event" style="left: 65%;">
+                        <div class="tooltip">Graduated from Rice University. B.S. Computational Neuroscience, B.A. Cognitive Science</div>
+                        <div class="year">2024</div>
+                    </div>
+                        <div class="timeline-event" style="left: 80%;">
+                        <div class="tooltip">Researcher/Coordinator in the Yamagami Lab</div>
+                        <div class="year">2024</div>
+                    </div>
+                        <div class="timeline-event" style="left: 95%;">
+                        <div class="tooltip">Started R&D at Starling Medical</div>
+                        <div class="year">2025</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

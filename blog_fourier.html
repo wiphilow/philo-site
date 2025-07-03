@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>What is a fourier transform?</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: white;
+            color: #1f2937;
+            line-height: 1.7;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+        }
+
+        .navigation {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 3rem;
+            flex-wrap: wrap;
+        }
+
+        .nav-button {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.75rem 1.25rem;
+            background: #f9fafb;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            text-decoration: none;
+            color: #374151;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .nav-button:hover {
+            background: #10b981;
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .nav-button.primary {
+            background: #10b981;
+            color: white;
+            border-color: #10b981;
+        }
+
+        .nav-button.primary:hover {
+            background: #059669;
+            border-color: #059669;
+        }
+
+        .article-header {
+            margin-bottom: 2rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .article-date {
+            font-size: 0.875rem;
+            color: #10b981;
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .article-title {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: #1f2937;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+
+        .article-subtitle {
+            font-size: 1.15rem;
+            color: #6b7280;
+            font-weight: 400;
+        }
+
+        .article-content {
+            font-size: 1.125rem;
+            color: #374151;
+            margin-bottom: 3rem;
+        }
+
+        .article-content h2 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin: 2.5rem 0 1rem 0;
+        }
+
+        .article-content h3 {
+            font-size: 1.375rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin: 1rem 0 0.75rem 0;
+        }
+
+        .article-content h4 {
+            font-size: 1.175rem;
+            font-weight: 500;
+            color: #1f2937;
+            margin: 1rem 0 0.75rem 0;
+        }
+
+        .article-content p {
+            margin-bottom: 1.5rem;
+        }
+
+        .article-content ul, .article-content ol {
+            margin: 1.5rem 0;
+            padding-left: 2rem;
+        }
+
+        .article-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .article-content code {
+            background: #f3f4f6;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            color: #10b981;
+            font-size: 1.125rem;
+            color: #374151;
+            margin-bottom: 3rem
+        }
+
+        .article-content pre {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.2rem;
+            padding: 1.5rem;
+            overflow-x: auto;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            color: #1f2937;
+            line-height: 1.7;
+            flex-wrap: wrap;
+
+        }
+
+        .article-content pre code {
+            background: none;
+            padding: 0;
+            color: #374151;
+        }
+
+        .article-content blockquote {
+            border-left: 4px solid #10b981;
+            padding-left: 1.5rem;
+            margin: 1.5rem 0;
+            font-style: italic;
+            color: #4b5563;
+        }
+
+        .bottom-navigation {
+            padding-top: 2rem;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .signal-link {
+            color: #10b981;
+            text-decoration: none;
+            font-weight: 600;
+            font-family: 'Courier New', monospace;
+        }
+
+        .signal-link:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1.5rem 1rem;
+            }
+
+            .article-title {
+                font-size: 2rem;
+            }
+
+            .navigation {
+                flex-direction: column;
+            }
+
+            .nav-button {
+                justify-content: center;
+            }
+
+            .bottom-navigation {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav class="navigation">
+            <a href="tangents.html" class="nav-button primary">← Back to Tangents</a>
+            
+        </nav>
+
+        <header class="article-header">
+            <div class="article-date">2025.06.25</div>
+            <h1 class="article-title">What is a fourier transform?</h1>
+<p class="article-subtitle">
+  The fourier transform is the heart of modern electronics. Without it, there’d be no radio, cell phone, digital music, video, Wi-Fi, or medical imaging. If it plugs in or turns on, chances are it relies on the fourier transform. This is a beginner-friendly introduction to the fourier transform. No background needed.
+</p>
+        </header>
+
+ 
+        <article class="article-content">
+
+            <p> The goal of this article is to explain two important use cases of the fourier transform, provide intuition for its value, and give a sense for how it works. The math and bare-parts breakdown of the fourier transform will be included in a future article.</p>
+            <p>
+            <h2>Key Applications</h2>
+            
+            <h3>Sampling</h3>
+            <p>
+            Imagine you have a device that records at every moment in time. It could be a microphone that records sound or a camera that records video. For every single moment in time, you would have either a sound bite (a sound recording at a momentary instant) or a video frame (a picture at a momentary instant. Videos can be thought of as a bunch of pictures shown in quick succession). Say this device recorded everyday 24/7. How would the recording/video be stored? Computers and storage devices have a finite amount of storage. A never-ending recording is a recording for an infinite amount of time and is an infinite amount of data. Further, since our perfect device records at every moment in time, there is also an infinite amount of data within a year, a month, or even just a day. Even within a second or a tenth of second, our perfect recording device has an infinite amount of data samples. For those unfamiliar, infinite is a construct, not a number, and there are different 'sizes' of infinite (some infinities are bigger than others).
+            </p>
+            <p> 
+            This 'perfect recording device' is just as unrealistic as a comptuter that can store an ever-lasting recording (or even a .1 second long recording with an infinite number of samples). However, since a computer should be able to store much more than just one song, the notion that we want to save less data than the recording device can record is still relevant. The solution to this problem is sampling.
+            </p>
+
+            <div style="
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.25rem;
+            padding: 1.5rem;
+            overflow: hidden;
+            text-align: left;
+            margin-bottom: 2rem;
+            ">
+            <img src="figures/blog_fourier/fig1.1.jpg"
+                alt="fig1.2.jpg"
+                style="width: 100%; height: auto; object-fit: contain; display: block; margin-bottom: 1rem;">
+
+            <p style="margin: 0; text-align: left;">
+                Here's a crude visualization for saving an 11-sample-per-second reading into a finite amount of storage space.
+                The sensor picks up a value (in this case 1) at each sample. This suggests that in the real world, something is happening constantly.
+                While each individual sample could be saved in memory, it’s a bit wasteful (especially for a longer time period or a sensor that samples 1000 times per second).
+            </p>
+            </div>
+
+
+                        <div style="
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.25rem;
+            padding: 1.5rem;
+            overflow: hidden;
+            text-align: left;
+            margin-bottom: 2rem;
+            ">
+            <img src="figures/blog_fourier/fig1.2.jpg"
+                alt="fig1.2.jpg"
+                style="width: 100%; height: auto; object-fit: contain; display: block; margin-bottom: 1rem;">
+
+            <p style="margin: 0; text-align: left;">
+            <p>Instead of saving each sample, every other sample can be saved while still encoding the same, constant sensor interpretion of the world. Just as all 11 samples can be modeled with the function y = 1, every other sample can also be modeled by y = 1. Every third sample would also encode the same information.</p>
+
+                </p>
+            </div>
+
+            <p>But what about a slightly more complex signal? 11 samples can represent a broad number of scenarios beyond just a straight line and as the number of saved samples are decreased in an effort to preserve memory, more and more initial signal shapes are possible (infinite samples = perfect encoding. As samples -> 0 more interpretations can be made from the encoding).  </p>
+
+            
+        
+        <div style="
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.25rem;
+            padding: 1.5rem;
+            overflow: hidden;
+            text-align: left;
+            margin-bottom: 2rem;
+            ">
+            <h4>Three signals with increasing sample count</h4>
+
+            <img src="figures/blog_fourier/fig1.3.jpg"
+                alt="fig1.3.jpg"
+                style="width: 100%; height: auto; object-fit: contain; display: block; margin-bottom: 1rem;">
+
+            <p style="margin: 0; text-align: left;">
+                <p> With 6 samples, all 3 signals appear to represent the signal y = 1. With 11 samples, its clear that the 3 signals are in fact unique and that the original six samples had the sample value for all three signals. With 21 samples we start to see the underlying geometry of each signal (red signal: y = sin(x), blue signal: a sawtooth shape, green signal: a trapezoid shape). However, the green signal is found to be a squarewave (not trapezoidal) with even more samples. This introduces the idea that different signals need a different number of samples to determine their true form.
+                </p>
+                <p>Note: This example is not <i> entirely</i> accurate as the period of all signals is the same and a squarewave has an infinite bandwidth. However, it effectively illustrates a problem the fourier transform/series solves.</p>
+            </div>
+
+
+
+            <p>In order to save memory, we want to take as few samples as possible while still being able to determine the EXACT value of the signal at any time. But, from the last example, the samples required for this vary dramatically from signal to signal. This is what the fourier transform does in regards to sampling. The fourier transfor, allows for computers to determine how often to sample in order to efficiently 'know' the EXACT values of the signal.</p>
+            
+
+           <p> So far, all the signal examples shown have been relatively intuitive - They repeat after a certain amount of time and can be equated to fairly straighforward equations. What makes the fourier transform neat is that it can describe the value at any point of a signal even if the signal doesn't repeat or if the signal has weird features/bumps/sudden jumps without taking every single sample (taking a sample in the context of a computer means to know the sample value. Without knowing the value of each specific sample, the fourier transform can inform how often to sample in order to capture signal intricacies). </p>
+                    <div style="
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.25rem;
+            padding: 1.5rem;
+            overflow: hidden;
+            text-align: left;
+            margin-bottom: 2rem;
+            ">
+            <h4>Unpredictable and non-repeating signals. Describing the problem with an example</h4>
+
+            <img src="figures/blog_fourier/fig1.4.jpg"
+                alt="fig1.4.jpg"
+                style="width: 100%; height: auto; object-fit: contain; display: block; margin-bottom: 1rem;">
+            
+            <img src="figures/blog_fourier/fig1.5.jpg"
+                alt="fig1.5.jpg"
+                style="width: 100%; height: auto; object-fit: contain; display: block; margin-bottom: 1rem;">
+
+            <p style="margin: 0; text-align: left;"></p>
+                    <p>Imagine each of the above signals is a road that you are a driving on from the left end to the right end. The sun is in your eyes and you cannot see any of the road in front of you so you have to ask the front-seat passenger which way to go. You don't want to annoy the passenger so you don't want to ask for directions every second but you also want to make sure to stay on path. How often should you ask the passenger for directions to ensure you stay on the road?
+                         
+            </div>
+
+            <p>Hopefully I've done an adequate job at explaining the sampling problem and just how unintuitive a solution to this problem is. Here I'm going introduce another application of the fourier transform and in doing so, will explain the foundation for what it does to solve these challenges. </p>
+
+            <h3>Filtering </h3>
+
+            <p> Coming Soon</p>
+
+            
+            <p>A special thanks to Dr. Joseph Young who taught me everything I know about the fourier transform. </p>
+        </article>
+
+        <footer class="bottom-navigation">
+            <a href="tangents.html" class="nav-button primary">← Back to All Posts</a>
+            <a href="index.html" class="nav-button">Back to Main Signal</a>
+        </footer>
+    </div>
+</body>
+</html>

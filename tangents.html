@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tangents Signal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(to bottom right, #ecfdf5, #d1fae5);
+            min-height: 100vh;
+            color: #1f2937;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 3rem 1.5rem;
+        }
+
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            background: white;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            text-decoration: none;
+            color: #374151;
+            margin-bottom: 2rem;
+            transition: all 0.2s;
+        }
+
+        .back-button:hover {
+            background: #f9fafb;
+            transform: translateY(-1px);
+        }
+
+        /* Header that matches the animation target */
+        .page-header {
+            position: fixed;
+            top: 80px;
+            left: max(24px, 5vw);
+            display: flex;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .frequency-dot {
+            width: 1rem;
+            height: 1rem;
+            background: #10b981;
+            border-radius: 50%;
+            margin-right: 1rem;
+        }
+
+        .page-title {
+            font-size: 40px;
+            font-weight: 900;
+            color: #10b981;
+            font-family: 'Inter', sans-serif;
+            text-shadow: 0 0 8px #10b981;
+        }
+
+        .frequency {
+            margin-left: 1rem;
+            color: #10b981;
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        /* Content starts below the fixed header */
+        .content {
+            margin-top: 160px;
+        }
+
+        .intro-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            margin-bottom: 3rem;
+        }
+
+        .intro-card h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: #1f2937;
+        }
+
+        .intro-card p {
+            color: #4b5563;
+            line-height: 1.7;
+            font-size: 1.125rem;
+        }
+
+        .blog-entries {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .blog-entry {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .blog-entry:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        }
+
+        .blog-image {
+            width: 120px;
+            height: 120px;
+            border-radius: 0.75rem;
+            object-fit: cover;
+            flex-shrink: 0;
+            background: linear-gradient(135deg, #10b981, #059669);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2rem;
+            font-weight: bold;
+        }
+
+        .blog-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .blog-meta {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .blog-date {
+            font-size: 0.875rem;
+            color: #10b981;
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+        }
+
+        .blog-category {
+            padding: 0.25rem 0.5rem;
+            background: #dcfce7;
+            color: #166534;
+            font-size: 0.75rem;
+            border-radius: 9999px;
+            font-weight: 500;
+        }
+
+        .blog-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+
+        .blog-summary {
+            color: #4b5563;
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        .blog-arrow {
+            width: 48px;
+            height: 48px;
+            background: #10b981;
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+            transition: all 0.3s ease;
+        }
+
+        .blog-entry:hover .blog-arrow {
+            background: #059669;
+            transform: translateX(4px);
+        }
+
+        @media (max-width: 768px) {
+            .page-title {
+                font-size: 32px;
+            }
+
+            .page-header {
+                left: 24px;
+            }
+
+            .blog-entry {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .blog-image {
+                width: 100px;
+                height: 100px;
+            }
+
+            .blog-meta {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-header">
+        <h1 class="page-title">Tangents</h1>
+        <span class="frequency">f = 1.2Hz</span>
+    </div>
+
+    <div class="container">
+        <div class="content">
+            <a href="index.html" class="back-button">
+                ← Back to Signal
+            </a>
+
+            <div class="intro-card">
+                <p>
+                    My amazing friends aren't always availible to listen to every startup pitch, ted talk, and rant I have so this page is me shouting into the internet void. Hoping these find the right people!
+                </p>
+            </div>
+
+            <div class="blog-entries">
+
+<!--Article 1 -->
+                    <a href="blog_fourier.html" class="blog-entry">
+                    <div class="blog-image">
+                            <canvas id="fourier-canvas" style="width: 100%; height: 100%; display: block;"></canvas>
+                     </div>
+
+
+
+                    <script>
+                    const canvas = document.getElementById('fourier-canvas');
+                    const ctx = canvas.getContext('2d');
+
+                    function resizeCanvas() {
+                        canvas.width = canvas.offsetWidth;
+                        canvas.height = canvas.offsetHeight;
+                    }
+
+                    resizeCanvas();
+                    window.addEventListener('resize', resizeCanvas);
+
+                    let time = 0;
+
+                    function draw() {
+                        const width = canvas.width;
+                        const height = canvas.height;
+                        ctx.clearRect(0, 0, width, height);
+                        ctx.lineWidth = 2;
+                        ctx.strokeStyle = 'white'; 
+
+                        ctx.beginPath();
+                        for (let x = 0; x < width; x += 2) {
+                        const t = (x + time) * 0.01;
+                        const y = height / 2 + 30 * Math.sin(t) + 20 * Math.sin(t * 2.3 + 1);
+                        if (x === 0) ctx.moveTo(x, y);
+                        else ctx.lineTo(x, y);
+                        }
+                        ctx.stroke();
+
+                        time += 2;
+                        requestAnimationFrame(draw);
+                    }
+
+                    draw();
+                    </script>
+
+
+                    <div class="blog-content">
+                        <div class="blog-meta">
+                            <span class="blog-date">2025.06.25</span>
+                            <span class="blog-category">Knowledge Bite</span>
+                        </div>
+                        <h3 class="blog-title">What is a fourier transform?</h3>
+                        <p class="blog-summary">
+  The Fourier Transform is the heart of modern electronics. Without it, there’d be no radio, cell phone, digital music, video, Wi-Fi, or medical imaging. If it plugs in or turns on, chances are it relies on the Fourier Transform. This is a beginner-friendly introduction to the fourier transfrom. No background needed.
+                        </p>
+                    </div>
+                    <div class="blog-arrow">→</div>
+                </a>
+
+
+<!--Article 2 -->
+
+
+                    <a href="construction.html" class="blog-entry">
+                    <div class="blog-image">Coming Soon</div>
+                    <div class="blog-content">
+                        <div class="blog-meta">
+                            <span class="blog-date">2025</span>
+                            <span class="blog-category">Knowledge Bite</span>
+
+                        </div>
+                        <h3 class="blog-title">Underneath the hood of the fourier transform</h3>
+                        <p class="blog-summary">
+                         
+                        </p>
+                    </div>
+                    <div class="blog-arrow">→</div>
+                </a>
+
+
+<!--Article 3 -->
+
+
+
+                <a href="construction.html" class="blog-entry">
+                    <div class="blog-image">Coming Soon</div>
+                    <div class="blog-content">
+                        <div class="blog-meta">
+                            <span class="blog-date">2025</span>
+                            <span class="blog-category">Philosophy</span>
+                            <span class="blog-category">Cognition</span>
+                            <span class="blog-category">Rant</span>
+
+                        </div>
+                        <h3 class="blog-title">And what if we live in a simulation?</h3>
+                        <p class="blog-summary">
+                           
+                        </p>
+                    </div>
+                    <div class="blog-arrow">→</div>
+                </a>
+
+
+<!--Article 4 -->
+
+
+                <a href="construction.html" class="blog-entry">
+                    <div class="blog-image">Coming Soon</div>
+                    <div class="blog-content">
+                        <div class="blog-meta">
+                            <span class="blog-date">2025</span>
+                            <span class="blog-category">Machine Learning</span>
+                            <span class="blog-category">'Ted Talk'</span>
+                        </div>
+                        <h3 class="blog-title">A framework for an AI-generated music industry</h3>
+                        <p class="blog-summary">
+                          
+                        </p>
+                    </div>
+                    <div class="blog-arrow">→</div>
+                </a>
+
+<!--Article 5 -->
+
+                <a href="construction.html" class="blog-entry">
+                    <div class="blog-image">Coming Soon</div>
+                    <div class="blog-content">
+                        <div class="blog-meta">
+                            <span class="blog-date">2025</span>
+                            <span class="blog-category">Neuroscience</span>
+                            <span class="blog-category">Knowledge Bite</span>
+
+                        </div>
+                        <h3 class="blog-title">Rewriting learning limits: How PNNs can help us learn more, faster</h3>
+                        <p class="blog-summary">
+                           
+                        </p>
+                    </div>
+                    <div class="blog-arrow">→</div>
+                </a>
+
+<!--Article 6 -->
+
+
+                <a href="construction.html" class="blog-entry">
+                    <div class="blog-image">Coming Soon</div>
+                    <div class="blog-content">
+                        <div class="blog-meta">
+                            <span class="blog-date">2025</span>
+                            <span class="blog-category">Neuroscience</span>
+                            <span class="blog-category">Rant</span>
+
+                        </div>
+                        <h3 class="blog-title">Memory implant ethics</h3>
+                        <p class="blog-summary">
+
+                        </p>
+                    </div>
+                    <div class="blog-arrow">→</div>
+                </a>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Animate blog entries on load
+        window.addEventListener('load', () => {
+            const blogEntries = document.querySelectorAll('.blog-entry');
+            blogEntries.forEach((entry, index) => {
+                entry.style.opacity = '0';
+                entry.style.transform = 'translateY(20px)';
+                
+                setTimeout(() => {
+                    entry.style.transition = 'all 0.6s ease';
+                    entry.style.opacity = '1';
+                    entry.style.transform = 'translateY(0)';
+                }, 200 + index * 100);
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> Philo Signal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            overflow: hidden;
+            background: linear-gradient(to bottom, #fafafa, #f1f5f9);
+            cursor: crosshair;
+        }
+
+        #instruction-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #1f2937; /* dark gray */
+            color: white;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            text-decoration: none;
+            font-family: sans-serif;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            transition: background-color 0.3s ease;
+            z-index: 1000;
+        }
+        #instruction-text {
+            display: none;
+        }       
+        .overlay.instructions {
+    display: none;
+        }
+
+        #instruction-button:hover {
+            background-color: #111827; /* even darker on hover */
+        }
+        #canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        #canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .overlay {
+            position: absolute;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .title {
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            opacity: 0;
+            animation: fadeInScale 1s ease-out forwards;
+        }
+
+        .title h1 {
+            font-size: clamp(4rem, 8vw, 8rem);
+            font-weight: 900;
+            color: rgba(17, 24, 39, 0.1);
+            margin-bottom: 1rem;
+            letter-spacing: -0.02em;
+        }
+
+        .title p {
+            font-size: 1.25rem;
+            color: rgba(107, 114, 128, 0.6);
+        }
+
+        .instructions {
+            top: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 0.75rem 1.5rem;
+            border-radius: 9999px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+            opacity: 0;
+            animation: fadeInUp 1s ease-out 0.5s forwards;
+        }
+
+        .filter-progress {
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 0.75rem 1.5rem;
+            border-radius: 9999px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: none;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .filter-dot {
+            width: 0.75rem;
+            height: 0.75rem;
+            border-radius: 50%;
+        }
+
+        .filter-text {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .progress-bar {
+            width: 4rem;
+            height: 0.5rem;
+            background: #e5e7eb;
+            border-radius: 9999px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 9999px;
+            width: 0%;
+            transition: width 0.1s ease-out;
+        }
+
+        /* Animated title that moves to header position */
+        .animated-title {
+            position: fixed;
+            z-index: 100;
+            font-family: 'Inter', sans-serif;
+            font-weight: 900;
+            pointer-events: none;
+            white-space: nowrap;
+            transition: all 2.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translate(-50%, 1.25rem);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, 0);
+            }
+        }
+
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+        .toggle-switch {
+            user-select: none;
+        }
+
+        .toggle-switch .slider {
+            margin-left: 10px;
+            width: 40px;
+            height: 20px;
+            background-color: #ccc;
+            border-radius: 9999px;
+            position: relative;
+            transition: background-color 0.3s;
+        }
+
+        .toggle-switch .slider::before {
+            content: "";
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 16px;
+            height: 16px;
+            background-color: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+
+        .toggle-switch input:checked + .slider {
+            background-color: #1f2937;
+        }
+
+        .toggle-switch input:checked + .slider::before {
+            transform: translateX(20px);
+        }
+
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    
+    <div class="overlay instructions">
+        <span id="instruction-text">Hover over the wave to decompose • Click text waves to navigate</span>
+    </div>
+
+    <div class="overlay title">
+        <h1 style="white-space: nowrap;">Philo Katzman</h1>
+    </div>
+    
+    <div class="overlay filter-progress" id="filter-progress">
+        <div class="filter-dot" id="filter-dot"></div>
+        <span class="filter-text" id="filter-text">Filtering...</span>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill"></div>
+        </div>
+    </div>
+
+    <script>
+        class WavePortfolio {
+            constructor() {
+                this.canvas = document.getElementById('canvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.mousePos = { x: -1, y: -1 };
+                this.hoveredWave = -1;
+                this.time = 0;
+                this.isFiltering = false;
+                this.selectedWave = -1;
+                this.filterProgress = 0;
+                this.animationId = null;
+                this.linkHitBoxes = []; // Store hit boxes for links
+                
+                // Store the original decomposition bounds when filtering starts
+                this.originalDecompositionStart = 0;
+                this.originalDecompositionEnd = 0;
+                
+                // Title animation properties
+                this.animatedTitleElement = null;
+                this.titleStartPos = { x: 0, y: 0 };
+                this.titleEndPos = { x: 0, y: 0 };
+
+                this.waveComponents = [
+                    {
+                        frequency: 0.5,
+                        amplitude: 0.8,
+                        phase: 0,
+                        color: "#3b82f6",
+                        label: "About Me",
+                        page: "about.html",
+                        yOffset: -140
+                    },
+                    {
+                        frequency: 0.8,
+                        amplitude: 0.6,
+                        phase: Math.PI / 4,
+                        color: "#ef4444",
+                        label: "Projects",
+                        page: "construction.html",      <!-- Revert to projects.html-->
+                        yOffset: -80
+                    },
+                    {
+                        frequency: 1.2,
+                        amplitude: 0.7,
+                        phase: Math.PI / 2,
+                        color: "#10b981",
+                        label: "Tangents",
+                        page: "tangents.html",
+                        yOffset: 240
+                    },
+                    {
+                        frequency: 1.4,
+                        amplitude: .8,
+                        phase: Math.PI / 3,
+                        color: "#f59e0b",
+                        label: "Experience",
+                        page: "experience.html",
+                        yOffset: 80
+                    },
+                   
+                    {
+                        frequency: 12.3,
+                        amplitude: 0,
+                        phase: Math.PI / 11,
+                        color: "#9ca3af",
+                        label: "Noise",
+                        page: "Noise.html",
+                        yOffset: 0,
+                        hasText: false,
+                        isNoise: true
+                    }
+                ];
+
+                this.init();
+            }
+
+            init() {
+                this.resizeCanvas();
+                this.bindEvents();
+                this.animate();
+                
+
+                const noiseToggle = document.getElementById('toggle-noise');
+                const noiseComponent = this.waveComponents.find(c => c.isNoise);
+                noiseToggle.checked = noiseComponent.amplitude > 0;
+
+                noiseToggle.addEventListener('change', () => {
+                    this.toggleNoise();
+                });
+
+
+            }
+
+            resizeCanvas() {
+                const dpr = window.devicePixelRatio || 1;
+                this.canvas.width = window.innerWidth * dpr;
+                this.canvas.height = window.innerHeight * dpr;
+                this.canvas.style.width = window.innerWidth + 'px';
+                this.canvas.style.height = window.innerHeight + 'px';
+                this.ctx.scale(dpr, dpr);
+            }
+
+            bindEvents() {
+                window.addEventListener('resize', () => this.resizeCanvas());
+                
+                this.canvas.addEventListener('mousemove', (e) => {
+                    if (this.isFiltering) return;
+                    
+                    const rect = this.canvas.getBoundingClientRect();
+                    this.mousePos = {
+                        x: e.clientX - rect.left,
+                        y: e.clientY - rect.top
+                    };
+                });
+
+                this.canvas.addEventListener('mouseleave', () => {
+                    if (this.isFiltering) return;
+                    this.mousePos = { x: -1, y: -1 };
+                    this.hoveredWave = -1;
+                });
+
+                this.canvas.addEventListener('click', (e) => {
+                    if (this.isFiltering) return;
+                    
+                    const rect = this.canvas.getBoundingClientRect();
+                    const clickX = e.clientX - rect.left;
+                    const clickY = e.clientY - rect.top;
+                    
+                    // Check if click is on any link hitbox
+                    const clickedWave = this.checkLinkClick(clickX, clickY);
+                    if (clickedWave >= 0) {
+                        this.startBandpassFilter(clickedWave, clickX, clickY);
+                    }
+                });
+            }
+
+            checkLinkClick(clickX, clickY) {
+                // Check if click is over any link hitbox
+                for (let i = 0; i < this.linkHitBoxes.length; i++) {
+                    const hitBox = this.linkHitBoxes[i];
+                    if (hitBox.width > 0 && hitBox.height > 0) {
+                        if (clickX >= hitBox.x && 
+                            clickX <= hitBox.x + hitBox.width &&
+                            clickY >= hitBox.y && 
+                            clickY <= hitBox.y + hitBox.height) {
+                            return i;
+                        }
+                    }
+                }
+                return -1;
+            }
+
+            createAnimatedTitle(waveIndex, startX, startY) {
+                const component = this.waveComponents[waveIndex];
+                
+                // Create animated title element
+                this.animatedTitleElement = document.createElement('div');
+                this.animatedTitleElement.className = 'animated-title';
+                this.animatedTitleElement.textContent = component.label;
+                this.animatedTitleElement.style.color = component.color;
+                this.animatedTitleElement.style.fontSize = '22px';
+                this.animatedTitleElement.style.textShadow = `0 0 8px ${component.color}`;
+                
+                // Set initial position (where it was clicked)
+                this.titleStartPos = { x: startX, y: startY };
+                this.animatedTitleElement.style.left = startX + 'px';
+                this.animatedTitleElement.style.top = startY + 'px';
+                this.animatedTitleElement.style.transform = 'translate(-50%, -50%)';
+                
+                // Calculate end position (where it will be in the header)
+                // Standard header position: left margin + frequency dot + spacing
+                const headerLeftMargin = Math.max(24, window.innerWidth * 0.05); // Responsive margin
+                const headerTopMargin = 80; // Standard header top position
+                this.titleEndPos = { 
+                    x: headerLeftMargin + 55, // Account for frequency dot and spacing
+                    y: headerTopMargin +30
+                };
+                
+                document.body.appendChild(this.animatedTitleElement);
+                
+                // Trigger animation after a brief delay to ensure element is rendered
+                setTimeout(() => {
+                    this.animatedTitleElement.style.left = this.titleEndPos.x + 'px';
+                    this.animatedTitleElement.style.top = this.titleEndPos.y + 'px';
+                    this.animatedTitleElement.style.fontSize = '40px'; // Grow to header size
+                    this.animatedTitleElement.style.fontWeight = '900';
+                }, 50);
+            }
+
+            startBandpassFilter(waveIndex, clickX, clickY) {
+                this.selectedWave = waveIndex;
+                this.isFiltering = true;
+                this.filterProgress = 0;
+
+                // Create animated title that moves to header position
+                this.createAnimatedTitle(waveIndex, clickX, clickY);
+
+                // Store the original decomposition bounds
+                const decompositionRadius = 150;
+                this.originalDecompositionStart = Math.max(0, this.mousePos.x - decompositionRadius);
+                this.originalDecompositionEnd = Math.min(window.innerWidth, this.mousePos.x + decompositionRadius);
+
+                // Update UI
+                document.getElementById('instruction-text').textContent = `Applying bandpass filter for ${this.waveComponents[waveIndex].label}...`;
+                const filterProgress = document.getElementById('filter-progress');
+                const filterDot = document.getElementById('filter-dot');
+                const filterText = document.getElementById('filter-text');
+                const progressFill = document.getElementById('progress-fill');
+
+                filterProgress.style.display = 'flex';
+                filterDot.style.backgroundColor = this.waveComponents[waveIndex].color;
+                filterText.textContent = `Filtering Signal`;
+                progressFill.style.backgroundColor = this.waveComponents[waveIndex].color;
+
+                // Animate smooth transition
+                const startTime = Date.now();
+                const transitionDuration = 2500; // Smooth 2.5 second transition
+                const navigationDelay = 500; // Additional delay before navigation
+
+                const animateTransition = () => {
+                    const elapsed = Date.now() - startTime;
+                    const rawProgress = Math.min(elapsed / transitionDuration, 1);
+                    
+                    // Use easing function for smoother animation
+                    const easeInOutCubic = (t) => t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1;
+                    this.filterProgress = easeInOutCubic(rawProgress);
+                    
+                    progressFill.style.width = (rawProgress * 100) + '%';
+
+                    if (rawProgress < 1) {
+                        requestAnimationFrame(animateTransition);
+                    } else {
+                        // Wait a bit more before navigation for visual completion
+                        setTimeout(() => {
+                            window.location.href = this.waveComponents[waveIndex].page;
+                        }, navigationDelay);
+                    }
+                };
+
+                requestAnimationFrame(animateTransition);
+            }
+
+            animate() {
+                const width = window.innerWidth;
+                const height = window.innerHeight;
+                const centerY = height / 2;
+                const waveSpeed = this.time * .03;
+                const decompositionRadius = 150;
+
+                this.ctx.clearRect(0, 0, width, height);
+
+                // Check hover detection
+                let newHoveredWave = -1;
+                const isDecomposing = this.mousePos.x >= 0 && this.mousePos.y >= 0;
+
+                if (isDecomposing && !this.isFiltering) {
+                    // Check if hovering over a link first
+                    const linkHover = this.checkLinkHover();
+                    if (linkHover >= 0) {
+                        newHoveredWave = linkHover;
+                    } else {
+                        // Check wave hover in decomposition zone
+                        const decompositionStart = Math.max(0, this.mousePos.x - decompositionRadius);
+                        const decompositionEnd = Math.min(width, this.mousePos.x + decompositionRadius);
+                        
+                        if (this.mousePos.x >= decompositionStart && this.mousePos.x <= decompositionEnd) {
+                            for (let i = 0; i < this.waveComponents.length; i++) {
+                                const component = this.waveComponents[i];
+                                const componentY = centerY + component.yOffset;
+                                const distance = Math.abs(this.mousePos.y - componentY);
+
+                                if (distance < 40) {
+                                    newHoveredWave = i;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                this.hoveredWave = newHoveredWave;
+
+                // Update cursor
+                document.body.style.cursor = (this.hoveredWave >= 0 && !this.isFiltering) ? 'pointer' : 'crosshair';
+
+                if (this.isFiltering) {
+                    // During filtering: show smooth transition (hide canvas text)
+                    this.drawSmoothTransition(width, height, centerY, waveSpeed, true);
+                } else if (isDecomposing) {
+                    this.drawDecomposedWaves(width, height, centerY, waveSpeed, decompositionRadius);
+                } else {
+                    this.drawCombinedWave(width, height, centerY, waveSpeed);
+                }
+
+                // Draw cursor indicator
+                if (isDecomposing && !this.isFiltering) {
+                    this.ctx.fillStyle = "rgba(59, 130, 246, 0.2)";
+                    this.ctx.globalAlpha = 0.6;
+                    this.ctx.beginPath();
+                    this.ctx.arc(this.mousePos.x, this.mousePos.y, 10, 0, 2 * Math.PI);
+                    this.ctx.fill();
+                }
+
+                this.time++;
+                this.animationId = requestAnimationFrame(() => this.animate());
+            }
+
+            checkLinkHover() {
+                if (this.isFiltering || this.mousePos.x < 0 || this.mousePos.y < 0) {
+                    return -1;
+                }
+
+                // Check if mouse is over any link
+                for (let i = 0; i < this.linkHitBoxes.length; i++) {
+                    const hitBox = this.linkHitBoxes[i];
+                    if (hitBox.width > 0 && hitBox.height > 0) {
+                        if (this.mousePos.x >= hitBox.x && 
+                            this.mousePos.x <= hitBox.x + hitBox.width &&
+                            this.mousePos.y >= hitBox.y && 
+                            this.mousePos.y <= hitBox.y + hitBox.height) {
+                            return i;
+                        }
+                    }
+                }
+                return -1;
+            }
+
+            drawSmoothTransition(width, height, centerY, waveSpeed, hideCanvasText = false) {
+                if (this.selectedWave < 0) return;
+
+                const selectedComponent = this.waveComponents[this.selectedWave];
+                
+                // Calculate the expanding bounds of the selected wave
+                const selectedStart = this.originalDecompositionStart - (this.originalDecompositionStart * this.filterProgress);
+                const selectedEnd = this.originalDecompositionEnd + ((width - this.originalDecompositionEnd) * this.filterProgress);
+                
+                // Original wave contracts inward
+                const contractedStart = this.originalDecompositionStart * (1 - this.filterProgress);
+                const contractedEnd = width - ((width - this.originalDecompositionEnd) * (1 - this.filterProgress));
+
+                // Draw the contracting original wave (black signal)
+                if (this.filterProgress < 1) {
+                    this.ctx.strokeStyle = "#1f2937";
+                    this.ctx.lineWidth = 6;
+                    this.ctx.globalAlpha = 1 - this.filterProgress;
+
+                    // Left side of contracting wave
+                    if (contractedStart > 0) {
+                        this.ctx.beginPath();
+                        for (let x = 0; x <= contractedStart; x += 2) {
+                            const waveX = (x / width) * 8 * Math.PI - waveSpeed;
+                            let y = centerY;
+
+                            this.waveComponents.forEach(component => {
+                                y += component.amplitude * 60 * Math.sin(component.frequency * waveX + component.phase);
+                            });
+
+                            if (x === 0) {
+                                this.ctx.moveTo(x, y);
+                            } else {
+                                this.ctx.lineTo(x, y);
+                            }
+                        }
+                        this.ctx.stroke();
+                    }
+
+                    // Right side of contracting wave
+                    if (contractedEnd < width) {
+                        this.ctx.beginPath();
+                        for (let x = contractedEnd; x <= width; x += 2) {
+                            const waveX = (x / width) * 8 * Math.PI - waveSpeed;
+                            let y = centerY;
+
+                            this.waveComponents.forEach(component => {
+                                y += component.amplitude * 60 * Math.sin(component.frequency * waveX + component.phase);
+                            });
+
+                            if (x === contractedEnd) {
+                                this.ctx.moveTo(x, y);
+                            } else {
+                                this.ctx.lineTo(x, y);
+                            }
+                        }
+                        this.ctx.stroke();
+                    }
+                }
+
+                // Draw the expanding selected wave
+                this.ctx.strokeStyle = selectedComponent.color;
+                this.ctx.lineWidth = 6;
+                this.ctx.globalAlpha = 1;
+                
+                // Add enhanced glow effect during transition
+                this.ctx.shadowColor = selectedComponent.color;
+                this.ctx.shadowBlur = 8 + this.filterProgress * 12;
+
+                this.ctx.beginPath();
+                for (let x = selectedStart; x <= selectedEnd; x += 2) {
+                    const waveX = (x / width) * 8 * Math.PI - waveSpeed;
+                    const y = centerY + selectedComponent.amplitude * 60 * Math.sin(selectedComponent.frequency * waveX + selectedComponent.phase);
+
+                    if (x === selectedStart) {
+                        this.ctx.moveTo(x, y);
+                    } else {
+                        this.ctx.lineTo(x, y);
+                    }
+                }
+                this.ctx.stroke();
+                this.ctx.shadowBlur = 0;
+
+                // Don't draw canvas text during filtering since we have the animated DOM element
+                if (!hideCanvasText) {
+                    // Draw the expanding text at center
+                    const textWaveSpeed = this.time * 0.03;
+                    const textX = width / 2;
+                    const waveX = (textX / width) * 8 * Math.PI - textWaveSpeed;
+                    const waveY = centerY + selectedComponent.amplitude * 60 * Math.sin(selectedComponent.frequency * waveX + selectedComponent.phase);
+
+                    this.ctx.fillStyle = selectedComponent.color;
+                    this.ctx.font = `bold ${18 + this.filterProgress * 8}px Inter, sans-serif`;
+                    this.ctx.globalAlpha = 1;
+                    this.ctx.shadowColor = selectedComponent.color;
+                    this.ctx.shadowBlur = 4 + this.filterProgress * 8;
+
+                    const textMetrics = this.ctx.measureText(selectedComponent.label);
+                    this.ctx.fillText(selectedComponent.label, textX - textMetrics.width / 2, waveY);
+                    this.ctx.shadowBlur = 0;
+                }
+            }
+
+            drawCombinedWave(width, height, centerY, waveSpeed) {
+                this.ctx.strokeStyle = "#1f2937";
+                this.ctx.lineWidth = 6;
+                this.ctx.globalAlpha = 1;
+                this.ctx.beginPath();
+
+                for (let x = 0; x < width; x += 2) {
+                    const waveX = (x / width) * 8 * Math.PI - waveSpeed;
+                    let y = centerY;
+
+                    this.waveComponents.forEach(component => {
+                        y += component.amplitude * 60 * Math.sin(component.frequency * waveX + component.phase);
+                    });
+
+                    if (x === 0) {
+                        this.ctx.moveTo(x, y);
+                    } else {
+                        this.ctx.lineTo(x, y);
+                    }
+                }
+                this.ctx.stroke();
+            }
+
+            drawDecomposedWaves(width, height, centerY, waveSpeed, decompositionRadius) {
+                const decompositionStart = Math.max(0, this.mousePos.x - decompositionRadius);
+                const decompositionEnd = Math.min(width, this.mousePos.x + decompositionRadius);
+
+                // Clear hit boxes
+                this.linkHitBoxes = [];
+
+                // Draw combined wave outside decomposition zone
+                this.ctx.strokeStyle = "#1f2937";
+                this.ctx.lineWidth = 6;
+                this.ctx.globalAlpha = 0.8;
+
+                // Left side
+                if (decompositionStart > 0) {
+                    this.ctx.beginPath();
+                    for (let x = 0; x < decompositionStart; x += 2) {
+                        const waveX = (x / width) * 8 * Math.PI - waveSpeed;
+                        let y = centerY;
+
+                        this.waveComponents.forEach(component => {
+                            y += component.amplitude * 60 * Math.sin(component.frequency * waveX + component.phase);
+                        });
+
+                        if (x === 0) {
+                            this.ctx.moveTo(x, y);
+                        } else {
+                            this.ctx.lineTo(x, y);
+                        }
+                    }
+                    this.ctx.stroke();
+                }
+
+                // Right side
+                if (decompositionEnd < width) {
+                    this.ctx.beginPath();
+                    for (let x = decompositionEnd; x < width; x += 2) {
+                        const waveX = (x / width) * 8 * Math.PI - waveSpeed;
+                        let y = centerY;
+
+                        this.waveComponents.forEach(component => {
+                            y += component.amplitude * 60 * Math.sin(component.frequency * waveX + component.phase);
+                        });
+
+                        if (x === decompositionEnd) {
+                            this.ctx.moveTo(x, y);
+                        } else {
+                            this.ctx.lineTo(x, y);
+                        }
+                    }
+                    this.ctx.stroke();
+                }
+
+                this.waveComponents.forEach((component, index) => {
+                if (component.amplitude > 0) {
+                    this.drawComponentWave(component, index, decompositionStart, decompositionEnd, width, centerY);
+                }
+            });
+
+
+                // Draw decomposition zone indicators
+                this.ctx.strokeStyle = "rgba(59, 130, 246, 0.3)";
+                this.ctx.lineWidth = 2;
+                this.ctx.globalAlpha = 0.5;
+                this.ctx.setLineDash([5, 5]);
+                this.ctx.beginPath();
+                this.ctx.moveTo(decompositionStart, 0);
+                this.ctx.lineTo(decompositionStart, height);
+                this.ctx.moveTo(decompositionEnd, 0);
+                this.ctx.lineTo(decompositionEnd, height);
+                this.ctx.stroke();
+                this.ctx.setLineDash([]);
+            }
+
+            drawComponentWave(component, index, decompositionStart, decompositionEnd, width, centerY) {
+                const isHovered = index === this.hoveredWave;
+                const componentY = centerY + component.yOffset;
+                const textWaveSpeed = this.time * 0.03;
+
+                // Style settings
+                const fontSize = isHovered ? 22 : 14;
+                const fontWeight = isHovered ? 'bold' : 'normal';
+                const lineWidth = isHovered ? 6 : 3;
+                const baseAlpha = isHovered ? 1 : 0.7;
+
+                // Calculate text dimensions for centered positioning
+                this.ctx.font = `${fontWeight} ${fontSize}px Inter, sans-serif`;
+                const textMetrics = this.ctx.measureText(component.label);
+                const exactTextWidth = textMetrics.width;
+                const textPadding = isHovered ? 15 : 10;
+                const totalTextWidth = exactTextWidth + textPadding * 2;
+
+                // Center the text horizontally in the decomposition window
+                const centerX = (decompositionStart + decompositionEnd) / 2;
+                const gapStart = centerX - totalTextWidth / 2;
+                const gapEnd = centerX + totalTextWidth / 2;
+
+                // Calculate text position for hit box
+                const waveX = (centerX / width) * 8 * Math.PI - textWaveSpeed;
+                const waveY = componentY + component.amplitude * 60 * Math.sin(component.frequency * waveX + component.phase);
+
+                // Store hit box for this link
+                const textHeight = fontSize * 1.2;
+                this.linkHitBoxes[index] = {
+                    x: decompositionStart,
+                    y: componentY - 40,  // Expand vertically around the wave
+                    width: decompositionEnd - decompositionStart,
+                    height: 80,          // 40px above and below the line
+                    index: index
+                };
+
+
+                // Draw the colored sine wave with gap for centered text
+                this.ctx.strokeStyle = component.color;
+                this.ctx.lineWidth = lineWidth;
+                this.ctx.globalAlpha = baseAlpha;
+
+                // Add glow effects
+                if (isHovered) {
+                    this.ctx.shadowColor = component.color;
+                    this.ctx.shadowBlur = 8;
+                }
+
+                // Draw left part of wave (before gap)
+                if (gapStart > decompositionStart) {
+                    this.ctx.beginPath();
+                    for (let x = decompositionStart; x <= gapStart; x += 2) {
+                        const waveX = (x / width) * 8 * Math.PI - textWaveSpeed;
+                        const y = componentY + component.amplitude * 60 * Math.sin(component.frequency * waveX + component.phase);
+
+                        if (x === decompositionStart) {
+                            this.ctx.moveTo(x, y);
+                        } else {
+                            this.ctx.lineTo(x, y);
+                        }
+                    }
+                    this.ctx.stroke();
+                }
+
+                // Draw right part of wave (after gap)
+                if (gapEnd < decompositionEnd) {
+                    this.ctx.beginPath();
+                    for (let x = gapEnd; x <= decompositionEnd; x += 2) {
+                        const waveX = (x / width) * 8 * Math.PI - textWaveSpeed;
+                        const y = componentY + component.amplitude * 60 * Math.sin(component.frequency * waveX + component.phase);
+
+                        if (x === gapEnd) {
+                            this.ctx.moveTo(x, y);
+                        } else {
+                            this.ctx.lineTo(x, y);
+                        }
+                    }
+                    this.ctx.stroke();
+                }
+
+                this.ctx.shadowBlur = 0;
+
+                // Draw centered text
+                this.ctx.fillStyle = component.color;
+                this.ctx.globalAlpha = baseAlpha;
+
+                if (isHovered) {
+                    this.ctx.shadowColor = component.color;
+                    this.ctx.shadowBlur = 4;
+                }
+
+                // Keep text horizontal (no rotation) but position at wave height
+                this.ctx.fillText(component.label, centerX - exactTextWidth / 2, waveY);
+                this.ctx.shadowBlur = 0;
+            }
+        
+            toggleNoise() {
+                const noiseIndex = this.waveComponents.findIndex(c => c.isNoise);
+                if (noiseIndex !== -1) {
+                    this.waveComponents[noiseIndex].amplitude = 
+                        this.waveComponents[noiseIndex].amplitude === 0 ? 0.12 : 0;
+                }
+            }
+        }
+
+        // Initialize the portfolio when the page loads
+        window.addEventListener('DOMContentLoaded', () => {
+            new WavePortfolio();
+
+
+        });
+    </script>
+    <a href="blog_fourier.html" id="instruction-button">
+  What is a Fourier Transform?
+</a>
+<label class="toggle-switch" style="
+    position: fixed;
+    bottom: 60px;
+    right: 20px;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-family: sans-serif;
+    color: #1f2937;">
+    Noise
+    <input type="checkbox" id="toggle-noise" style="display: none;">
+    <span class="slider"></span>
+</label>
+
+
+</body>
+</html>
