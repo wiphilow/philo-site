@@ -308,7 +308,14 @@
                 background-color: rgba(17, 24, 39, 0.1); /* same as Philo Katzman text */
                 color: #1f2937; /* dark text for contrast */
             }
+
+            
 }
+
+#yourCanvasID.show {
+  opacity: 1;
+}
+
 
 
     </style>
@@ -1029,6 +1036,18 @@ function resizeNameToFit() {
 
 window.addEventListener("DOMContentLoaded", resizeNameToFit);
 window.addEventListener("resize", resizeNameToFit);
+
+window.addEventListener('pageshow', (event) => {
+  if (event.persisted) {
+    // The page was restored from back-forward cache
+    // Re-initialize your animation here
+    location.reload(); // simplest way: force a full reload
+  }
+});
+
+
+canvas.classList.add('show');
+
 </script>
 
 

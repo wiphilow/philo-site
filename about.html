@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <link rel="preload" as="image" href="images/headshot.jpg">
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>About Me Signal</title>
@@ -341,6 +343,7 @@ display:none;
 
     </style>
 </head>
+
 <body>
     <div class="page-header">
         <h1 class="page-title">About Me</h1>
@@ -360,6 +363,7 @@ display:none;
 
   <div class="prose" style="overflow: hidden;">
     <img src="images/headshot.jpg"
+         loading="eager"
          alt="Headshot"
          class="circle-float"
          style="width: 200px; height: 200px; border-radius: 50%; object-fit: cover; object-position: center 40%; float: left; margin: 0 1rem 1rem 0;">
