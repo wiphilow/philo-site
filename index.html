@@ -839,8 +839,15 @@ if (this.isFiltering) {
             }
 
             drawDecomposedWaves(width, height, centerY, waveSpeed, decompositionRadius) {
-                const decompositionStart = Math.max(0, this.mousePos.x - decompositionRadius);
-                const decompositionEnd = Math.min(width, this.mousePos.x + decompositionRadius);
+let decompositionStart, decompositionEnd;
+
+if (isTouchDevice) {
+  decompositionStart = 0;
+  decompositionEnd = width;
+} else {
+  decompositionStart = Math.max(0, this.mousePos.x - decompositionRadius);
+  decompositionEnd = Math.min(width, this.mousePos.x + decompositionRadius);
+}
 
                 // Clear hit boxes
                 this.linkHitBoxes = [];
@@ -898,7 +905,11 @@ if (this.isFiltering) {
 
 
                 // Draw decomposition zone indicators
-                this.ctx.strokeStyle = "rgba(59, 130, 246, 0.3)";
+if (!isTouchDevice) {
+  this.ctx.strokeStyle = "rgba(59, 130, 246, 0.3)";
+  
+}
+
                 this.ctx.lineWidth = 2;
                 this.ctx.globalAlpha = 0.5;
                 this.ctx.setLineDash([5, 5]);
