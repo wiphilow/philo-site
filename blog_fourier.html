@@ -223,7 +223,7 @@
             <div class="article-date">2025.06.25</div>
             <h1 class="article-title">What is a fourier transform?</h1>
 <p class="article-subtitle">
-  The fourier transform is the heart of modern electronics. Without it, there’d be no radio, cell phone, digital music, video, Wi-Fi, or medical imaging. If it plugs in or turns on, chances are it relies on the fourier transform. This is a beginner-friendly introduction to the fourier transform. No background needed.
+  The fourier transform is the heart of modern electronics. Without it, there’d be no radio, cell phone, digital music, video, Wi-Fi, and medical imaging. If it plugs in or turns on, chances are it relies on the fourier transform. This is a beginner-friendly introduction to the fourier transform. No background needed.
 </p>
         </header>
 
@@ -341,10 +341,31 @@
 
             <h3>Filtering </h3>
 
-            <p> Coming Soon</p>
+            <p> Recorded values from a sensor are the sum of multiple inputs at each point in time. For example, ears/microphones at a concert might pick up on a singer singing, a person clapping, drums from the back of the stage, fans screaming, wind hitting the mic/ear, and the hum of air conditioning. Likewise, visuals from the eye or recorded as a video will 'see' the performance but will also capture flashing lights, stage fog, and the glare of a spotlight. The same applies for implanted biomedical devices and 5G cellular signals. Because 'a signal' refers to a measurment of some quantity that carries information, pretty much all electronics that communicate with another electronic has this multi-input property. In the case of a 5G signal, as the cellular signal bounces off buildings and the environment, phones recieve multiple versions of the same signal at slightly different times. Additionally, fog and humidity can distort/weaken cell signals and the internal electronics of a phone (such as wifi and bluetooth emitters) can create interfering signals that add to what is being recieved by the 5G signal reciever. </p>
+
+            <p>The challenge of removing unwanted aspects of a signal is just as relevent as the sampling problem. While sampling helps save information by lowering computation time and memory usage, filtering removes the unwanted aspects of a signal so that information can be decoded/interpreted as intended.</p>
 
             
-            <p>A special thanks to Dr. Joseph Young who taught me everything I know about the fourier transform. </p>
+            <div style="
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.25rem;
+            padding: 1.5rem;
+            overflow: hidden;
+            text-align: left;
+            margin-bottom: 2rem;
+            ">
+            <h4>Background: signal properties and superposition</h4>
+            </div>
+
+
+
+
+
+
+
+
+            <p>Special thanks to Dr. Joseph Young who taught me everything I know about the fourier transform. </p>
         </article>
 
         <footer class="bottom-navigation">

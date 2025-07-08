@@ -317,6 +317,23 @@
 }
 
 
+@media (max-width: 768px) {
+  #main-signal-canvas {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .decomposed-signal-container {
+    width: 100vw;
+    left: 0 !important;
+    right: 0 !important;
+    margin: 0 auto;
+  }
+}
+
+
+
 
     </style>
 </head>
@@ -655,14 +672,21 @@ this.originalDecompositionEnd = decompositionEnd;
                 // Update cursor
                 document.body.style.cursor = (this.hoveredWave >= 0 && !this.isFiltering) ? 'pointer' : 'crosshair';
 
-                if (this.isFiltering) {
-                    // During filtering: show smooth transition (hide canvas text)
-                    this.drawSmoothTransition(width, height, centerY, waveSpeed, true);
-                } else if (isDecomposing) {
-                    this.drawDecomposedWaves(width, height, centerY, waveSpeed, decompositionRadius);
-                } else {
-                    this.drawCombinedWave(width, height, centerY, waveSpeed);
-                }
+if (this.isFiltering) {
+  this.drawSmoothTransition(width, height, centerY, waveSpeed, true);
+} else if (isDecomposing) {
+  this.drawDecomposedWaves(width, height, centerY, waveSpeed, decompositionRadius);
+} else {
+  // ❌ Skip combined wave on mobile
+  if (!isTouchDevice) {
+    this.drawCombinedWave(width, height, centerY, waveSpeed);
+  } else {
+    // Clear canvas to ensure only background is visible
+    this.ctx.clearRect(0, 0, width, height);
+  }
+}
+
+
 
          
 
