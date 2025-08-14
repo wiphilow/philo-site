@@ -5,7 +5,7 @@
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About Me Signal</title>
+    <title>Philo - About Me</title>
     <style>
         * {
             margin: 0;
@@ -16,15 +16,16 @@
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(to bottom right, #fafafa, #f8f8f8);
-            opacity: 0;
-            transition: opacity 1s ease-in;
+            visibility: hidden;
+
             min-height: 100vh;
             color: #1f2937;
         }
 
-        body.fade-in {
-  opacity: 1;
-}
+        body.show {
+            visibility: visible;
+
+        }
 
         .container {
             max-width: 1200px;
@@ -365,6 +366,7 @@ display:none;
     <img src="images/headshot.jpg"
          loading="eager"
          alt="Headshot"
+         fetchpriority="high"
          class="circle-float"
          style="width: 200px; height: 200px; border-radius: 50%; object-fit: cover; object-position: center 40%; float: left; margin: 0 1rem 1rem 0;">
 
@@ -404,8 +406,8 @@ font-size: 1.1em; font-weight: 900; text-decoration: none; ">Noise</a>
       <br>
         <p style="color: #4b5563;">
 
-      See <a href="tangents.html" style="color: #10b981; font-family: 'Inter', sans-serif;
-font-size: 1.1em; font-weight: 900; text-decoration: none; ">Tangents</a> for my thoughts on these topics
+      See my <a href="tangents.html" style="color: #10b981; font-family: 'Inter', sans-serif;
+font-size: 1.1em; font-weight: 900; text-decoration: none; ">Tangents</a> on these topics
        </p>
     </div>
 
@@ -553,8 +555,8 @@ if (isTouchDevice) {
 
 
 <script>
-  window.addEventListener('DOMContentLoaded', () => {
-    document.body.classList.add('fade-in');
+  window.addEventListener('load', () => {
+    document.body.classList.add('show');
   });
 </script>
 
