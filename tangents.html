@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tangents Signal</title>
+    <title>Philo - Tangents</title>
     <style>
         * {
             margin: 0;
@@ -227,6 +227,13 @@
                 justify-content: center;
             }
         }
+        #pnn-canvas {
+  background: linear-gradient(135deg, #10b981, #059669);
+  border-radius: 0.75rem;
+  width: 100%;
+  height: 100%;
+}
+
     </style>
 </head>
 <body>
@@ -243,13 +250,180 @@
 
             <div class="intro-card">
                 <p>
-                    My cool friends aren't always availible to listen to every startup pitch, ted talk, and rant I have so this page is me shouting into the internet void. Hoping these find the right people.
+                   I’ve learned that when I frame my ideas and studies like a TED Talk or a blog post it makes it clear which parts I get and which parts are still fuzzy. Since my cool friends aren't always availible to listen to every startup pitch, Ted Talk, and rant I have, this page is me shouting into the internet void. Hoping these find the right people.
                 </p>
+                <br>
+                <p>I am by no means an expert on these topics. These are purely tangents along my learning/ideating journey. Please reach out if you'd like to discuss or suggest edits!</p>
             </div>
 
             <div class="blog-entries">
 
+
+
 <!--Article 1 -->
+
+                <a href="blog_PNNs.html" class="blog-entry">
+                <div class="blog-image">
+                    <canvas id="pnn-canvas" style="width: 100%; height: 100%; display: block;"></canvas>
+                </div>
+
+<script>
+// PNN neuron canvas animation
+document.addEventListener('DOMContentLoaded', () => {
+    const canvas = document.getElementById('pnn-canvas');
+    const ctx = canvas.getContext('2d');
+
+    function resizeCanvas() {
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    const neurons = [];
+    const connections = [];
+
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+
+    const offsets = [
+        [-30, -40],
+        [-10,  40],
+        [  50, 5],
+        [ 20,   32],
+        [-18, -20],
+        [ 32,  27],
+        [ -46,   28],
+        [  43, -25],
+        [ 22, -22],
+        [-23,  12],
+        [0,  -40]
+    ];
+
+    offsets.forEach(([dx, dy]) => {
+        neurons.push({
+            x: centerX + dx,
+            y: centerY + dy,
+            baseX: centerX + dx,
+            baseY: centerY + dy,
+            fireTimer: Math.random() * 100,
+            dendrites: [],
+            offset: Math.random() * 2 * Math.PI
+        });
+    });
+
+    // Add dendrites (short lines around neuron)
+    neurons.forEach(n => {
+        for (let i = 0; i < 3; i++) {
+            const angle = Math.random() * 2 * Math.PI;
+            const dist = 10 + Math.random() * 10;
+            n.dendrites.push({
+                x: n.x + Math.cos(angle) * dist,
+                y: n.y + Math.sin(angle) * dist
+            });
+        }
+    });
+
+    // Random connections
+    for (let i = 0; i < neurons.length; i++) {
+        let b;
+        do {
+            b = Math.floor(Math.random() * neurons.length);
+        } while (b === i);
+        connections.push({ a: i, b });
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        const t = Date.now() / 1000;
+
+        // Animate neuron movement
+        neurons.forEach(n => {
+            n.x = n.baseX + Math.sin(t + n.offset) * 1.5;
+            n.y = n.baseY + Math.cos(t + n.offset) * 1.5;
+        });
+
+        // Draw axon connections
+        ctx.lineWidth = 1.5;
+        connections.forEach(({ a, b }) => {
+            const na = neurons[a];
+            const nb = neurons[b];
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+            ctx.beginPath();
+            ctx.moveTo(na.x, na.y);
+            ctx.lineTo(nb.x, nb.y);
+            ctx.stroke();
+        });
+
+        // Draw neurons and dendrites
+        neurons.forEach((n, i) => {
+            n.fireTimer -= 1;
+            const firing = n.fireTimer <= 0;
+
+            // Soma
+            ctx.beginPath();
+            ctx.arc(n.x, n.y, firing ? 6 : 4, 0, 2 * Math.PI);
+            ctx.fillStyle = firing ? '#ffffff' : '#d1fae5';
+            ctx.fill();
+
+            // Dendrites
+            n.dendrites.forEach(d => {
+                ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(d.x, d.y);
+                ctx.lineTo(n.x, n.y);
+                ctx.stroke();
+            });
+
+            // Firing animation
+            if (firing) {
+                n.fireTimer = 100 + Math.random() * 60;
+                connections.forEach(({ a, b }) => {
+                    if (a === i) {
+                        const target = neurons[b];
+                        ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+                        ctx.lineWidth = 2;
+                        ctx.beginPath();
+                        ctx.moveTo(n.x, n.y);
+                        ctx.lineTo(target.x, target.y);
+                        ctx.stroke();
+                    }
+                });
+            }
+        });
+
+        requestAnimationFrame(draw);
+    }
+
+    draw();
+});
+
+</script>
+
+
+
+                    <div class="blog-content">
+                        <div class="blog-meta">
+                            <span class="blog-date">2025.08.05</span>
+                            <span class="blog-category">Neuroscience</span>
+                            <span class="blog-category">Knowledge Bite</span>
+
+                        </div>
+                        <h3 class="blog-title">Rewriting learning limits: How removing PNNs can help us learn more, faster</h3>
+                        <p class="blog-summary"> 
+                            It's partially true that old dogs can't learn new tricks. After a certain point in life, picking up new skills really does get harder. 
+                This is not just bad luck. Its a defense mechanism that protects the brain and the knowledge we have gained. 
+                But what if we could choose to flip that switch back on? This short read explores one of the brain’s systems that slows 
+                learning with age and shares new research showing how it might be changed. No neuroscience background required. </p>
+
+                    </div>
+                    <div class="blog-arrow">→</div>
+                </a>
+
+
+                <!--Article 2 -->
                     <a href="blog_fourier.html" class="blog-entry">
                     <div class="blog-image">
                             <canvas id="fourier-canvas" style="width: 100%; height: 100%; display: block;"></canvas>
@@ -309,9 +483,11 @@
                 </a>
 
 
-<!--Article 2 -->
 
 
+<!--Article 3 -->
+
+                <h2 class="coming-soon-header">Coming Soon</h2>
                     <a href="construction.html" class="blog-entry">
                     <div class="blog-image">Coming Soon</div>
                     <div class="blog-content">
@@ -371,24 +547,7 @@
                     <div class="blog-arrow">→</div>
                 </a>
 
-<!--Article 5 -->
 
-                <a href="construction.html" class="blog-entry">
-                    <div class="blog-image">Coming Soon</div>
-                    <div class="blog-content">
-                        <div class="blog-meta">
-                            <span class="blog-date">2025</span>
-                            <span class="blog-category">Neuroscience</span>
-                            <span class="blog-category">Knowledge Bite</span>
-
-                        </div>
-                        <h3 class="blog-title">Rewriting learning limits: How PNNs can help us learn more, faster</h3>
-                        <p class="blog-summary">
-                           
-                        </p>
-                    </div>
-                    <div class="blog-arrow">→</div>
-                </a>
 
 <!--Article 6 -->
 
