@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Removing PNNs </title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: white;
+            color: #1f2937;
+            line-height: 1.7;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+        }
+
+        .navigation {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 3rem;
+            flex-wrap: wrap;
+        }
+
+        .nav-button {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.75rem 1.25rem;
+            background: #f9fafb;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            text-decoration: none;
+            color: #374151;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .nav-button:hover {
+            background: #10b981;
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .nav-button.primary {
+            background: #10b981;
+            color: white;
+            border-color: #10b981;
+        }
+
+        .nav-button.primary:hover {
+            background: #059669;
+            border-color: #059669;
+        }
+
+        .article-header {
+            margin-bottom: 3rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .article-date {
+            font-size: 0.875rem;
+            color: #10b981;
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .article-title {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: #1f2937;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+
+        .article-subtitle {
+            font-size: 1.25rem;
+            color: #6b7280;
+            font-weight: 400;
+        }
+
+        .article-content {
+            font-size: 1.125rem;
+            color: #374151;
+            margin-bottom: 3rem;
+        }
+
+        .article-content h2 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin: 2.5rem 0 1rem 0;
+        }
+
+        .article-content h3 {
+            font-size: 1.375rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin: 2rem 0 0.75rem 0;
+        }
+
+        .article-content p {
+            margin-bottom: 1.5rem;
+        }
+
+        .article-content ul, .article-content ol {
+            margin: 1.5rem 0;
+            padding-left: 2rem;
+        }
+
+        .article-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .article-content code {
+            background: #f3f4f6;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            color: #10b981;
+        }
+
+        .article-content pre {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            overflow-x: auto;
+            margin: 1.5rem 0;
+        }
+
+        .article-content pre code {
+            background: none;
+            padding: 0;
+            color: #374151;
+        }
+
+        .article-content blockquote {
+            border-left: 4px solid #10b981;
+            padding-left: 1.5rem;
+            margin: 1.5rem 0;
+            font-style: italic;
+            color: #4b5563;
+        }
+
+        .bottom-navigation {
+            padding-top: 2rem;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .signal-link {
+            color: #10b981;
+            text-decoration: none;
+            font-weight: 600;
+            font-family: 'Courier New', monospace;
+        }
+
+        .signal-link:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1.5rem 1rem;
+            }
+
+            .article-title {
+                font-size: 2rem;
+            }
+
+            .navigation {
+                flex-direction: column;
+            }
+
+            .nav-button {
+                justify-content: center;
+            }
+
+            .bottom-navigation {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav class="navigation">
+            <a href="tangents.html" class="nav-button primary">← Back to Tangents</a>
+            
+        </nav>
+
+        <header class="article-header">
+            <div class="article-date">2025.06.25</div>
+            <h1 class="article-title">Rewriting the Limits of Learning: How removing PNNs can help us learn more, faster</h1>
+            <p class="article-subtitle">
+               It's partially true that old dogs can't learn new tricks. After a certain point in life, picking up new skills really does get harder. 
+                This is not just bad luck. It's a defense mechanism that protects the brain and the knowledge we have gained. 
+                But what if we could choose to flip that switch back on? This short read explores one of the brain’s systems that slows 
+                learning with age and shares new research showing how it might be changed. No neuroscience background required. </p>
+
+
+            </header>
+
+        <article class="article-content">
+           
+<h2>Background</h2>
+<h3>Memory</h3>
+<p>The word “memory” means different things depending on who you ask. In psychology, it is pretty much what most people think of: stored experiences and mental processes that we can encode, keep, and bring back later. These might be memories of graduating from high school, eating your favorite meal, or where you last parked your car.
+<p>    In neuroscience, memory often refers to something a little different. It is about the physical changes that happen in neurons, the smallest building blocks of the brain, that alter how they behave. As a loose example, hearing your favorite song today might excite a particular neuron, but ten years from now that same song might barely make it react. Neurons can change their behavior based on what they have been through.
+</p>
+
+<p>
+There’s a neat connection between memory in the whole brain and memory in a single neuron. We make decisions based on past experiences and individual neurons contribute 
+by ‘remembering’ what’s happened to them and adjusting their connections and structure. Tiny changes add up when many neurons do this together and give rise to the memories and behaviors we experience.
+</p>
+
+<h3>Information through Neurons</h3>
+<p>Neurons pass information to each other using tiny electrical pulses. At their meeting points (synapses), the electrical signal from one neuron causes the release of chemical messengers. These chemicals bind to the next neuron, open tiny channels on the next neuron’s surface, and allow ions to rush in. If enough ions enter, another electrical pulse is sent along, and the cycle repeats.
+</p>
+
+<img src="figures/blog_pnn/fig2.2.gif"
+                alt="fig2.2.gif"
+                style="width: 100%; height: auto; object-fit: contain; display: block; margin-bottom: 1rem;">
+
+<h3>The Brain’s Shape Shifting Trick</h3>
+
+<p>Plasticity is the brain’s ability (at the level of individual neurons, neural circuits, and the whole brain) to change and reorganize itself.  It's how we can adapt, learn, and even 'rewire' after brain injury. 
+It’s not a metaphor or abstraction. Neurons literally change their structure. They can grow new branches, make stronger links to each other, and form entirely new connections.
+</p>
+
+                    <div style="
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.25rem;
+            padding: 1.5rem;
+            overflow: hidden;
+            text-align: left;
+            margin-bottom: 2rem;
+            "> 
+            <h4>A Plasticity Example</h4>
+
+            <br>
+            <br>
+            <img src="figures/blog_pnn/fig2.1.jpg"
+                alt="fig2.2.gif"
+                style="width: 100%; height: auto; object-fit: contain; display: block; margin-bottom: 1rem;">
+            <p>Aplysia, a type of sea slug, are a classic model for demonstrating plasticity because their neurons are large and their neural circuits (groups of neurons working together for a specific purpose) are relatively simple.
+             When its siphon (a small flap) is touched, the aplysia reflexively pulls in its gill. If this touch is repeated gently over and over, the response gradually weakens as the synapse between neurons transmits less signal.  </p> 
+
+                <p>A similar effect can be seen in humans too (although the circuit path is far more complex). When moving about, we may initially feel our clothes rubbing against our skin, but with repeated stimulation, this sensation fades.</p>
+
+             <p>In Aplysia, if the same siphon touch is paired with something startling, like an electric shock to the tail, the synapse strengthens through a larger release of chemical messengers (neurotransmitters). This causes more channels to 
+                open on the postsynaptic neuron which allows more ions to enter. The increased ion flow makes it more likely that the postsynaptic neuron will experience an electric pulse (fire an action potential) which results in the gill-withdrawal reflex 
+                becoming faster and stronger. This change is a simple example of how experience can physically alter synaptic strength and lead to a change in behavior.
+            
+        
+        </div>
+
+<p>Plasticity is supercharged when we are young. During early development, neurons make connections at a rapid pace as we learn language, develop depth perception, adopt social norms, and figure out how to move and control our body. But as we get older that ability slows down. There is some truth to the “old dog can’t learn new tricks” saying. One reason for this is the increase of something called perineuronal nets (PNNs).
+</p>
+
+
+<h2>PNNs</h2>
+
+<p>PNNs are structures that wrap around neurons and help stabilize their existing connections. Just like neurons, these structures are as real and physical as you, me, and the device you’re reading this through. They are like a fine net surrounding a neuron and have the consequence of making it harder for new connections to form. This is one way the brain limits plasticity in adulthood.
+</p>
+
+
+
+<p>During early development, neurons make connections at a rapid pace as we acquire skills, facts, and social understanding. Later, the brain trims away weaker or duplicate connections in a process called synaptic pruning. PNNs help maintain the stable set of connections that remain.
+</p>
+<img src="figures/blog_pnn/fig2.3.jpg"
+                alt="fig2.3.jpg"
+                style="width: 100%; height: auto; object-fit: contain; display: block; margin-bottom: 1rem;">
+<p>Even with PNNs in place our brains can still change. It just happens more slowly.
+</p>
+
+<p>You might wonder why the brain goes through all the trouble of making so many connections only to cut them back later. It's similar to writing a long research paper. First you gather all the information you can, then you cut out what is less relevant so the paper is clear and focused. Without the first step of overbuilding, you might miss something important.
+ </p>
+
+<p>Simply keeping every connection would not work either. A paper with every relevant reference would be messy and repetitive. In the brain, too many redundant connections can cause inefficiency and even lead to developmental disorders like autism spectrum disorder.
+All of this is to say that PNNs are not strictly a bad thing. They provide important structural support to the brain’s wiring, preserve the skills we developed early in life, help control microglia activity (the brain's immune cells which are important for preventing inflamation and slowing disease progression) and protect against neurodegeneration. 
+</p>
+
+<p>So we would not want to remove PNNs entirely. But if we could selectively remove them it might help the brain adapt to new challenges or fight off infections more effectively.
+</p>
+
+
+<h2>Removing PNNs
+</h2>
+
+<p>Hopefully I’ve illustrated that improving memory/plasticity is not as simple as just removing PNNs and that at this moment, removing PNNs for plastic gain is highly experimental. However, it has been done!
+Researchers have shown that PNN removal helps with memory through a novel object recognition test in rodents. A brief explanation of this can be found below.
+</p>
+                    <div style="
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.25rem;
+            padding: 1.5rem;
+            overflow: hidden;
+            text-align: left;
+            margin-bottom: 2rem;
+            ">
+
+<img src="figures/blog_pnn/fig2.4.jpg"
+                alt="fig2.4.jpg"
+                style="width: 100%; height: auto; object-fit: contain; display: block; margin-bottom: 1rem;">
+
+<p>On training day, a rodent explores a pair of objects in a Y-shaped maze. On testing day, one familiar object is replaced with something new. A rodent with a strong memory will spend more time investigating the novel object. Memory strength can be measured using something called a discrimination index, which is closer to one in animals with better memory.
+When PNNs are removed, rodents tend to prefer the novel object more, showing a higher discrimination index and recall ability. 
+</p>
+</div>
+<p>There is other evidence that PNN removal can better memory but likely not enough to outweigh their sheer importance to stable, efficient neuron circuits. Still, their unique role and potential is exciting enough for research to continue.
+</p>
+<br>
+
+<br>
+
+<p>This post grew out of a presentation I gave for BIOS442, a journal club style course.
+     My topic was novel ways of removing PNNs as described in Venturino et al.’s paper "Microglia Enable Mature Perineuronal
+      Nets Disassembly Upon Anesthetic Ketamine Exposure Or 60-Hz Light Entrainment In The Healthy Brain". I didn’t touch on 
+      these methods in this post but if this topic caught your interest I recommend giving the paper a look: 
+      <a href="https://www.sciencedirect.com/science/article/pii/S2211124721006896" target="_blank">link</a>.
+</p>
+
+
+
+        </article>
+
+        <footer class="bottom-navigation">
+            <a href="tangents.html" class="nav-button primary">← Back to All Posts</a>
+            <a href="index.html" class="nav-button">Back to Main Signal</a>
+        </footer>
+    </div>
+</body>
+</html>
