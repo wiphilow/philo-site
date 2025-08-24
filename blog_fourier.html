@@ -309,10 +309,10 @@
 
 
 
-            <p>In order to save memory, we want to take as few samples as possible while still being able to determine the EXACT value of the signal at any time. But, from the last example, the samples required for this vary dramatically from signal to signal. This is what the fourier transform does in regards to sampling. The fourier transfor, allows for computers to determine how often to sample in order to efficiently 'know' the EXACT values of the signal.</p>
+            <p>In order to save memory, we want to take as few samples as possible while still being able to determine the EXACT value of the signal at any time. But, from the last example, the samples required for this vary dramatically from signal to signal. This is what the fourier transform does in regards to sampling. The fourier transform, allows for computers to determine how often to sample in order to efficiently 'know' the EXACT values of the signal.</p>
             
 
-           <p> So far, all the signal examples shown have been relatively intuitive - They repeat after a certain amount of time and can be equated to fairly straighforward equations. What makes the fourier transform neat is that it can describe the value at any point of a signal even if the signal doesn't repeat or if the signal has weird features/bumps/sudden jumps without taking every single sample (taking a sample in the context of a computer means to know the sample value. Without knowing the value of each specific sample, the fourier transform can inform how often to sample in order to capture signal intricacies). </p>
+           <p> So far, all the signal examples shown have been relatively intuitive - They repeat after a certain amount of time and can be equated to fairly straighforward equations. What makes the fourier transform neat is that it can describe the value at any point of a signal even if the signal doesn't repeat or if the signal has weird features/bumps/sudden jumps without taking every single sample (Without knowing the value of each specific sample, the fourier transform can inform how often to sample in order to capture signal intricacies). </p>
                     <div style="
             background: #f9fafb;
             border: 1px solid #e5e7eb;
@@ -341,7 +341,7 @@
 
             <h3>Filtering </h3>
 
-            <p> Recorded values from a sensor are the sum of multiple inputs at each point in time. For example, ears/microphones at a concert might pick up on a singer singing, a person clapping, drums from the back of the stage, fans screaming, wind hitting the mic/ear, and the hum of air conditioning. Likewise, visuals from the eye or recorded as a video will 'see' the performance but will also capture flashing lights, stage fog, and the glare of a spotlight. The same applies for implanted biomedical devices and 5G cellular signals. Because 'a signal' refers to a measurment of some quantity that carries information, pretty much all electronics that communicate with another electronic has this multi-input property. In the case of a 5G signal, as the cellular signal bounces off buildings and the environment, phones recieve multiple versions of the same signal at slightly different times. Additionally, fog and humidity can distort/weaken cell signals and the internal electronics of a phone (such as wifi and bluetooth emitters) can create interfering signals that add to what is being recieved by the 5G signal reciever. </p>
+            <p> Recorded values from a sensor are the sum of multiple inputs at each point in time. For example, ears/microphones at a concert might pick up on a singer singing, a person clapping, drums from the back of the stage, fans screaming, wind hitting the mic/ear, and the hum of air conditioning. Likewise, visuals from the eye or recorded as a video will 'see' the performance but will also capture flashing lights, stage fog, and the glare of a spotlight. The same applies for implanted biomedical devices and 5G cellular signals. Because 'a signal' refers to a measurment of some quantity that carries information, pretty much all electronics that communicate with another electronic has this multi-input property. In the case of a 5G signal, as the cellular signal bounces off buildings and the environment, phones recieve multiple versions of the same signal at slightly different times. Additionally, the internal electronics of a phone (such as wifi and bluetooth emitters) can create interfering signals that add to what is being recieved by the 5G signal reciever. </p>
 
             <p>The challenge of removing unwanted aspects of a signal is just as relevent as the sampling problem. While sampling helps save information by lowering computation time and memory usage, filtering removes the unwanted aspects of a signal so that information can be decoded/interpreted as intended.</p>
 
@@ -356,6 +356,8 @@
             margin-bottom: 2rem;
             ">
             <h4>Background: signal properties and superposition</h4>
+
+            <p>Idealized light and sound signals are sinusoidal. Sound waves appear sinusoidal because sound consists of alternating compression and decompression of air molecules in a repeating pattern. When a pure tone is produced, the air pressure at a given location oscillates between a high (compression) and low (decompression) value  which when measured over time, creates a smooth, predictable waveform that resembles a sine function. </p>
             </div>
 
 
