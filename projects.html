@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Philo - Projects</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(to bottom right, #fafafa, #f8f8f8);
+            min-height: 100vh;
+            color: #1f2937;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 3rem 1.5rem;
+        }
+
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            background: white;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            text-decoration: none;
+            color: #374151;
+            margin-bottom: 2rem;
+            transition: all 0.2s;
+        }
+
+        .back-button:hover {
+            background: #f9fafb;
+            transform: translateY(-1px);
+        }
+
+        /* Header that matches the animation target */
+        .page-header {
+            position: fixed;
+            top: 80px;
+            left: 40px;
+            display: flex;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .frequency-dot {
+            width: 1rem;
+            height: 1rem;
+            background: #ef4444;
+            border-radius: 50%;
+            margin-right: 1rem;
+        }
+
+        .page-title {
+            font-size: 40px;
+            font-weight: 900;
+            color: #ef4444;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .frequency {
+            margin-left: 1rem;
+            color: #ef4444;
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        /* Content starts below the fixed header */
+        .content {
+            margin-top: 160px;
+        }
+
+        .intro-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            margin-bottom: 3rem;
+        }
+
+        .intro-card h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: #1f2937;
+        }
+
+        .intro-card p {
+            color: #4b5563;
+            line-height: 1.7;
+            font-size: 1.125rem;
+        }
+
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+        }
+
+        .project-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+        }
+
+        .project-card:hover {
+            background: rgba(255, 255, 255, 0.9);
+            transform: translateY(-2px);
+        }
+
+        .project-header {
+            height: 8rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .project-header.red { background: linear-gradient(to bottom right, #ef4444, #ec4899); }
+        .project-header.purple { background: linear-gradient(to bottom right, #8b5cf6, #6366f1); }
+        .project-header.orange { background: linear-gradient(to bottom right, #f97316, #ef4444); }
+        .project-header.green { background: linear-gradient(to bottom right, #10b981, #14b8a6); }
+
+        .project-status {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .project-content {
+            padding: 1.5rem;
+        }
+
+        .project-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+
+        .project-description {
+            color: #6b7280;
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+
+        .tech-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .tech-tag {
+            padding: 0.25rem 0.5rem;
+            background: #f3f4f6;
+            color: #374151;
+            font-size: 0.75rem;
+            border-radius: 9999px;
+        }
+
+        .project-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            text-decoration: none;
+            color: #374151;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: #f9fafb;
+        }
+
+        .btn svg {
+            width: 1rem;
+            height: 1rem;
+            margin-right: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .projects-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .page-title {
+                font-size: 32px;
+            }
+            
+
+        }
+
+        .modal { position: fixed; inset: 0; display: none; z-index: 1000; }
+.modal.open { display: block; }
+.modal-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,.45); }
+.modal-dialog {
+  position: relative; margin: 5vh auto 0; width: min(90vw, 1200px); height: 85vh;
+  background: #fff; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,.3);
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 14px; border-bottom: 1px solid #e5e7eb; background: #fafafa;
+  font-weight: 700;
+}
+.modal-close { border: 1px solid #e5e7eb; background: #fff; border-radius: 8px; padding: 4px 8px; cursor: pointer; }
+.modal-close:hover { background: #f3f4f6; }
+.modal-body { position: relative; flex: 1; }
+#demoFrame { width: 100%; height: 100%; border: 0; display: block; }
+.spinner {
+  position: absolute; inset: 0; display: grid; place-items: center; background: #fff;
+}
+.spinner::after {
+  content: ""; width: 32px; height: 32px; border: 3px solid #e5e7eb; border-top-color: #ef4444;
+  border-radius: 50%; animation: spin 0.9s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+    </style>
+</head>
+<body>
+    <div class="page-header">
+        <h1 class="page-title">Projects</h1>
+        <span class="frequency">f = 0.8Hz</span>
+    </div>
+
+    <div class="container">
+        <div class="content">
+            <a href="index.html" class="back-button">
+                ← Back to Signal
+            </a>
+
+            <div class="intro-card">
+                <p>
+                    I have way too many startup ideas.
+                </p>
+            </div>
+
+            <div class="projects-grid">
+                <div class="project-card">
+                    <div class="project-header red">
+                        <div class="project-status">Live</div>
+                    </div>
+                    <div class="project-content">
+                        <h3 class="project-title">PromptPantry</h3>
+                        <p class="project-description">
+                             Making big projects with LLMs is messy. Copying and pasting ChatGPT outputs from a code editor and back,
+                             scrolling through lines of AI-generated output to make small tweaks, and trying to find previous outputs in
+                              AI chats is a hastle. This is espcially true for unexperienced developers who want to build without setting
+                              up an IDE or understanding a variety of language syntax. PromptPantry is a wesbite/app developer and paper writing tool 
+                              that allows for organized chats with toggled context-sharing between chats.
+                        </p>
+                        <div class="tech-tags">
+                            <span class="tech-tag">context-controlled prompting</span>
+                            <span class="tech-tag">project organization</span>
+                            <span class="tech-tag">live rendering</span>
+                            <span class="tech-tag">chat version control</span>
+
+                        </div>
+                        <div class="project-buttons">
+                            <a href="construction.html" class="btn">
+                                
+                                About
+                            </a>
+
+                            <a href="Projects/promptpantry/promptpantry_demo.html" class="btn"
+                            onclick="openDemo(this.getAttribute('href'),'PromptPantry Demo'); return false;">
+                            Demo
+                            </a>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="project-card">
+                    <div class="project-header purple">
+                        <div class="project-status">Graduated</div>
+                    </div>
+                    <div class="project-content">
+                        <h3 class="project-title">Metaru</h3>
+                        <p class="project-description">
+                        Coming Soon                        </p>
+
+                      
+                            </a>
+                        </div>
+                    </div>
+                </div>
+<!--
+                <div class="project-card">
+                    <div class="project-header orange">
+                        <div class="project-status">Live</div>
+                    </div>
+                    <div class="project-content">
+                        <h3 class="project-title">Generative Art Engine</h3>
+                        <p class="project-description">
+                            AI-powered system for creating unique digital art using mathematical algorithms
+                        </p>
+                        <div class="tech-tags">
+                            <span class="tech-tag">Python</span>
+                            <span class="tech-tag">OpenAI</span>
+                            <span class="tech-tag">PIL</span>
+                        </div>
+                        <div class="project-buttons">
+                            <a href="#" class="btn">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
+                                </svg>
+                                Code
+                            </a>
+                            <a href="#" class="btn">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                                </svg>
+                                Demo
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="project-card">
+                    <div class="project-header green">
+                        <div class="project-status">Beta</div>
+                    </div>
+                    <div class="project-content">
+                        <h3 class="project-title">Signal Processing Library</h3>
+                        <p class="project-description">
+                            Open-source JavaScript library for real-time audio signal processing
+                        </p>
+                        <div class="tech-tags">
+                            <span class="tech-tag">JavaScript</span>
+                            <span class="tech-tag">Web Workers</span>
+                            <span class="tech-tag">WASM</span>
+                        </div>
+                        <div class="project-buttons">
+                            <a href="#" class="btn">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
+                                </svg>
+                                Code
+                            </a>
+                            <a href="#" class="btn">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                                </svg>
+                                Demo
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    -->
+    <div id="demoModal" class="modal" aria-hidden="true" role="dialog" aria-modal="true">
+  <div class="modal-backdrop" data-close="true"></div>
+  <div class="modal-dialog" role="document">
+    <div class="modal-header">
+      <span id="demoTitle">Demo</span>
+      <button class="modal-close" aria-label="Close" data-close="true">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="spinner" id="demoSpinner" aria-hidden="true"></div>
+      <iframe id="demoFrame" src="" title="Demo" loading="lazy"></iframe>
+    </div>
+  </div>
+</div>
+
+<script>
+let lastFocus = null;
+const modal   = document.getElementById('demoModal');
+const frame   = document.getElementById('demoFrame');
+const spinner = document.getElementById('demoSpinner');
+const titleEl = document.getElementById('demoTitle');
+
+function openDemo(path, title = 'Demo') {
+  lastFocus = document.activeElement;
+  titleEl.textContent = title;
+  spinner.style.display = 'grid';
+  frame.src = path;                        // relative path to your demo
+  modal.classList.add('open');
+  modal.setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden'; // prevent background scroll
+
+  frame.addEventListener('load', () => { spinner.style.display = 'none'; }, { once: true });
+  modal.querySelector('.modal-close').focus();
+}
+
+function closeDemo() {
+  frame.src = 'about:blank';               // release the loaded page
+  modal.classList.remove('open');
+  modal.setAttribute('aria-hidden', 'true');
+  document.body.style.overflow = '';
+  if (lastFocus) lastFocus.focus();
+}
+
+modal.addEventListener('click', (e) => {
+  if (e.target.dataset.close === 'true') closeDemo();   // backdrop or ✕
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && modal.classList.contains('open')) closeDemo();
+});
+</script>
+
+</body>
+</html>
