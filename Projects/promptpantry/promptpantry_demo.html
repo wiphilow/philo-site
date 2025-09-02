@@ -1,0 +1,1449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Block Diagram Editor</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --background: oklch(1 0 0);
+            --foreground: oklch(0.145 0 0);
+            --card: oklch(1 0 0);
+            --card-foreground: oklch(0.145 0 0);
+            --popover: oklch(1 0 0);
+            --popover-foreground: oklch(0.145 0 0);
+            --primary: oklch(0.205 0 0);
+            --primary-foreground: oklch(0.985 0 0);
+            --secondary: oklch(0.97 0 0);
+            --secondary-foreground: oklch(0.205 0 0);
+            --muted: oklch(0.97 0 0);
+            --muted-foreground: oklch(0.556 0 0);
+            --accent: oklch(0.97 0 0);
+            --accent-foreground: oklch(0.205 0 0);
+            --destructive: oklch(0.577 0.245 27.325);
+            --destructive-foreground: oklch(0.577 0.245 27.325);
+            --border: oklch(0.922 0 0);
+            --input: oklch(0.922 0 0);
+            --ring: oklch(0.708 0 0);
+            --radius: 0.625rem;
+        }
+
+        .dark {
+            --background: oklch(0.145 0 0);
+            --foreground: oklch(0.985 0 0);
+            --card: oklch(0.145 0 0);
+            --card-foreground: oklch(0.985 0 0);
+            --popover: oklch(0.145 0 0);
+            --popover-foreground: oklch(0.985 0 0);
+            --primary: oklch(0.985 0 0);
+            --primary-foreground: oklch(0.205 0 0);
+            --secondary: oklch(0.269 0 0);
+            --secondary-foreground: oklch(0.985 0 0);
+            --muted: oklch(0.269 0 0);
+            --muted-foreground: oklch(0.708 0 0);
+            --accent: oklch(0.269 0 0);
+            --accent-foreground: oklch(0.985 0 0);
+            --destructive: oklch(0.396 0.141 25.723);
+            --destructive-foreground: oklch(0.637 0.237 25.331);
+            --border: oklch(0.269 0 0);
+            --input: oklch(0.269 0 0);
+            --ring: oklch(0.439 0 0);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            border-color: var(--border);
+            outline-color: var(--ring);
+            outline-offset: 2px;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            height: 100vh;
+            background: var(--background);
+            color: var(--foreground);
+            overflow: hidden;
+            font-feature-settings: "rlig" 1, "calt" 1;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .toolbar {
+            position: fixed;
+            top: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 50;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            display: flex;
+            gap: 8px;
+            padding: 12px;
+        }
+
+        .toolbar button {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: calc(var(--radius) - 2px);
+            background: var(--card);
+            color: var(--card-foreground);
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .toolbar button:hover {
+            background: var(--accent);
+            color: var(--accent-foreground);
+        }
+
+        .toolbar button.active {
+            background: var(--primary);
+            color: var(--primary-foreground);
+            border-color: var(--primary);
+        }
+
+        .login-button {
+            position: fixed;
+            bottom: 16px;
+            right: 16px;
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: calc(var(--radius) - 2px);
+            background: var(--card);
+            color: var(--card-foreground);
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .login-button:hover {
+            background: var(--accent);
+            color: var(--accent-foreground);
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            background: #10b981;
+            border-radius: 50%;
+        }
+
+        .canvas {
+            width: 100%;
+            height: 100vh;
+            position: relative;
+            cursor: crosshair;
+            background: var(--muted);
+            background-image: radial-gradient(circle, var(--border) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        .block {
+            position: absolute;
+            width: 128px;
+            height: 64px;
+            background: var(--card);
+            border: 2px solid var(--border);
+            border-radius: calc(var(--radius) - 2px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .block:hover {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-color: var(--ring);
+        }
+
+        .block.connecting {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+
+        .block.eraser-hover {
+            border-color: var(--destructive);
+            background: #fef2f2;
+        }
+
+        .block-name {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--muted-foreground);
+            text-align: center;
+            padding: 0 8px;
+            pointer-events: none;
+            user-select: none;
+        }
+.popup, .popup *:not(input):not(textarea) {
+    user-select: none;
+}
+
+        .popup-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 40;
+            backdrop-filter: blur(4px);
+        }
+
+        .popup {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            width: 800px;
+            height: 600px;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .chat-section {
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--border);
+        }
+
+        .outcomes-section {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .popup-header {
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+            background: var(--muted);
+            display: flex;
+            align-items: center;
+            justify-content: between;
+        }
+
+        .popup-header input {
+            width: 128px;
+            height: 28px;
+            padding: 4px 8px;
+            border: 1px solid var(--border);
+            border-radius: calc(var(--radius) - 4px);
+            background: var(--background);
+            color: var(--foreground);
+            font-size: 14px;
+            font-weight: 500;
+            margin-left: 8px;
+        }
+
+        .popup-header input:focus {
+            outline: 2px solid var(--ring);
+            border-color: var(--ring);
+        }
+
+        .close-button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: calc(var(--radius) - 4px);
+            margin-left: auto;
+            color: var(--muted-foreground);
+            transition: all 0.2s ease;
+        }
+
+        .close-button:hover {
+            background: var(--accent);
+            color: var(--accent-foreground);
+        }
+
+        .divider {
+            width: 4px;
+            background: var(--border);
+            cursor: col-resize;
+            flex-shrink: 0;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .divider-dots {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            opacity: 0.6;
+            transition: opacity 0.2s;
+        }
+
+        .divider:hover .divider-dots {
+            opacity: 1;
+        }
+
+        .divider-dot {
+            width: 4px;
+            height: 4px;
+            background: var(--muted-foreground);
+            border-radius: 50%;
+        }
+
+        .divider:hover .divider-dot {
+            background: var(--foreground);
+        }
+
+.chat-section, .outcomes-section {
+    display: flex;
+    flex-direction: column;
+    /* make them grow/shrink with flex */
+    flex-grow: 1;
+    flex-shrink: 1;
+    min-width: 150px; /* optional, prevents collapsing */
+    overflow: hidden;
+}
+
+
+.chat-content, .outcomes-content {
+    flex: 1 1 auto;  /* allow dynamic resizing */
+    overflow-y: auto;
+}
+
+.popup-header {
+    flex: 0 0 auto;  /* keep header height fixed */
+}
+
+
+        .chat-message {
+            background: var(--muted);
+            border-radius: calc(var(--radius) - 2px);
+            padding: 12px;
+        }
+
+        .chat-message p {
+            font-size: 14px;
+            margin-bottom: 4px;
+            color: var(--card-foreground);
+        }
+
+        .chat-message .timestamp {
+            font-size: 12px;
+            color: var(--muted-foreground);
+        }
+
+        .chat-input-area {
+            padding: 16px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 8px;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: calc(var(--radius) - 2px);
+            background: var(--background);
+            color: var(--foreground);
+            font-size: 14px;
+        }
+
+        .chat-input:focus {
+            outline: 2px solid var(--ring);
+            border-color: var(--ring);
+        }
+
+        .send-button {
+            padding: 8px 12px;
+            background: var(--primary);
+            color: var(--primary-foreground);
+            border: none;
+            border-radius: calc(var(--radius) - 2px);
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .send-button:hover {
+            opacity: 0.9;
+        }
+
+        .outcomes-content {
+            flex: 1;
+            padding: 16px;
+            position: relative;
+            text-align: center;
+            color: var(--muted-foreground);
+        }
+        .outcomes-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+}
+
+.header-row {
+    display: flex;
+    align-items: center; /* ensures all children are vertically centered */
+    gap: 16px; /* optional spacing */
+}
+
+        .version-controls {
+            position: absolute;
+            bottom: 16px;
+            right: 16px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .version-controls button {
+            padding: 6px 12px;
+            border: 1px solid var(--border);
+            border-radius: calc(var(--radius) - 4px);
+            background: var(--card);
+            color: var(--card-foreground);
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .version-controls button:hover {
+            background: var(--accent);
+            color: var(--accent-foreground);
+        }
+
+        .version-history {
+            border-bottom: 1px solid var(--border);
+            background: var(--muted);
+            padding: 12px;
+        }
+
+        .version-history-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .version-navigation {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .version-info {
+            flex: 1;
+            text-align: center;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: calc(var(--radius) - 4px);
+            padding: 8px;
+            font-size: 12px;
+        }
+
+        .revert-button {
+            margin-top: 8px;
+            padding: 6px 12px;
+            background: var(--primary);
+            color: var(--primary-foreground);
+            border: none;
+            border-radius: calc(var(--radius) - 4px);
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .revert-button:hover {
+            opacity: 0.9;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        svg {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+.grid {
+  position: absolute;
+  border: 2px dotted var(--border);
+  background-image: linear-gradient(to right, var(--border) 1px, transparent 1px),
+                    linear-gradient(to bottom, var(--border) 1px, transparent 1px);
+  background-size: 20px 20px;
+  z-index: 0; /* keep grids below everything else */
+  resize: both;            /* built-in resize */
+  overflow: auto;          /* needed for resize handles */
+  cursor: default;            /* show move cursor */
+}
+
+
+
+.connection-clickable { pointer-events: all; cursor: pointer; }
+
+.connection-visible { stroke: black; stroke-width: 2; fill: none; }
+.eraser-mode .connection-visible.hover { stroke: red; }
+
+        code, pre {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, 'Courier New', monospace;
+        }
+
+/* Hide the toolbar whenever a chat popup is open */
+body.chat-open .toolbar { 
+  display: none; 
+}
+
+    </style>
+</head>
+<body>
+      
+    <div class="toolbar">
+        <button id="blockTool" class="active">
+            <span>⬜</span>
+            Block
+        </button>
+        <button id="connectTool">
+            <span>➕</span>
+            Connect
+        </button>
+        <button id="gridTool">
+    <span>🔲</span>
+    Grid
+</button>
+
+        <button id="eraserTool">
+            <span>🗑️</span>
+            Eraser
+        </button>
+    </div>
+
+   <div class="login-button" onclick="connectToChatGPT()">
+  <div class="status-dot" id="loginStatus"></div>
+  Login
+</div>
+
+<script>
+const API_BASE = 'https://ai-proxy.philokatzman.workers.dev';
+
+async function connectToChatGPT() {
+  try {
+    const res = await fetch(`${API_BASE}/api/ok`, { method: 'GET' });
+    if (!res.ok) throw new Error();
+    document.getElementById('loginStatus').style.background = '#10b981'; // green
+  } catch {
+    alert('Backend not reachable. Deploy your Worker and set API_BASE.');
+  }
+}
+
+async function callModel(messages){
+  const res = await fetch(`${API_BASE}/api/chat`, {
+    method: 'POST',
+    headers: { 'Content-Type':'application/json' },
+    body: JSON.stringify({ messages })
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const msg = data?.error || `proxy_error_${res.status}`;
+    throw new Error(msg);
+  }
+  if (!data?.content) {
+    throw new Error('empty_content_from_model');
+  }
+  return data.content;
+}
+
+function buildOpenAIMessages(block) {
+  // keep both user/assistant turns (OpenAI chat API allows that)
+  return (block.chatMessages || []).map(m => ({
+    role: m.role || 'user',
+    content: m.text
+  }));
+}
+
+function getCannedReply(block, userText) {
+  // tweak the copy however you like
+  return `${block.name}: This demo does not currently connect with ChatGPT or any LLMs. When implemented, this chatspace will allow you to prompt the
+   construction of some subsection of a project. This could be a specific page on an website, a feature on an app, an abstract of a research paper, or
+    a chapter in a book. The returned output (rendered code in website/app development cases) will appear on the right and can be iteratively updated, saved,
+    and restored with version control histroy.`;
+}
+
+
+async function sendMessage() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text) return;
+
+  const block = getOpenBlock();
+  if (!block) return;
+
+  const now = new Date();
+
+  // 1) push the user message to THIS block
+  block.chatMessages.push({
+    id: 'u-' + now.getTime(),
+    role: 'user',
+    text,
+    timestamp: now
+  });
+  input.value = '';
+  renderChatMessages();
+
+  // 2) simulate latency and push a canned assistant reply
+  setTimeout(() => {
+    const reply = getCannedReply(block, text);
+    block.chatMessages.push({
+      id: 'a-' + (Date.now()),
+      role: 'assistant',
+      text: reply,
+      timestamp: new Date()
+    });
+    renderChatMessages();
+  }, 300); // adjust delay if you want
+}
+
+
+
+
+
+// (Optional) show assistant/user differently
+// In your renderChatMessages(), you can add:
+// msgEl.style.background = msg.role === 'assistant' ? 'var(--card)' : 'var(--muted)';
+</script>
+
+
+     
+    <div class="canvas" id="canvas">
+        <svg id="connectionsSvg">
+            <defs>
+                <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                    <polygon points="0 0, 10 3.5, 0 7" fill="black" />
+                </marker>
+            </defs>
+        </svg>
+    </div>
+
+     Popup Template 
+    <div id="popup" class="popup-overlay hidden">
+        <div class="popup">
+            <div class="chat-section" id="chatSection">
+                <div class="popup-header">
+                    <span style="font-size: 14px; color: var(--muted-foreground);"></span>
+                    <input type="text" id="blockNameInput" placeholder="Enter block name">
+                </div>
+                
+                <div id="versionHistory" class="version-history hidden">
+                    <div class="version-history-header">
+                        <h4 style="font-size: 12px; font-weight: 600; color: var(--foreground);">Version History</h4>
+                        <button onclick="closeVersionHistory()" style="background: none; border: none; cursor: pointer; color: var(--muted-foreground);">✕</button>
+                    </div>
+                    <div class="version-navigation">
+                        <button id="prevVersion" onclick="navigateVersion(-1)" style="color: var(--foreground);">‹</button>
+                        <div class="version-info" id="versionInfo">
+                            <div id="versionName" style="color: var(--foreground);">Select a version to view</div>
+                            <div id="versionDate" style="color: var(--muted-foreground);"></div>
+                        </div>
+                        <button id="nextVersion" onclick="navigateVersion(1)" style="color: var(--foreground);">›</button>
+                    </div>
+                    <div style="text-align: center; margin-top: 8px;">
+                        <button class="revert-button" id="revertButton" onclick="revertToVersion()" style="display: none;">
+                            ↻ Revert to This Version
+                        </button>
+                    </div>
+                </div>
+
+                <div class="chat-content" id="chatContent">
+                    <div style="text-align: center; color: var(--muted-foreground); font-size: 14px;">Start a conversation...</div>
+                </div>
+                
+                <div class="chat-input-area">
+                    <input type="text" class="chat-input" id="chatInput" placeholder="Type a message...">
+                    <button class="send-button" onclick="sendMessage()">➤</button>
+                </div>
+            </div>
+
+            <div class="divider" id="divider">
+                <div class="divider-dots">
+                    <div class="divider-dot"></div>
+                    <div class="divider-dot"></div>
+                    <div class="divider-dot"></div>
+                </div>
+            </div>
+
+            <div class="outcomes-section" id="outcomesSection">
+                <div class="popup-header">
+                    <h3 style="font-weight: 600; font-size: 14px; color: var(--foreground);">Output</h3>
+                    <button class="close-button" onclick="closePopup()">✕</button>
+                </div>
+                
+                <div class="outcomes-content">
+                    <div style="margin-bottom: 16px;">
+                        <div style="width: 64px; height: 64px; background: var(--muted); border-radius: calc(var(--radius) - 2px); margin: 0 auto 8px; display: flex; align-items: center; justify-content: center;">
+                            ⬜
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 8px; font-size: 12px;">
+                        <div style="background: var(--card); border-radius: calc(var(--radius) - 4px); padding: 8px; color: var(--foreground);">Status: Ready</div>
+                        <div style="background: var(--card); border-radius: calc(var(--radius) - 4px); padding: 8px; color: var(--foreground);" id="connectionCount">Connections: 0</div>
+                    </div>
+
+                    <div class="version-controls">
+                        <button onclick="saveVersion()">Save Version</button>
+                        <button onclick="showVersionHistory()">View History</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let blocks = [];
+        let connections = [];
+        let selectedTool = 'block';
+        let connectingFrom = null;
+        let draggedBlock = null;
+        let dragOffset = { x: 0, y: 0 };
+        let openPopup = null;
+        let wasDragged = false;
+        let dividerPosition = 50;
+        let isDraggingDivider = false;
+        let showingVersionHistory = false;
+        let selectedVersionIndex = null;
+        let hoveredConnection = null;
+        let grids = [];
+        let draggedGrid = null;
+let gridDragOffset = { x: 0, y: 0 };
+
+
+
+        const DRAG_THRESHOLD = 5;      // pixels
+
+let dragStart = null;       // {x,y} at mousedown
+let suppressCanvasClick = false;
+
+
+
+        const getOpenBlock = () => openPopup ? blocks.find(b => b.id === openPopup.blockId) : null;
+
+        // Tool selection
+        document.getElementById('blockTool').onclick = () => setTool('block');
+        document.getElementById('connectTool').onclick = () => setTool('connect');
+        document.getElementById('eraserTool').onclick = () => setTool('eraser');
+        document.getElementById('gridTool').onclick = () => setTool('grid');
+
+
+function setTool(tool) {
+  selectedTool = tool;
+  document.querySelectorAll('.toolbar button').forEach(btn => btn.classList.remove('active'));
+  document.getElementById(tool + 'Tool').classList.add('active');
+
+  // NEW: flip a class on <body> for CSS-based hover styling
+  document.body.classList.toggle('eraser-mode', tool === 'eraser');
+
+  connectingFrom = null;
+  updateBlockStyles();
+  updateConnections(); // ensure clickable areas/classNames are in sync with the 
+renderGrids();
+}
+
+
+document.getElementById('canvas').onclick = function(e) {
+  if (suppressCanvasClick) return;
+  if (e.target.id !== 'canvas') return;
+
+  const rect = this.getBoundingClientRect();
+
+  if (selectedTool === 'block' && !openPopup) {
+    const x = e.clientX - rect.left - 64;
+    const y = e.clientY - rect.top - 32;
+    addBlock(x, y);
+  }
+
+  if (selectedTool === 'grid') {
+    const x = e.clientX - rect.left - 100; // center the 200px grid
+    const y = e.clientY - rect.top - 100;
+    addGrid(x, y);
+  }
+};
+
+document.addEventListener('mousemove', function(e) {
+  if (draggedGrid && selectedTool === 'grid') {
+    const canvas = document.getElementById('canvas');
+    const rect = canvas.getBoundingClientRect();
+
+    const grid = grids.find(g => g.id === draggedGrid);
+    if (grid) {
+      grid.x = Math.max(0, e.clientX - rect.left - gridDragOffset.x);
+      grid.y = Math.max(0, e.clientY - rect.top - gridDragOffset.y);
+      updateGridPosition(grid);
+    }
+  }
+
+            if (draggedBlock) {
+            const canvas = document.getElementById('canvas');
+            const rect = canvas.getBoundingClientRect();
+
+            const dx = e.clientX - (dragStart?.x ?? e.clientX);
+            const dy = e.clientY - (dragStart?.y ?? e.clientY);
+            if (!wasDragged && (Math.abs(dx) > DRAG_THRESHOLD || Math.abs(dy) > DRAG_THRESHOLD)) {
+                wasDragged = true;
+            }
+
+            if (wasDragged) {  // only move once we cross the threshold
+                const x = Math.max(0, e.clientX - rect.left - dragOffset.x);
+                const y = Math.max(0, e.clientY - rect.top - dragOffset.y);
+
+                const block = blocks.find(b => b.id === draggedBlock);
+                if (block) {
+                block.x = x;
+                block.y = y;
+                updateBlockPosition(block);
+                updateConnections();
+                }
+            }
+            }
+
+
+
+            if (isDraggingDivider && openPopup) {
+                const popup = document.querySelector('.popup');
+                const rect = popup.getBoundingClientRect();
+                const newPosition = ((e.clientX - rect.left) / rect.width) * 100;
+                dividerPosition = Math.max(30, Math.min(70, newPosition));
+                updateDividerPosition();
+            }
+});
+
+
+
+
+
+
+document.addEventListener('mouseup', function() {
+  draggedBlock = null;
+  draggedGrid = null;  // stop dragging grids too
+  dragOffset = { x: 0, y: 0 };
+  gridDragOffset = { x: 0, y: 0 };
+  dragStart = null;
+  isDraggingDivider = false;
+  setTimeout(() => { wasDragged = false; }, 0);
+});
+
+
+function updateGridPosition(grid) {
+  const gridEl = document.getElementById(grid.id);
+  if (gridEl) {
+    gridEl.style.left = grid.x + 'px';
+    gridEl.style.top = grid.y + 'px';
+  }
+}
+
+
+function addBlock(x, y) {
+  const block = {
+    id: 'block-' + Date.now(),
+    x, y,
+    name: 'New Block',
+    chatMessages: [],                // <-- NEW per-block chat
+    versions: [{
+      id: 'version-' + Date.now(),
+      name: 'New Block - Version 1',
+      timestamp: new Date(),
+      data: { name: 'New Block' }
+    }]
+  };
+  blocks.push(block);
+  renderBlock(block);
+}
+
+function addGrid(x, y) {
+  const grid = {
+    id: 'grid-' + Date.now(),
+    x, y,
+    size: 200 // default size, could expand later
+  };
+  grids.push(grid);
+  renderGrid(grid);
+}
+
+function handleGridClick(gridId, e) {
+  if (selectedTool === 'eraser') {
+    // remove from grids array
+    grids = grids.filter(g => g.id !== gridId);
+    // remove element from DOM
+    const gridEl = document.getElementById(gridId);
+    if (gridEl) gridEl.remove();
+  }
+}
+
+function renderGrids() {
+  grids.forEach(grid => {
+    const el = document.getElementById(grid.id);
+    if (!el) return;
+
+    // Allow clicks when using grid or eraser tool
+    if (selectedTool === 'grid' || selectedTool === 'eraser') {
+      el.style.pointerEvents = 'auto';
+    } else {
+      el.style.pointerEvents = 'none';
+    }
+  });
+}
+
+
+
+function renderGrid(grid) {
+  const gridEl = document.createElement('div');
+  gridEl.className = 'grid';
+  gridEl.id = grid.id;
+  gridEl.style.left = grid.x + 'px';
+  gridEl.style.top = grid.y + 'px';
+  gridEl.style.width = grid.size + 'px';
+  gridEl.style.height = grid.size + 'px';
+  gridEl.style.transition = 'outline 0.2s'; // smooth highlight
+gridEl.onmousedown = (e) => handleGridMouseDown(grid.id, e);
+
+  // HIGHLIGHT ON HOVER
+  gridEl.addEventListener('mouseenter', () => {
+    if (selectedTool === 'eraser') {
+      gridEl.style.outline = '2px solid red';
+    }
+  });
+
+  gridEl.addEventListener('mouseleave', () => {
+    gridEl.style.outline = 'none';
+  });
+
+  // ERASE CLICK
+  gridEl.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (selectedTool === 'eraser') {
+      grids = grids.filter(g => g.id !== grid.id);
+      gridEl.remove();
+    }
+  });
+
+  document.getElementById('canvas').prepend(gridEl);
+
+  new ResizeObserver(entries => {
+    for (let entry of entries) {
+      const grid = grids.find(g => g.id === entry.target.id);
+      if (grid) {
+        grid.size = entry.target.offsetWidth;
+      }
+    }
+  }).observe(gridEl);
+}
+
+
+
+new ResizeObserver(entries => {
+  for (let entry of entries) {
+    const gridEl = entry.target;
+    const grid = grids.find(g => g.id === gridEl.id);
+    if (grid) {
+      grid.size = gridEl.offsetWidth;  // could use separate width/height if non-square
+      gridEl.style.height = gridEl.offsetWidth + 'px'; // enforce square
+      gridEl.style.backgroundSize = `${gridEl.offsetWidth / 10}px ${gridEl.offsetWidth / 10}px`;
+    }
+  }
+}).observe(gridEl);
+
+
+
+function handleGridMouseDown(gridId, e) {
+  if (selectedTool !== 'grid') return; // only drag if grid tool is active
+
+  const el = document.getElementById(gridId);
+  const resizeHandleSize = 16; // approximate built-in handle area
+
+  // ignore bottom-right resize corner
+  if (e.offsetX > el.clientWidth - resizeHandleSize && e.offsetY > el.clientHeight - resizeHandleSize) {
+    return;
+  }
+
+  e.preventDefault();
+  e.stopPropagation();
+
+  const grid = grids.find(g => g.id === gridId);
+  if (grid) {
+    draggedGrid = gridId;
+    const rect = document.getElementById('canvas').getBoundingClientRect();
+    gridDragOffset = {
+      x: e.clientX - rect.left - grid.x,
+      y: e.clientY - rect.top - grid.y
+    };
+  }
+}
+
+
+
+
+        // Render block
+        function renderBlock(block) {
+            const blockEl = document.createElement('div');
+            blockEl.className = 'block';
+            blockEl.id = block.id;
+            blockEl.style.left = block.x + 'px';
+            blockEl.style.top = block.y + 'px';
+            
+            const nameEl = document.createElement('span');
+            nameEl.className = 'block-name';
+            nameEl.textContent = block.name;
+            blockEl.appendChild(nameEl);
+            
+            blockEl.onclick = (e) => handleBlockClick(block.id, e);
+            blockEl.onmousedown = (e) => handleBlockMouseDown(block.id, e);
+            
+            document.getElementById('canvas').appendChild(blockEl);
+        }
+
+        // Handle block click
+        function handleBlockClick(blockId, e) {
+            e.stopPropagation();
+            
+            if (selectedTool === 'connect') {
+                if (!connectingFrom) {
+                    connectingFrom = blockId;
+                    updateBlockStyles();
+                } else if (connectingFrom !== blockId) {
+                    addConnection(connectingFrom, blockId);
+                    connectingFrom = null;
+                    updateBlockStyles();
+                }
+            } else if (selectedTool === 'block' && !wasDragged) {
+                openBlockPopup(blockId);
+            } else if (selectedTool === 'eraser') {
+                deleteBlock(blockId);
+            }
+        }
+
+function handleBlockMouseDown(blockId, e) {
+  if (selectedTool !== 'connect') {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const block = blocks.find(b => b.id === blockId);
+    if (block) {
+      draggedBlock = blockId;
+      wasDragged = false;
+      const canvas = document.getElementById('canvas');
+      const rect = canvas.getBoundingClientRect();
+      dragOffset = {
+        x: e.clientX - rect.left - block.x,
+        y: e.clientY - rect.top - block.y
+      };
+      dragStart = { x: e.clientX, y: e.clientY }; // NEW
+    }
+  }
+}
+
+
+
+        // Update block styles
+        function updateBlockStyles() {
+            blocks.forEach(block => {
+                const blockEl = document.getElementById(block.id);
+                if (blockEl) {
+                    blockEl.className = 'block';
+                    if (connectingFrom === block.id) {
+                        blockEl.classList.add('connecting');
+                    }
+                }
+            });
+        }
+
+        // Update block position
+        function updateBlockPosition(block) {
+            const blockEl = document.getElementById(block.id);
+            if (blockEl) {
+                blockEl.style.left = block.x + 'px';
+                blockEl.style.top = block.y + 'px';
+            }
+        }
+
+        // Add connection
+        function addConnection(fromId, toId) {
+            const connection = {
+                id: 'connection-' + Date.now(),
+                fromId: fromId,
+                toId: toId
+            };
+            connections.push(connection);
+            updateConnections();
+        }
+
+        // Update connections
+function updateConnections() {
+  const svg = document.getElementById('connectionsSvg');
+  svg.innerHTML = ''; // no defs, no arrowheads
+
+  connections.forEach(connection => {
+    const from = getBlockTopAnchor(connection.fromId);
+    const to = getBlockTopAnchor(connection.toId);
+    const controlY = Math.min(from.y, to.y) - 50;
+
+    const path = `M ${from.x} ${from.y} Q ${from.x} ${controlY} ${(from.x + to.x) / 2} ${controlY} Q ${to.x} ${controlY} ${to.x} ${to.y}`;
+
+    // Invisible, wide, clickable path
+    const clickablePath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    clickablePath.setAttribute('d', path);
+    clickablePath.setAttribute('stroke', 'transparent');
+    clickablePath.setAttribute('stroke-width', '30');
+    clickablePath.setAttribute('fill', 'none');
+    // only clickable in eraser mode
+    if (selectedTool === 'eraser') {
+      clickablePath.classList.add('connection-clickable');
+    }
+
+    clickablePath.onclick = (e) => handleConnectionClick(connection.id, e);
+    clickablePath.onmouseenter = () => handleConnectionMouseEnter(connection.id);
+    clickablePath.onmouseleave = () => handleConnectionMouseLeave();
+
+    // Thin, visible curve (styled via CSS class)
+    const visiblePath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    visiblePath.setAttribute('d', path);
+    visiblePath.setAttribute('vector-effect', 'non-scaling-stroke');
+    visiblePath.classList.add('connection-visible');
+    visiblePath.id = `vis-${connection.id}`;
+    if (selectedTool === 'eraser' && hoveredConnection === connection.id) {
+      visiblePath.classList.add('hover');
+    }
+
+    svg.appendChild(clickablePath);
+    svg.appendChild(visiblePath);
+  });
+}
+
+
+        // Get block top anchor
+        function getBlockTopAnchor(blockId) {
+            const block = blocks.find(b => b.id === blockId);
+            if (!block) return { x: 0, y: 0 };
+            return { x: block.x + 64, y: block.y };
+        }
+
+        // Handle connection click
+        function handleConnectionClick(connectionId, e) {
+            e.stopPropagation();
+            if (selectedTool === 'eraser') {
+                connections = connections.filter(c => c.id !== connectionId);
+                updateConnections();
+                updateConnectionCount();
+            }
+        }
+
+function handleConnectionMouseEnter(connectionId) {
+  if (selectedTool === 'eraser') {
+    hoveredConnection = connectionId;
+    const vis = document.getElementById(`vis-${connectionId}`);
+    if (vis) vis.classList.add('hover');
+  }
+}
+
+function handleConnectionMouseLeave() {
+  if (hoveredConnection) {
+    const vis = document.getElementById(`vis-${hoveredConnection}`);
+    if (vis) vis.classList.remove('hover');
+  }
+  hoveredConnection = null;
+}
+
+
+        // Delete block
+        function deleteBlock(blockId) {
+            blocks = blocks.filter(b => b.id !== blockId);
+            connections = connections.filter(c => c.fromId !== blockId && c.toId !== blockId);
+            
+            const blockEl = document.getElementById(blockId);
+            if (blockEl) {
+                blockEl.remove();
+            }
+            
+            updateConnections();
+            updateConnectionCount();
+        }
+
+function openBlockPopup(blockId) {
+  openPopup = { blockId: blockId, isOpen: true };
+  const block = blocks.find(b => b.id === blockId);
+
+  document.getElementById('blockNameInput').value = block.name;
+  document.getElementById('popup').classList.remove('hidden');
+
+  document.body.classList.add('chat-open');   // <-- add this line
+
+  updateDividerPosition();
+  updateConnectionCount();
+  loadChatMessages();
+}
+
+
+function closePopup() {
+  openPopup = null;
+  document.getElementById('popup').classList.add('hidden');
+  document.body.classList.remove('chat-open');  // <-- and this line
+  showingVersionHistory = false;
+  document.getElementById('versionHistory').classList.add('hidden');
+}
+
+
+function updateDividerPosition() {
+    const chatSection = document.getElementById('chatSection');
+    const outcomesSection = document.getElementById('outcomesSection');
+
+    chatSection.style.flexBasis = `${dividerPosition}%`;
+    outcomesSection.style.flexBasis = `${100 - dividerPosition}%`;
+}
+
+
+
+
+        // Divider drag
+        document.getElementById('divider').onmousedown = function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            isDraggingDivider = true;
+        };
+
+        
+
+        // Block name input
+        document.getElementById('blockNameInput').oninput = function() {
+            if (openPopup) {
+                const block = blocks.find(b => b.id === openPopup.blockId);
+                if (block) {
+                    block.name = this.value;
+                    const blockEl = document.getElementById(block.id);
+                    if (blockEl) {
+                        blockEl.querySelector('.block-name').textContent = block.name;
+                    }
+                }
+            }
+        };
+
+        document.getElementById('blockNameInput').onkeydown = function(e) {
+            if (e.key === 'Enter') {
+                this.blur();
+            }
+        };
+
+        // Chat functionality
+        document.getElementById('chatInput').onkeydown = function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        };
+
+
+
+       function renderChatMessages() {
+  const chatContent = document.getElementById('chatContent');
+  const block = getOpenBlock();
+  const msgs = block?.chatMessages || [];
+
+  if (msgs.length === 0) {
+    chatContent.innerHTML = '<div style="text-align: center; color: var(--muted-foreground); font-size: 14px;"><br>Start your block...</div>';
+    return;
+  }
+
+  chatContent.innerHTML = '';
+  msgs.forEach(msg => {
+    const msgEl = document.createElement('div');
+    msgEl.className = 'chat-message';
+    msgEl.innerHTML = `
+      <p>${msg.text}</p>
+      <span class="timestamp">${new Date(msg.timestamp).toLocaleTimeString()}</span>
+    `;
+    chatContent.appendChild(msgEl);
+  });
+
+  chatContent.scrollTop = chatContent.scrollHeight;
+}
+
+        function loadChatMessages() {
+            renderChatMessages();
+        }
+
+function saveVersion() {
+  if (!openPopup) return;
+  const block = getOpenBlock();
+  if (block) {
+    const versionNumber = block.versions.length + 1;
+    const newVersion = {
+      id: 'version-' + Date.now(),
+      name: `${block.name} - Version ${versionNumber}`,
+      timestamp: new Date(),
+      data: { name: block.name, chatMessages: [...block.chatMessages] } // <-- per-block chat
+    };
+    block.versions.push(newVersion);
+  }
+}
+
+
+        function showVersionHistory() {
+            showingVersionHistory = true;
+            selectedVersionIndex = 0;
+            document.getElementById('versionHistory').classList.remove('hidden');
+            updateVersionDisplay();
+        }
+
+        function closeVersionHistory() {
+            showingVersionHistory = false;
+            selectedVersionIndex = null;
+            document.getElementById('versionHistory').classList.add('hidden');
+        }
+
+        function navigateVersion(direction) {
+            if (!openPopup) return;
+            
+            const block = blocks.find(b => b.id === openPopup.blockId);
+            if (!block) return;
+            
+            const newIndex = (selectedVersionIndex || 0) + direction;
+            if (newIndex >= 0 && newIndex < block.versions.length) {
+                selectedVersionIndex = newIndex;
+                updateVersionDisplay();
+            }
+        }
+
+        function updateVersionDisplay() {
+            if (!openPopup || selectedVersionIndex === null) return;
+            
+            const block = blocks.find(b => b.id === openPopup.blockId);
+            if (!block) return;
+            
+            const version = block.versions[selectedVersionIndex];
+            if (version) {
+                document.getElementById('versionName').textContent = version.name;
+                document.getElementById('versionDate').textContent = version.timestamp.toLocaleString();
+                document.getElementById('revertButton').style.display = 'inline-block';
+            }
+            
+            document.getElementById('prevVersion').disabled = selectedVersionIndex === 0;
+            document.getElementById('nextVersion').disabled = selectedVersionIndex === block.versions.length - 1;
+        }
+
+        function revertToVersion() {
+  if (!openPopup || selectedVersionIndex === null) return;
+  const block = getOpenBlock();
+  if (!block) return;
+
+  const version = block.versions[selectedVersionIndex];
+  if (version) {
+    block.name = version.data.name;
+    document.getElementById('blockNameInput').value = block.name;
+    const blockEl = document.getElementById(block.id);
+    if (blockEl) blockEl.querySelector('.block-name').textContent = block.name;
+
+    block.chatMessages = [...(version.data.chatMessages || [])];  // <-- restore this block's chat
+    renderChatMessages();
+    closeVersionHistory();
+  }
+}
+
+        function updateConnectionCount() {
+            if (openPopup) {
+                const count = connections.filter(c => 
+                    c.fromId === openPopup.blockId || c.toId === openPopup.blockId
+                ).length;
+                document.getElementById('connectionCount').textContent = `Connections: ${count}`;
+            }
+        }
+
+
+        // Initialize
+        updateConnections();
+
+        function renderBlock(block) {
+    const blockEl = document.createElement('div');
+    blockEl.className = 'block';
+    blockEl.id = block.id;
+    blockEl.style.left = block.x + 'px';
+    blockEl.style.top = block.y + 'px';
+
+    const nameEl = document.createElement('span');
+    nameEl.className = 'block-name';
+    nameEl.textContent = block.name;
+    blockEl.appendChild(nameEl);
+
+    blockEl.onclick = (e) => handleBlockClick(block.id, e);
+    blockEl.onmousedown = (e) => handleBlockMouseDown(block.id, e);
+
+    // NEW: show red style while erasing + hovering
+    blockEl.onmouseenter = () => {
+        if (selectedTool === 'eraser') {
+            blockEl.classList.add('eraser-hover');
+        }
+    };
+    blockEl.onmouseleave = () => {
+        blockEl.classList.remove('eraser-hover');
+    };
+
+    document.getElementById('canvas').appendChild(blockEl);
+
+const divider = document.getElementById('divider');
+const chatSection = document.getElementById('chatSection');
+const outcomesSection = document.getElementById('outcomesSection');
+let isDragging = false;
+
+divider.addEventListener('mousedown', () => {
+  isDragging = true;
+  document.body.style.cursor = 'col-resize';
+});
+
+document.addEventListener('mousemove', e => {
+  if (!isDragging) return;
+  const container = chatSection.parentElement;
+  const containerRect = container.getBoundingClientRect();
+  // Calculate width for the left panel
+  let newWidth = e.clientX - containerRect.left;
+  // Optional: set min and max width
+  const minWidth = 200;
+  const maxWidth = containerRect.width - 200;
+  newWidth = Math.max(minWidth, Math.min(maxWidth, newWidth));
+  chatSection.style.flexBasis = `${newWidth}px`;
+});
+
+document.addEventListener('mouseup', () => {
+  if (isDragging) {
+    isDragging = false;
+    document.body.style.cursor = 'default';
+  }
+});
+
+    
+}
+
+
+
+    </script>
+
+
+</body>
+</html>
