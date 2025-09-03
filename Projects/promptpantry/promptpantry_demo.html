@@ -140,6 +140,301 @@
             color: var(--accent-foreground);
         }
 
+        /* --- Project View tab & panel --- */
+.project-tab {
+  position: fixed;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+  width: 36px;
+  height: 84px;
+  background: var(--card);
+  border-left: 1px solid var(--border);
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
+  box-shadow: -6px 0 16px rgba(0,0,0,0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 60; /* above toolbar/others */
+}
+
+.project-tab .arrow {
+  width: 0;
+  height: 0;
+  border-top: 7px solid transparent;
+  border-bottom: 7px solid transparent;
+  border-right: 10px solid var(--foreground); /* ▶ pointing LEFT because right side is filled */
+  /* We’ll flip this when open */
+  transition: transform .25s ease;
+}
+
+/* Panel that slides in from the right */
+#projectPanel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100vh;
+  width: 0;
+  background: var(--card);
+  border-left: 1px solid var(--border);
+  box-shadow: -20px 0 40px rgba(0,0,0,0.10);
+  overflow: hidden;
+  transition: width .3s ease;
+  z-index: 55;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Panel header/content (optional styling) */
+#projectPanel .panel-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  font-weight: 600;
+  color: var(--foreground);
+  background: var(--muted);
+}
+#projectPanel .panel-body {
+  padding: 16px;
+  overflow-y: auto;
+  color: var(--foreground);
+}
+
+/* When open: half-screen panel */
+body.project-open #projectPanel { width: 50vw; }
+
+/* Hide active users & login while open */
+body.project-open .active-users,
+body.project-open .login-button { display: none !important; }
+
+/* Shrink the rest to the left half */
+body.project-open .canvas { 
+  width: 50vw !important; 
+}
+body.project-open .toolbar {
+  left: 25vw; /* keep toolbar centered in the left half */
+  transform: translateX(-50%);
+}
+
+/* Optional: also keep any popup centered within the left half */
+body.project-open .popup-overlay {
+  width: 50vw;
+}
+
+/* Flip arrow when open (so it points right to indicate closing) */
+body.project-open .project-tab .arrow {
+  transform: rotate(180deg);
+}
+
+
+.grid-wrapper {
+  position: absolute;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 1;
+  width: max-content;
+  pointer-events: none; /* default: clicks fall through to canvas */
+}
+
+
+
+
+.grid-controls {
+  display: flex;
+  align-items: center;   /* vertical centering */
+  justify-content: center; /* center the whole row */
+  gap: 6px;              /* small spacing between items */
+  margin-top: 6px;
+  width: 100%;
+  font-size: 12px;
+  color: var(--muted-foreground);
+}
+
+.grid-name {
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  height: auto !important;
+  font: inherit;
+  color: var(--foreground);
+  min-width: 6ch;       /* tiny width so it doesn’t collapse */
+}
+
+.grid-name {
+  flex: 0 1 auto;        /* allow it to size to content */
+  text-align: center;     /* align text toward the color box */
+      /* keeps it from collapsing */
+}
+
+
+/* color trigger (the small box you click) */
+.color-trigger {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  position: relative; /* anchor for the popover */
+}
+
+/* the dropdown panel */
+.color-menu {
+  position: absolute;
+  top: 24px;           /* just under the trigger */
+  left: 0;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px;
+  box-shadow: 0 10px 20px rgba(0,0,0,.1);
+  display: none;       /* hidden by default */
+  z-index: 9999;       /* above grids/controls */
+  white-space: nowrap;
+}
+
+/* the grid of options inside the panel */
+.color-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 20px); /* adjust for your palette size */
+  gap: 6px;
+}
+
+/* each color choice */
+.color-option {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+}
+.color-option:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.grid-controls input,
+.grid-controls select {
+  height: 26px;
+  padding: 2px 8px;
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) - 4px);
+  color: var(--foreground);
+}
+
+/* dropdown for grid color */
+.grid-color-select {
+  appearance: none;       /* strip default styling */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  padding: 0;
+  background-color: transparent; /* will be set via JS */
+}
+
+
+/* tiny live preview next to the dropdown */
+.grid-color-chip {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+}
+
+
+.grid-controls input:focus,
+.grid-controls select:focus {
+  outline: 2px solid var(--ring);
+  border-color: var(--ring);
+}
+
+/* Added active users display styling */
+.active-users {
+  position: fixed;
+  bottom: 16px;
+  left: 16px;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) - 2px);
+  background: var(--card);
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+}
+
+/* the popover is positioned absolutely relative to .active-users */
+.active-popover {
+  position: absolute;
+  bottom: 52px;      /* sits above the bar */
+  right: 0;          /* aligns to the arrow on the far right */
+  min-width: 200px;
+  background: var(--card);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 12px 24px rgba(0,0,0,.16);
+  padding: 8px;
+  z-index: 70;
+}
+
+.active-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* name left, red dot right */
+  padding: 6px 8px;
+  border-radius: calc(var(--radius) - 4px);
+  font-size: 13px;
+}
+
+.status-red {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ef4444;
+}
+
+
+        .active-users-label {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--muted-foreground);
+            margin-right: 8px;
+        }
+
+        .user-circle {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 500;
+            border: 2px solid var(--border);
+            transition: all 0.2s ease;
+        }
+
+        .user-circle.active {
+            background: white;
+            color: var(--primary-foreground);
+            border-color: var(--primary);
+        }
+
+        .user-circle.empty {
+            background: var(--muted);
+            border-color: var(--border);
+        }
+
         .status-dot {
             width: 12px;
             height: 12px;
@@ -171,6 +466,48 @@
             transition: all 0.2s ease;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
+
+        .block { 
+  position: absolute;
+  z-index: 2;         /* ← above grids */
+}
+.grid { 
+  position: relative;
+  z-index: 0;
+}
+
+
+
+/* placeholder style for plain-text inputs */
+.grid-name::placeholder {
+  color: var(--muted-foreground);
+  opacity: 0.8;
+}
+
+/* palette row */
+.color-palette {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+
+/* individual swatch */
+.color-swatch {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  outline: none;
+}
+.color-swatch:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+.color-swatch.selected {
+  box-shadow: 0 0 0 2px var(--ring) inset;
+}
+
 
         .block:hover {
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -239,7 +576,7 @@
             background: var(--muted);
             display: flex;
             align-items: center;
-            justify-content: between;
+            justify-content:space-between;
         }
 
         .popup-header input {
@@ -403,6 +740,63 @@
     align-items: center; /* ensures all children are vertically centered */
     gap: 16px; /* optional spacing */
 }
+/* keep the bar compact */
+.active-users { position: fixed; }
+
+/* wrapper lets the tooltip position relative to the circle */
+.user-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* tooltip box */
+.you-tooltip {
+  position: absolute;
+  bottom: 44px;                  /* sits above the circle */
+  left: 50%;
+  transform: translateX(-50%);
+  display: none;                 /* show on hover */
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  background: var(--card);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) - 4px);
+  box-shadow: 0 8px 20px rgba(0,0,0,.15);
+  font-size: 12px;
+  white-space: nowrap;
+  z-index: 80;                   /* above the bar */
+}
+
+/* little arrow / caret under the tooltip */
+.you-tooltip::after {
+  content: "";
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 6px 6px 0 6px;
+  border-style: solid;
+  border-color: var(--card) transparent transparent transparent;
+  filter: drop-shadow(0 1px 0 var(--border));
+}
+
+/* show tooltip on hover (or focus for accessibility) */
+.user-wrapper:hover .you-tooltip,
+.user-wrapper:focus-within .you-tooltip {
+  display: inline-flex;
+}
+
+/* green status dot */
+.status-green {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 0 1px var(--border) inset;
+}
 
         .version-controls {
             position: absolute;
@@ -488,17 +882,58 @@
         }
 
 .grid {
-  position: absolute;
+  /* position: absolute;  <-- remove this */
+  position: relative;        /* or omit entirely */
   border: 2px dotted var(--border);
   background-image: linear-gradient(to right, var(--border) 1px, transparent 1px),
                     linear-gradient(to bottom, var(--border) 1px, transparent 1px);
   background-size: 20px 20px;
-  z-index: 0; /* keep grids below everything else */
-  resize: both;            /* built-in resize */
-  overflow: auto;          /* needed for resize handles */
-  cursor: default;            /* show move cursor */
+  z-index: 0;
+  resize: both;
+  overflow: auto;
+  cursor: default;
 }
 
+/* allow tooltip positioning */
+.user-circle { position: relative; }
+
+/* “You” tooltip */
+.user-circle[data-label]:hover::after {
+  content: attr(data-label);
+  position: absolute;
+  bottom: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--card);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) - 4px);
+  padding: 4px 8px;
+  font-size: 12px;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0,0,0,.12);
+  pointer-events: none;
+  z-index: 60;
+}
+
+/* arrow trigger looks clickable */
+.more-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--muted);
+  cursor: pointer;
+  border: 2px solid var(--border);
+}
+
+
+.active-item:hover {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+
+/* utility you already use */
+.hidden { display: none; }
 
 
 .connection-clickable { pointer-events: all; cursor: pointer; }
@@ -518,7 +953,43 @@ body.chat-open .toolbar {
     </style>
 </head>
 <body>
-      
+    
+<div class="active-users" id="activeUsers">
+  <span class="active-users-label">Active now:</span>
+<div class="user-wrapper">
+  <div class="user-circle active" id="youCircle" aria-label="You">👤</div>
+  <div class="you-tooltip" role="tooltip">
+    <span>You</span>
+    <span class="status-green" aria-hidden="true"></span>
+  </div>
+</div>
+  <div class="user-circle empty"></div>
+  <div class="user-circle empty"></div>
+  <button class="user-circle more-trigger" id="moreActiveBtn">↑</button>
+
+  <!-- Popover is inside the same container, but absolutely positioned -->
+  <div class="active-popover hidden" id="moreActivePopover">
+    <div class="active-item"><span>🧑 Alex</span><span class="status-red"></span></div>
+    <div class="active-item"><span>👩 Jamie</span><span class="status-red"></span></div>
+    <div class="active-item"><span>🧔 Sam</span><span class="status-red"></span></div>
+    <div class="active-item"><span>👩‍💻 Taylor</span><span class="status-red"></span></div>
+  </div>
+</div>
+
+
+
+
+
+    <!-- Canvas -->
+    <div class="canvas" id="canvas">
+        <svg id="connectionsSvg">
+            <defs>
+                <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                    <polygon points="0 0, 10 3.5, 0 7" fill="black" />
+                </marker>
+            </defs>
+        </svg>
+    </div>
     <div class="toolbar">
         <button id="blockTool" class="active">
             <span>⬜</span>
@@ -747,6 +1218,23 @@ let suppressCanvasClick = false;
 
 
 
+const GRID_COLORS = [
+  { name: 'Gray',     value: 'oklch(0.96 0.04 0)'   },
+  { name: 'Peach',    value: 'oklch(0.96 0.05 30)'  },
+  { name: 'Yellow',   value: 'oklch(0.96 0.06 60)'  },
+  { name: 'Mint',     value: 'oklch(0.96 0.05 180)' },
+  { name: 'Lavender', value: 'oklch(0.96 0.05 250)' }
+];
+
+function applyGridColorStyles(grid, gridEl) {
+  gridEl.style.backgroundImage =
+    `linear-gradient(to right, var(--border) 1px, transparent 1px),
+     linear-gradient(to bottom, var(--border) 1px, transparent 1px)`;
+  gridEl.style.backgroundColor = grid.color || GRID_COLORS[0].value;
+}
+
+
+
         const getOpenBlock = () => openPopup ? blocks.find(b => b.id === openPopup.blockId) : null;
 
         // Tool selection
@@ -771,24 +1259,25 @@ renderGrids();
 }
 
 
-document.getElementById('canvas').onclick = function(e) {
-  if (suppressCanvasClick) return;
-  if (e.target.id !== 'canvas') return;
+const canvasEl = document.getElementById('canvas');
 
-  const rect = this.getBoundingClientRect();
+canvasEl.addEventListener('click', (e) => {
+  if (suppressCanvasClick) return;
+
+  // If the click started inside a grid UI or popup, do nothing
+  if (e.target.closest('.grid-wrapper') || e.target.closest('.popup')) return;
+
+  const rect = canvasEl.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
 
   if (selectedTool === 'block' && !openPopup) {
-    const x = e.clientX - rect.left - 64;
-    const y = e.clientY - rect.top - 32;
-    addBlock(x, y);
+    addBlock(x - 64, y - 32);
+  } else if (selectedTool === 'grid') {
+    addGrid(x - 100, y - 100);
   }
+});
 
-  if (selectedTool === 'grid') {
-    const x = e.clientX - rect.left - 100; // center the 200px grid
-    const y = e.clientY - rect.top - 100;
-    addGrid(x, y);
-  }
-};
 
 document.addEventListener('mousemove', function(e) {
   if (draggedGrid && selectedTool === 'grid') {
@@ -803,7 +1292,7 @@ document.addEventListener('mousemove', function(e) {
     }
   }
 
-            if (draggedBlock) {
+            if (draggedBlock && selectedTool !== 'grid') {
             const canvas = document.getElementById('canvas');
             const rect = canvas.getBoundingClientRect();
 
@@ -855,12 +1344,13 @@ document.addEventListener('mouseup', function() {
 
 
 function updateGridPosition(grid) {
-  const gridEl = document.getElementById(grid.id);
-  if (gridEl) {
-    gridEl.style.left = grid.x + 'px';
-    gridEl.style.top = grid.y + 'px';
+  const wrap = document.getElementById(grid.id + '-wrap');
+  if (wrap) {
+    wrap.style.left = grid.x + 'px';
+    wrap.style.top  = grid.y + 'px';
   }
 }
+
 
 
 function addBlock(x, y) {
@@ -884,11 +1374,29 @@ function addGrid(x, y) {
   const grid = {
     id: 'grid-' + Date.now(),
     x, y,
-    size: 200 // default size, could expand later
+    width: 240,
+    height: 160,
+    rows: 8,
+    cols: 12,
+    lockAspect: false,
+    name: '',
+    color: GRID_COLORS[2].value // default = Yellow
   };
   grids.push(grid);
   renderGrid(grid);
 }
+
+
+
+
+function updateGridTiling(grid, gridEl) {
+  // Size each “cell” by dividing the box by cols/rows
+  const cellW = Math.max(1, gridEl.clientWidth / Math.max(1, grid.cols));
+  const cellH = Math.max(1, gridEl.clientHeight / Math.max(1, grid.rows));
+  gridEl.style.backgroundSize = `${cellW}px ${cellH}px`;
+}
+
+
 
 function handleGridClick(gridId, e) {
   if (selectedTool === 'eraser') {
@@ -902,89 +1410,262 @@ function handleGridClick(gridId, e) {
 
 function renderGrids() {
   grids.forEach(grid => {
-    const el = document.getElementById(grid.id);
-    if (!el) return;
+    const el   = document.getElementById(grid.id);
+    const wrap = document.getElementById(grid.id + '-wrap');
+    if (!el || !wrap) return;
 
-    // Allow clicks when using grid or eraser tool
-    if (selectedTool === 'grid' || selectedTool === 'eraser') {
-      el.style.pointerEvents = 'auto';
-    } else {
-      el.style.pointerEvents = 'none';
-    }
+    const interactive = (selectedTool === 'grid' || selectedTool === 'eraser');
+
+    wrap.style.pointerEvents = interactive ? 'auto' : 'none';
+    el.style.pointerEvents   = interactive ? 'auto' : 'none';
+
+    // also disable/enable the controls row
+    const controls = wrap.querySelector('.grid-controls');
+    if (controls) controls.style.pointerEvents = interactive ? 'auto' : 'none';
   });
 }
 
 
 
 function renderGrid(grid) {
+  // WRAPPER holds both the square grid and the controls beneath it
+  const wrap = document.createElement('div');
+  wrap.className = 'grid-wrapper';
+  wrap.id = grid.id + '-wrap';
+  wrap.style.left = grid.x + 'px';
+  wrap.style.top  = grid.y + 'px';
+
+  // INNER GRID (the square)
   const gridEl = document.createElement('div');
   gridEl.className = 'grid';
   gridEl.id = grid.id;
-  gridEl.style.left = grid.x + 'px';
-  gridEl.style.top = grid.y + 'px';
-  gridEl.style.width = grid.size + 'px';
-  gridEl.style.height = grid.size + 'px';
-  gridEl.style.transition = 'outline 0.2s'; // smooth highlight
-gridEl.onmousedown = (e) => handleGridMouseDown(grid.id, e);
+  gridEl.style.width  = grid.width + 'px';
+  gridEl.style.height = grid.height + 'px';
+  wrap.style.width    = grid.width + 'px';
+  gridEl.style.transition = 'outline 0.2s';
 
-  // HIGHLIGHT ON HOVER
+  // CONTROLS ROW
+  const controls = document.createElement('div');
+  controls.className = 'grid-controls';
+
+  // --- name (plain text style) ---
+  const nameInput = document.createElement('input');
+  nameInput.type = 'text';
+  nameInput.placeholder = 'grid name…';
+  nameInput.value = grid.name;
+  nameInput.id = grid.id + '-name';
+  nameInput.className = 'grid-name';
+
+  // === color trigger + custom dropdown ===
+  const colorTrigger = document.createElement('div');
+  colorTrigger.className = 'color-trigger';
+  colorTrigger.style.background = grid.color;
+
+  // popover anchored to the trigger
+  const colorMenu = document.createElement('div');
+  colorMenu.className = 'color-menu';
+  const colorGrid = document.createElement('div');
+  colorGrid.className = 'color-grid';
+  colorMenu.appendChild(colorGrid);
+
+  // build color squares
+  GRID_COLORS.forEach(({ value }) => {
+    const sw = document.createElement('button');
+    sw.type = 'button';
+    sw.className = 'color-option';
+    sw.style.background = value;
+    sw.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const g = grids.find(g => g.id === grid.id);
+      if (!g) return;
+      g.color = value;
+      colorTrigger.style.background = value;
+      applyGridColorStyles(g, gridEl);
+      closeMenu();
+    });
+    colorGrid.appendChild(sw);
+  });
+
+  // open/close helpers
+  const openMenu = () => { colorMenu.style.display = 'block'; };
+  const closeMenu = () => { colorMenu.style.display = 'none'; };
+
+  // toggle on trigger click
+  colorTrigger.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (colorMenu.style.display === 'block') closeMenu();
+    else openMenu();
+  });
+
+  // close on outside click / ESC
+  const outsideClick = (e) => {
+    if (!colorMenu.contains(e.target) && e.target !== colorTrigger) closeMenu();
+  };
+  const onKey = (e) => { if (e.key === 'Escape') closeMenu(); };
+  document.addEventListener('click', outsideClick);
+  document.addEventListener('keydown', onKey);
+
+  // prevent bubbling from UI to canvas
+  [nameInput, colorTrigger, colorMenu, controls, gridEl].forEach(el => {
+    el.addEventListener('mousedown', ev => ev.stopPropagation());
+    el.addEventListener('click',     ev => ev.stopPropagation());
+  });
+
+  // --- size/lock controls ---
+  const wInput = document.createElement('input');
+  wInput.type = 'number'; wInput.min = '40'; wInput.style.width = '72px';
+  wInput.value = grid.width;
+
+  const hInput = document.createElement('input');
+  hInput.type = 'number'; hInput.min = '40'; hInput.style.width = '72px';
+  hInput.value = grid.height;
+
+  const lockLabel = document.createElement('label');
+  lockLabel.style.display = 'inline-flex';
+  lockLabel.style.alignItems = 'center';
+  lockLabel.style.gap = '4px';
+  const lockChk = document.createElement('input');
+  lockChk.type = 'checkbox';
+  lockChk.checked = grid.lockAspect;
+  lockLabel.appendChild(lockChk);
+  lockLabel.appendChild(document.createTextNode('Lock aspect'));
+
+  // mount controls (once)
+  controls.append(nameInput, colorTrigger);
+  colorTrigger.appendChild(colorMenu);
+
+  // name binding
+  nameInput.addEventListener('input', () => {
+    const g = grids.find(g => g.id === grid.id);
+    if (g) g.name = nameInput.value;
+  });
+  nameInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); nameInput.blur(); }
+  });
+
+  // initial grid visuals
+  applyGridColorStyles(grid, gridEl);
+  updateGridTiling(grid, gridEl);
+
+  // hover/erase affordances
   gridEl.addEventListener('mouseenter', () => {
-    if (selectedTool === 'eraser') {
-      gridEl.style.outline = '2px solid red';
-    }
+    if (selectedTool === 'eraser') gridEl.style.outline = '2px solid red';
   });
-
-  gridEl.addEventListener('mouseleave', () => {
-    gridEl.style.outline = 'none';
-  });
-
-  // ERASE CLICK
+  gridEl.addEventListener('mouseleave', () => { gridEl.style.outline = 'none'; });
   gridEl.addEventListener('click', (e) => {
     e.stopPropagation();
     if (selectedTool === 'eraser') {
       grids = grids.filter(g => g.id !== grid.id);
-      gridEl.remove();
+      wrap.remove();
+      // cleanup listeners
+      document.removeEventListener('click', outsideClick);
+      document.removeEventListener('keydown', onKey);
     }
   });
 
-  document.getElementById('canvas').prepend(gridEl);
+  // drag the grid (not the resize corner)
+  gridEl.onmousedown = (e) => handleGridMouseDown(grid.id, e);
 
-  new ResizeObserver(entries => {
+  // resize observer (CSS resize handle)
+  const ro = new ResizeObserver(entries => {
     for (let entry of entries) {
-      const grid = grids.find(g => g.id === entry.target.id);
-      if (grid) {
-        grid.size = entry.target.offsetWidth;
+      const g = grids.find(g => g.id === grid.id);
+      if (!g) continue;
+      let newW = Math.max(40, entry.target.offsetWidth);
+      let newH = Math.max(40, entry.target.offsetHeight);
+      if (g.lockAspect) {
+        const ratio = (g.height && g.width) ? (g.height / g.width) : (newH / newW);
+        const dw = Math.abs(newW - g.width);
+        const dh = Math.abs(newH - g.height);
+        if (dw >= dh) newH = Math.round(newW * ratio);
+        else          newW = Math.round(newH / ratio);
+        gridEl.style.width  = newW + 'px';
+        gridEl.style.height = newH + 'px';
       }
+      g.width = newW; g.height = newH;
+      wInput.value = g.width; hInput.value = g.height;
+      wrap.style.width = g.width + 'px';
+      updateGridTiling(g, gridEl);
     }
-  }).observe(gridEl);
+  });
+  ro.observe(gridEl);
+
+  // manual size inputs
+  wInput.addEventListener('input', () => {
+    const g = grids.find(g => g.id === grid.id); if (!g) return;
+    const newW = Math.max(40, +wInput.value || 40);
+    if (g.lockAspect) {
+      const ratio = g.height / g.width || 1;
+      g.width = newW;
+      g.height = Math.max(40, Math.round(newW * ratio));
+      hInput.value = g.height;
+    } else g.width = newW;
+    gridEl.style.width  = g.width + 'px';
+    gridEl.style.height = g.height + 'px';
+    wrap.style.width    = g.width + 'px';
+    updateGridTiling(g, gridEl);
+  });
+
+  hInput.addEventListener('input', () => {
+    const g = grids.find(g => g.id === grid.id); if (!g) return;
+    const newH = Math.max(40, +hInput.value || 40);
+    if (g.lockAspect) {
+      const ratio = g.width / g.height || 1;
+      g.height = newH;
+      g.width = Math.max(40, Math.round(newH * ratio));
+      wInput.value = g.width;
+    } else g.height = newH;
+    gridEl.style.width  = g.width + 'px';
+    gridEl.style.height = g.height + 'px';
+    wrap.style.width    = g.width + 'px';
+    updateGridTiling(g, gridEl);
+  });
+
+  lockChk.addEventListener('change', () => {
+    const g = grids.find(g => g.id === grid.id);
+    if (g) g.lockAspect = lockChk.checked;
+  });
+
+  // mount once
+  wrap.appendChild(gridEl);
+  wrap.appendChild(controls);
+  document.getElementById('canvas').appendChild(wrap);
+
+  // interactivity for this grid
+  const interactive = (selectedTool === 'grid' || selectedTool === 'eraser');
+  wrap.style.pointerEvents = interactive ? 'auto' : 'none';
+  gridEl.style.pointerEvents = interactive ? 'auto' : 'none';
+  controls.style.pointerEvents = interactive ? 'auto' : 'none';
+
+  renderGrids(); // normalize others
 }
 
 
 
-new ResizeObserver(entries => {
-  for (let entry of entries) {
-    const gridEl = entry.target;
-    const grid = grids.find(g => g.id === gridEl.id);
-    if (grid) {
-      grid.size = gridEl.offsetWidth;  // could use separate width/height if non-square
-      gridEl.style.height = gridEl.offsetWidth + 'px'; // enforce square
-      gridEl.style.backgroundSize = `${gridEl.offsetWidth / 10}px ${gridEl.offsetWidth / 10}px`;
-    }
-  }
-}).observe(gridEl);
+
 
 
 
 function handleGridMouseDown(gridId, e) {
-  if (selectedTool !== 'grid') return; // only drag if grid tool is active
+  if (selectedTool !== 'grid') return;
 
-  const el = document.getElementById(gridId);
-  const resizeHandleSize = 16; // approximate built-in handle area
+  const gridEl = document.getElementById(gridId);
+  const wrap   = document.getElementById(gridId + '-wrap');
+  if (!gridEl || !wrap) return;
 
-  // ignore bottom-right resize corner
-  if (e.offsetX > el.clientWidth - resizeHandleSize && e.offsetY > el.clientHeight - resizeHandleSize) {
-    return;
-  }
+ const resizeHandleSize = 16;
+
+ const el = document.getElementById(gridId);
+if (el) el.__dragAspectLocked = e.shiftKey === true;
+
+  wrap.parentNode.appendChild(wrap);
+
+if (e.offsetX > gridEl.clientWidth - resizeHandleSize &&
+    e.offsetY > gridEl.clientHeight - resizeHandleSize) {
+  return; // let CSS 'resize: both' do its thing
+}
+
+  
 
   e.preventDefault();
   e.stopPropagation();
@@ -995,10 +1676,11 @@ function handleGridMouseDown(gridId, e) {
     const rect = document.getElementById('canvas').getBoundingClientRect();
     gridDragOffset = {
       x: e.clientX - rect.left - grid.x,
-      y: e.clientY - rect.top - grid.y
+      y: e.clientY - rect.top  - grid.y
     };
   }
 }
+
 
 
 
@@ -1043,24 +1725,26 @@ function handleGridMouseDown(gridId, e) {
         }
 
 function handleBlockMouseDown(blockId, e) {
-  if (selectedTool !== 'connect') {
-    e.preventDefault();
-    e.stopPropagation();
+  // ❌ don’t drag blocks when in grid mode
+  if (selectedTool === 'grid' || selectedTool === 'connect') return;
 
-    const block = blocks.find(b => b.id === blockId);
-    if (block) {
-      draggedBlock = blockId;
-      wasDragged = false;
-      const canvas = document.getElementById('canvas');
-      const rect = canvas.getBoundingClientRect();
-      dragOffset = {
-        x: e.clientX - rect.left - block.x,
-        y: e.clientY - rect.top - block.y
-      };
-      dragStart = { x: e.clientX, y: e.clientY }; // NEW
-    }
+  e.preventDefault();
+  e.stopPropagation();
+
+  const block = blocks.find(b => b.id === blockId);
+  if (block) {
+    draggedBlock = blockId;
+    wasDragged = false;
+    const canvas = document.getElementById('canvas');
+    const rect = canvas.getBoundingClientRect();
+    dragOffset = {
+      x: e.clientX - rect.left - block.x,
+      y: e.clientY - rect.top - block.y
+    };
+    dragStart = { x: e.clientX, y: e.clientY };
   }
 }
+
 
 
 
@@ -1443,6 +2127,65 @@ document.addEventListener('mouseup', () => {
 
 
     </script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  (function initProjectView() {
+    const tab = document.getElementById('projectTab');
+    const panel = document.getElementById('projectPanel');
+    if (!tab || !panel) return;  // guard if the elements aren’t there yet
+
+    function toggleProjectView() {
+      const open = document.body.classList.toggle('project-open');
+      panel.setAttribute('aria-hidden', String(!open));
+    }
+
+    tab.addEventListener('click', toggleProjectView);
+  })();
+
+  (function setupActiveBar() {
+    const btn = document.getElementById('moreActiveBtn');
+    const pop = document.getElementById('moreActivePopover');
+    const bar = document.getElementById('activeUsers');
+    if (!btn || !pop || !bar) return;
+
+    function togglePopover(e) {
+      e.stopPropagation();
+      const willOpen = pop.classList.contains('hidden');
+      pop.classList.toggle('hidden', !willOpen);
+      btn.setAttribute('aria-expanded', String(willOpen));
+    }
+    function closePopover() {
+      if (!pop.classList.contains('hidden')) {
+        pop.classList.add('hidden');
+        btn.setAttribute('aria-expanded', 'false');
+      }
+    }
+
+    btn.addEventListener('click', togglePopover);
+    pop.addEventListener('click', e => e.stopPropagation());
+    bar.addEventListener('click', e => e.stopPropagation());
+    document.addEventListener('click', closePopover);
+    window.addEventListener('blur', closePopover);
+  })();
+});
+</script>
+
+<!-- Project View trigger tab -->
+<div id="projectTab" class="project-tab" title="Project View">
+  <span class="arrow"></span>
+</div>
+
+
+<!-- Project View panel -->
+<aside id="projectPanel" aria-hidden="true">
+  <div class="panel-header">Rendered Project</div>
+  <div class="panel-body">
+    <!-- put whatever you want here: tree, files, versions, etc. -->
+    <p style="font-size:12px;color:var(--muted-foreground)">Your project overview lives here.</p>
+  </div>
+</aside>
+
 
 
 </body>
