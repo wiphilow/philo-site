@@ -233,7 +233,7 @@ body.project-open .project-tab .arrow {
   display: inline-flex;
   flex-direction: column;
   align-items: center;
-  z-index: 1;
+  z-index: 0;
   width: max-content;
   pointer-events: none; /* default: clicks fall through to canvas */
 }
@@ -471,11 +471,64 @@ body.project-open .project-tab .arrow {
   position: absolute;
   z-index: 2;         /* ← above grids */
 }
-.grid { 
-  position: relative;
-  z-index: 0;
-}
+.grid {
+    position: relative;
+    border: 2px dotted var(--border);
+    background-image: linear-gradient(to right, var(--border) 1px, transparent 1px),
+                      linear-gradient(to bottom, var(--border) 1px, transparent 1px);
+    background-size: 20px 20px;
+    z-index: 0;
+    overflow: hidden;     /* required for tiling; keep */
+    cursor: default;
+  }
 
+  /* NEW: visible, zoom-aware resize handle (bottom-right) */
+  .grid-resize-handle {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 16px;
+    height: 16px;
+    cursor: se-resize;
+    /* little “grip” look */
+    background:
+      linear-gradient(135deg, transparent 0 40%, var(--border) 40% 50%, transparent 50% 60%, var(--border) 60% 70%, transparent 70% 100%);
+    border-left: 1px solid var(--border);
+    border-top: 1px solid var(--border);
+    /* keep the handle the same screen size under zoom */
+    transform-origin: bottom right;
+    transform: scale(calc(1 / var(--stage-scale, 1)));
+    pointer-events: auto;
+  }
+
+.grid-resize-handle {
+  --handle-color: #9d9a9a;          /* force black */
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 16px;
+  height: 16px;
+  cursor: se-resize;
+
+  /* black hatch marks */
+  background:
+    linear-gradient(
+      135deg,
+      transparent 0 40%,
+      var(--handle-color) 40% 50%,
+      transparent 50% 60%,
+      var(--handle-color) 60% 70%,
+      transparent 70% 100%
+    );
+
+  border-left: 1px solid var(--handle-color);
+  border-top: 1px solid var(--handle-color);
+
+  /* stay same screen size under zoom */
+  transform-origin: bottom right;
+  transform: scale(calc(1 / var(--stage-scale, 1)));
+  pointer-events: auto;
+}
 
 
 /* placeholder style for plain-text inputs */
@@ -900,18 +953,7 @@ body.project-open .project-tab .arrow {
             pointer-events: none;
         }
 
-.grid {
-  /* position: absolute;  <-- remove this */
-  position: relative;        /* or omit entirely */
-  border: 2px dotted var(--border);
-  background-image: linear-gradient(to right, var(--border) 1px, transparent 1px),
-                    linear-gradient(to bottom, var(--border) 1px, transparent 1px);
-  background-size: 20px 20px;
-  z-index: 0;
-  resize: both;
-  overflow: auto;
-  cursor: default;
-}
+
 
 /* allow tooltip positioning */
 .user-circle { position: relative; }
@@ -975,6 +1017,22 @@ body.chat-open .active-users {
   display: none !important;
 }
 
+#connectionsSvg { z-index: 3; }
+.grid { z-index: 0; }
+.block { z-index: 2; }
+
+/* 2) CSS: cursors for pan mode */
+body.pan-mode .canvas { cursor: grab; }
+body.pan-dragging .canvas { cursor: grabbing; }
+
+/* Keep the stage positioned like absolute fill so it matches your current layout */
+#stage {
+  position: absolute;
+  inset: 0;
+  will-change: transform;
+}
+
+
     </style>
 </head>
 <body>
@@ -1005,19 +1063,10 @@ body.chat-open .active-users {
 
 
 
-    <!-- Canvas -->
-    <div class="canvas" id="canvas">
-        <svg id="connectionsSvg">
-            <defs>
-                <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-                    <polygon points="0 0, 10 3.5, 0 7" fill="black" />
-                </marker>
-            </defs>
-        </svg>
-    </div>
+
     <div class="toolbar">
         <button id="blockTool" class="active">
-            <span>⬜</span>
+            <span>🔲</span>
             Block
         </button>
         <button id="connectTool">
@@ -1025,14 +1074,17 @@ body.chat-open .active-users {
             Connect
         </button>
         <button id="gridTool">
-    <span>🔲</span>
+    <span>⌗</span>
     Grid
 </button>
 
         <button id="eraserTool">
-            <span>🗑️</span>
-            Eraser
+            <span>✂️</span>
+            Cut
         </button>
+
+          <button id="panTool"><span>🖐️</span>Pan</button>
+
     </div>
 
    <div class="login-button" onclick="connectToChatGPT()">
@@ -1130,18 +1182,18 @@ async function sendMessage() {
 </script>
 
 
-     
-    <div class="canvas" id="canvas">
-        <svg id="connectionsSvg">
-            <defs>
-                <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-                    <polygon points="0 0, 10 3.5, 0 7" fill="black" />
-                </marker>
-            </defs>
-        </svg>
-    </div>
+<div class="canvas" id="canvas">
+  <div id="stage"></div>
+  <svg id="connectionsSvg">
+    <defs>
+      <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+        <polygon points="0 0, 10 3.5, 0 7" fill="black" />
+      </marker>
+    </defs>
+  </svg>
+</div>
 
-     Popup Template 
+
     <div id="popup" class="popup-overlay hidden">
         <div class="popup">
             <div class="chat-section" id="chatSection">
@@ -1232,6 +1284,9 @@ async function sendMessage() {
         let grids = [];
         let draggedGrid = null;
 let gridDragOffset = { x: 0, y: 0 };
+let dragJustEndedUntil = 0;
+const DRAG_CLICK_GUARD_MS = 220; // tune 150–300 ms if you like
+
 
 
 
@@ -1241,6 +1296,8 @@ let dragStart = null;       // {x,y} at mousedown
 let suppressCanvasClick = false;
 
 
+const canvasEl = document.getElementById('canvas');
+const stageEl  = document.getElementById('stage');
 
 const GRID_COLORS = [
   { name: 'Gray',     value: 'oklch(0.96 0.04 0)'   },
@@ -1283,73 +1340,57 @@ renderGrids();
 }
 
 
-const canvasEl = document.getElementById('canvas');
 
 canvasEl.addEventListener('click', (e) => {
-  if (suppressCanvasClick) return;
 
-  // If the click started inside a grid UI or popup, do nothing
+  if (Date.now() < dragJustEndedUntil) return;
+  if (suppressCanvasClick) { suppressCanvasClick = false; return; }
   if (e.target.closest('.grid-wrapper') || e.target.closest('.popup')) return;
 
-  const rect = canvasEl.getBoundingClientRect();
-  const x = e.clientX - rect.left;
-  const y = e.clientY - rect.top;
-
+  const world = screenToWorld(e);
   if (selectedTool === 'block' && !openPopup) {
-    addBlock(x - 64, y - 32);
+    addBlock(world.x - 64, world.y - 32);
   } else if (selectedTool === 'grid') {
-    addGrid(x - 100, y - 100);
+    addGrid(world.x - 100, world.y - 100);
   }
 });
 
 
 document.addEventListener('mousemove', function(e) {
+  // Dragging a grid
   if (draggedGrid && selectedTool === 'grid') {
-    const canvas = document.getElementById('canvas');
-    const rect = canvas.getBoundingClientRect();
-
     const grid = grids.find(g => g.id === draggedGrid);
     if (grid) {
-      grid.x = Math.max(0, e.clientX - rect.left - gridDragOffset.x);
-      grid.y = Math.max(0, e.clientY - rect.top - gridDragOffset.y);
+      const local = getCanvasLocal(e);
+      grid.x = Math.max(0, local.x - panX - gridDragOffset.x);
+      grid.y = Math.max(0, local.y - panY - gridDragOffset.y);
       updateGridPosition(grid);
     }
-  }
+}
 
-            if (draggedBlock && selectedTool !== 'grid') {
-            const canvas = document.getElementById('canvas');
-            const rect = canvas.getBoundingClientRect();
+  // Dragging a block
+  if (draggedBlock && selectedTool !== 'grid') {
+    const local = getCanvasLocal(e);
+    const dx = e.clientX - (dragStart?.x ?? e.clientX);
+    const dy = e.clientY - (dragStart?.y ?? e.clientY);
+    if (!wasDragged && (Math.abs(dx) > DRAG_THRESHOLD || Math.abs(dy) > DRAG_THRESHOLD)) {
+      wasDragged = true;
+    }
+}
+    if (wasDragged) {
+        const local = getCanvasLocal(e); // world coords
+        const x = Math.max(0, local.x - dragOffset.x);
+        const y = Math.max(0, local.y - dragOffset.y);
+        const block = blocks.find(b => b.id === draggedBlock);
+        if (block) {
+        block.x = x; block.y = y;
+        updateBlockPosition(block);
+        updateConnections();
+        }
 
-            const dx = e.clientX - (dragStart?.x ?? e.clientX);
-            const dy = e.clientY - (dragStart?.y ?? e.clientY);
-            if (!wasDragged && (Math.abs(dx) > DRAG_THRESHOLD || Math.abs(dy) > DRAG_THRESHOLD)) {
-                wasDragged = true;
-            }
+      }
+    });
 
-            if (wasDragged) {  // only move once we cross the threshold
-                const x = Math.max(0, e.clientX - rect.left - dragOffset.x);
-                const y = Math.max(0, e.clientY - rect.top - dragOffset.y);
-
-                const block = blocks.find(b => b.id === draggedBlock);
-                if (block) {
-                block.x = x;
-                block.y = y;
-                updateBlockPosition(block);
-                updateConnections();
-                }
-            }
-            }
-
-
-
-            if (isDraggingDivider && openPopup) {
-                const popup = document.querySelector('.popup');
-                const rect = popup.getBoundingClientRect();
-                const newPosition = ((e.clientX - rect.left) / rect.width) * 100;
-                dividerPosition = Math.max(30, Math.min(70, newPosition));
-                updateDividerPosition();
-            }
-});
 
 
 
@@ -1357,6 +1398,12 @@ document.addEventListener('mousemove', function(e) {
 
 
 document.addEventListener('mouseup', function() {
+
+if (wasDragged) {
+    dragJustEndedUntil = Date.now() + DRAG_CLICK_GUARD_MS;   // ★
+  }
+  setTimeout(() => { suppressCanvasClick = false; }, 0);      // ★
+
   draggedBlock = null;
   draggedGrid = null;  // stop dragging grids too
   dragOffset = { x: 0, y: 0 };
@@ -1587,9 +1634,23 @@ function renderGrid(grid) {
     }
   });
 
-  // drag the grid (not the resize corner)
-  gridEl.onmousedown = (e) => handleGridMouseDown(grid.id, e);
+gridEl.onmousedown = (e) => {
+  if (selectedTool !== 'grid') return;
 
+  // If the click is on the custom handle, let that handler own it.
+  if (e.target && e.target.classList.contains('grid-resize-handle')) {
+    return; // the handle’s listener already does stopPropagation/preventDefault
+  }
+
+  // If you still keep native 'resize: both' anywhere, allow clicks
+  // very near the bottom-right corner to pass through to the browser:
+  const rect = gridEl.getBoundingClientRect();
+  const nearCorner = (rect.right - e.clientX <= 18) && (rect.bottom - e.clientY <= 18);
+  if (nearCorner) return;
+
+  // Otherwise, this is a drag-the-grid action
+  handleGridMouseDown(grid.id, e);
+};
   // resize observer (CSS resize handle)
   const ro = new ResizeObserver(entries => {
     for (let entry of entries) {
@@ -1653,7 +1714,60 @@ function renderGrid(grid) {
   // mount once
   wrap.appendChild(gridEl);
   wrap.appendChild(controls);
-  document.getElementById('canvas').appendChild(wrap);
+stageEl.appendChild(wrap);                  // ← was canvas
+
+
+// Add custom resize handle
+const handle = document.createElement('div');
+handle.className = 'grid-resize-handle';
+gridEl.appendChild(handle);
+
+// Scale-aware dragging
+let resizing = null;
+handle.addEventListener('mousedown', (e) => {
+  if (selectedTool !== 'grid') return;
+  e.stopPropagation();
+  e.preventDefault();
+  resizing = {
+    id: grid.id,
+    startX: e.clientX,
+    startY: e.clientY,
+    startW: grid.width,
+    startH: grid.height
+  };
+});
+
+// global listeners (you already have mousemove/mouseup — append this logic)
+document.addEventListener('mousemove', (e) => {
+  if (!resizing) return;
+  const g = grids.find(x => x.id === resizing.id);
+  if (!g) return;
+
+  // convert screen delta to world delta
+  const dxWorld = (e.clientX - resizing.startX) / scale;
+  const dyWorld = (e.clientY - resizing.startY) / scale;
+
+  let newW = Math.max(40, Math.round(resizing.startW + dxWorld));
+  let newH = Math.max(40, Math.round(resizing.startH + dyWorld));
+
+  if (g.lockAspect) {
+    const ratio = resizing.startH / resizing.startW || 1;
+    // choose dominant axis
+    if (Math.abs(dxWorld) >= Math.abs(dyWorld)) {
+      newH = Math.max(40, Math.round(newW * ratio));
+    } else {
+      newW = Math.max(40, Math.round(newH / ratio));
+    }
+  }
+
+  g.width = newW; g.height = newH;
+  gridEl.style.width  = `${g.width}px`;
+  gridEl.style.height = `${g.height}px`;
+  wrap.style.width    = `${g.width}px`;
+  updateGridTiling(g, gridEl);
+});
+
+document.addEventListener('mouseup', () => { resizing = null; });
 
   // interactivity for this grid
   const interactive = (selectedTool === 'grid' || selectedTool === 'eraser');
@@ -1662,6 +1776,8 @@ function renderGrid(grid) {
   controls.style.pointerEvents = interactive ? 'auto' : 'none';
 
   renderGrids(); // normalize others
+                    // ← was canvas
+
 }
 
 
@@ -1673,60 +1789,198 @@ function renderGrid(grid) {
 function handleGridMouseDown(gridId, e) {
   if (selectedTool !== 'grid') return;
 
-  const gridEl = document.getElementById(gridId);
-  const wrap   = document.getElementById(gridId + '-wrap');
-  if (!gridEl || !wrap) return;
+  const grid = grids.find(g => g.id === gridId);  // ← get it
+  if (!grid) return;
 
- const resizeHandleSize = 16;
+  const local = getCanvasLocal(e);                // world coords
+  draggedGrid = gridId;
+  gridDragOffset = { x: local.x - grid.x, y: local.y - grid.y }; // ← set offset
 
- const el = document.getElementById(gridId);
-if (el) el.__dragAspectLocked = e.shiftKey === true;
-
-  wrap.parentNode.appendChild(wrap);
-
-if (e.offsetX > gridEl.clientWidth - resizeHandleSize &&
-    e.offsetY > gridEl.clientHeight - resizeHandleSize) {
-  return; // let CSS 'resize: both' do its thing
-}
-
-  
+  // bring to front
+  const wrap = document.getElementById(gridId + '-wrap');
+  if (wrap && wrap.parentNode) wrap.parentNode.appendChild(wrap);
 
   e.preventDefault();
   e.stopPropagation();
+}
 
-  const grid = grids.find(g => g.id === gridId);
-  if (grid) {
-    draggedGrid = gridId;
-    const rect = document.getElementById('canvas').getBoundingClientRect();
-    gridDragOffset = {
-      x: e.clientX - rect.left - grid.x,
-      y: e.clientY - rect.top  - grid.y
-    };
+
+// --- Zoom state ---
+let scale = 1;
+const MIN_SCALE = 0.25;
+const MAX_SCALE = 3;
+
+// Canvas-local screen → world
+function screenToWorldPoint(px, py) {
+  return { x: (px - panX) / scale, y: (py - panY) / scale };
+}
+// World → canvas-local screen
+function worldToScreenPoint(wx, wy) {
+  return { x: panX + wx * scale, y: panY + wy * scale };
+}
+
+// Zoom keeping the mouse position anchored
+function zoomAtPointer(e, nextScale) {
+  const rect = canvasEl.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+
+  // world under cursor before zoom
+  const wbx = (mx - panX) / scale;
+  const wby = (my - panY) / scale;
+
+  scale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, nextScale));
+
+  // keep the same world point under the cursor
+  panX = mx - wbx * scale;
+  panY = my - wby * scale;
+
+  applyStageTransform();
+  updateConnections(); // re-route at new scale
+}
+
+
+// === Pan state ===
+let panX = 0, panY = 0;
+let isPanning = false;
+let panStart = { x: 0, y: 0 };
+
+
+// Helper: apply transform to the whole stage
+function applyStageTransform() {
+  const t = `translate(${panX}px, ${panY}px) scale(${scale})`;
+  stageEl.style.transform = t;
+  stageEl.style.transformOrigin = '0 0';
+
+  const svgEl = document.getElementById('connectionsSvg');
+  if (svgEl) {
+    svgEl.style.transform = t;
+    svgEl.style.transformOrigin = '0 0';
   }
+
+  // <-- tell CSS what the zoom is, so the handle can counter-scale
+  document.body.style.setProperty('--stage-scale', String(scale));
 }
 
 
 
 
+// Helper: screen → canvas-local
+function getCanvasLocal(e) {
+  const r = canvasEl.getBoundingClientRect();
+  return {
+    x: (e.clientX - r.left - panX) / scale,
+    y: (e.clientY - r.top  - panY) / scale
+  };
+}
 
-        // Render block
-        function renderBlock(block) {
-            const blockEl = document.createElement('div');
-            blockEl.className = 'block';
-            blockEl.id = block.id;
-            blockEl.style.left = block.x + 'px';
-            blockEl.style.top = block.y + 'px';
-            
-            const nameEl = document.createElement('span');
-            nameEl.className = 'block-name';
-            nameEl.textContent = block.name;
-            blockEl.appendChild(nameEl);
-            
-            blockEl.onclick = (e) => handleBlockClick(block.id, e);
-            blockEl.onmousedown = (e) => handleBlockMouseDown(block.id, e);
-            
-            document.getElementById('canvas').appendChild(blockEl);
-        }
+// Helper: screen → world (undo pan)
+function screenToWorld(e) {
+  return getCanvasLocal(e);
+}
+
+// 3.a) Add the Pan tool to tool selector
+document.getElementById('panTool').onclick = () => setTool('pan');
+
+const _origSetTool = setTool;
+setTool = function(tool) {
+  _origSetTool(tool); // run your existing logic
+  document.body.classList.toggle('pan-mode', tool === 'pan');
+  if (tool !== 'pan') {
+    document.body.classList.remove('pan-dragging');
+    isPanning = false;
+  }
+};
+
+// Optional: spacebar as temporary pan (like design tools)
+let spacePan = false;
+document.addEventListener('keydown', (e) => {
+  if (e.code === 'Space' && !spacePan) {
+    spacePan = true;
+    if (selectedTool !== 'pan') document.body.classList.add('pan-mode');
+  }
+});
+document.addEventListener('keyup', (e) => {
+  if (e.code === 'Space') {
+    spacePan = false;
+    if (selectedTool !== 'pan') {
+      document.body.classList.remove('pan-mode');
+      document.body.classList.remove('pan-dragging');
+      isPanning = false;
+    }
+  }
+});
+
+// 3.b) Start/drag/end panning on the canvas background
+canvasEl.addEventListener('mousedown', (e) => {
+  // Only start pan if: Pan tool ON or space held, and not on UI elements
+  if ((selectedTool === 'pan' || spacePan) &&
+      !e.target.closest('.grid-wrapper') &&
+      !e.target.closest('.block') &&
+      !e.target.closest('.popup')) {
+    isPanning = true;
+    panStart = { x: e.clientX, y: e.clientY };
+    document.body.classList.add('pan-dragging');
+    e.preventDefault();
+  }
+});
+
+document.addEventListener('mousemove', (e) => {
+  if (!isPanning) return;
+  const dx = e.clientX - panStart.x;
+  const dy = e.clientY - panStart.y;
+  panX += dx;
+  panY += dy;
+  panStart = { x: e.clientX, y: e.clientY };
+  applyStageTransform();
+
+  // prevent stray clicks after a pan
+  suppressCanvasClick = true;
+});
+
+document.addEventListener('mouseup', () => {
+  if (isPanning) {
+    isPanning = false;
+    document.body.classList.remove('pan-dragging');
+    dragJustEndedUntil = Date.now() + DRAG_CLICK_GUARD_MS;
+  }
+});
+
+
+function initDividerDrag() {
+  const divider = document.getElementById('divider');
+  const chatSection = document.getElementById('chatSection');
+  if (!divider || !chatSection) return; // guard
+
+  let isDragging = false;
+
+  divider.addEventListener('mousedown', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    isDragging = true;
+    document.body.style.cursor = 'col-resize';
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    const container = chatSection.parentElement;
+    const rect = container.getBoundingClientRect();
+    let newWidth = e.clientX - rect.left;
+    const min = 200;
+    const max = rect.width - 200;
+    newWidth = Math.max(min, Math.min(max, newWidth));
+    chatSection.style.flexBasis = `${newWidth}px`;
+  });
+
+  document.addEventListener('mouseup', () => {
+    if (!isDragging) return;
+    isDragging = false;
+    document.body.style.cursor = 'default';
+  });
+}
+
+
+
 
         // Handle block click
         function handleBlockClick(blockId, e) {
@@ -1749,25 +2003,21 @@ if (e.offsetX > gridEl.clientWidth - resizeHandleSize &&
         }
 
 function handleBlockMouseDown(blockId, e) {
-  // ❌ don’t drag blocks when in grid mode
-  if (selectedTool === 'grid' || selectedTool === 'connect') return;
+  const local = getCanvasLocal(e); // world coords
 
-  e.preventDefault();
-  e.stopPropagation();
+  suppressCanvasClick = true;
+  if (selectedTool === 'grid' || selectedTool === 'connect') return;
+  e.preventDefault(); e.stopPropagation();
 
   const block = blocks.find(b => b.id === blockId);
-  if (block) {
-    draggedBlock = blockId;
-    wasDragged = false;
-    const canvas = document.getElementById('canvas');
-    const rect = canvas.getBoundingClientRect();
-    dragOffset = {
-      x: e.clientX - rect.left - block.x,
-      y: e.clientY - rect.top - block.y
-    };
-    dragStart = { x: e.clientX, y: e.clientY };
-  }
+  if (!block) return;
+
+  draggedBlock = blockId;
+  wasDragged = false;
+  dragOffset = { x: local.x - block.x, y: local.y - block.y }; // ← no panX
+  dragStart  = { x: e.clientX, y: e.clientY };
 }
+
 
 
 
@@ -1804,48 +2054,681 @@ function handleBlockMouseDown(blockId, e) {
             connections.push(connection);
             updateConnections();
         }
+// ---------- CONFIG ----------
+const ROUTE = {
+  cell: 14,        // grid resolution (px). Lower = more precise, slower.
+  inflate: 12,     // how much to pad obstacles when routing (px)
+  hugPenalty: 3,   // add cost near obstacles to avoid "grazing"
+  maxNodes: 8e4    // safety cap
+};
+// Extra spacing/penalties for overlap-avoidance
+const EDGE = {
+  cablePad: 8,      // how "thick" a routed cable is, as an obstacle (px)
+  staggerStep: 6,   // pixels to stagger anchors along a face
+  staggerSpan: 5    // how many distinct staggers before repeating
+};
 
-        // Update connections
+// Pixel distance to place anchor outside the block face
+const CELL_WORLD     = 14;   // routing grid size
+const INFLATE_WORLD  = 12;   // obstacle padding
+const CABLEPAD_WORLD = 8;    // cable-as-obstacle thickness
+const CORNER_RADIUS  = 10;   // rounding when drawing
+const ANCHOR_OUTSET = 10;   // how far outside the block the cable starts/ends
+const STUB_LEN      = 18;   // short straight segment before first bend
+
+
+function getWorldObstacles(pad = 0, extraRects = []) {
+  const rects = [];
+
+  // blocks: 128x64 in WORLD
+  for (const b of blocks) {
+    rects.push({
+      left:   b.x - pad,
+      top:    b.y - pad,
+      right:  b.x + 128 + pad,
+      bottom: b.y + 64 + pad
+    });
+  }
+
+  // grids: width/height and x/y are already WORLD (you position the wrappers with stage transform)
+  for (const g of grids) {
+    rects.push({
+      left:   g.x - pad,
+      top:    g.y - pad,
+      right:  g.x + g.width  + pad,
+      bottom: g.y + g.height + pad
+    });
+  }
+
+  // previously-routed cables (already WORLD)
+  rects.push(...extraRects);
+
+  return rects;
+}
+
+function computeWorldExtent(points, obstacles, margin = 200) {
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+
+  // include endpoints
+  for (const p of points) {
+    minX = Math.min(minX, p.x); minY = Math.min(minY, p.y);
+    maxX = Math.max(maxX, p.x); maxY = Math.max(maxY, p.y);
+  }
+  // include obstacles
+  for (const r of obstacles) {
+    minX = Math.min(minX, r.left);  minY = Math.min(minY, r.top);
+    maxX = Math.max(maxX, r.right); maxY = Math.max(maxY, r.bottom);
+  }
+
+  minX -= margin; minY -= margin; maxX += margin; maxY += margin;
+
+  return { minX, minY, maxX, maxY, width: maxX - minX, height: maxY - minY };
+}
+
+function snapWorldToCell(p, cell) {
+  return { x: Math.round(p.x / cell) * cell, y: Math.round(p.y / cell) * cell };
+}
+
+function worldRectToCellRect(r, cell, originX, originY) {
+  const x0 = Math.floor((r.left  - originX) / cell);
+  const x1 = Math.ceil ((r.right - originX) / cell);
+  const y0 = Math.floor((r.top   - originY) / cell);
+  const y1 = Math.ceil ((r.bottom- originY) / cell);
+  return { x0, x1, y0, y1 };
+}
+
+function buildWalkableWorld(ext, cell, obstacles) {
+  const cols = Math.ceil(ext.width  / cell);
+  const rows = Math.ceil(ext.height / cell);
+  const grid = new Array(rows);
+  for (let y = 0; y < rows; y++) grid[y] = new Uint8Array(cols);
+
+  // mark walls
+  for (const r of obstacles) {
+    const rc = worldRectToCellRect(r, cell, ext.minX, ext.minY);
+    for (let y = rc.y0; y <= rc.y1; y++) {
+      if (y < 0 || y >= rows) continue;
+      for (let x = rc.x0; x <= rc.x1; x++) {
+        if (x < 0 || x >= cols) continue;
+        grid[y][x] = 1;
+      }
+    }
+  }
+  return { grid, cols, rows, originX: ext.minX, originY: ext.minY };
+}
+
+function worldToCell(p, cell, originX, originY) {
+  return {
+    x: Math.max(0, Math.round((p.x - originX) / cell)),
+    y: Math.max(0, Math.round((p.y - originY) / cell))
+  };
+}
+function cellToWorld(c, cell, originX, originY) {
+  return { x: originX + c.x * cell, y: originY + c.y * cell };
+}
+
+
+function getBlockRect(blockId) {
+  const b = blocks.find(x => x.id === blockId);
+  return b ? { left: b.x, top: b.y, right: b.x + 128, bottom: b.y + 64, cx: b.x + 64, cy: b.y + 32 } : null;
+}
+
+/**
+ * Choose the best face (left/right/top/bottom) based on the direction to the other endpoint,
+ * and return two points:
+ * - anchor: a point OUTSIDE the block face by ANCHOR_OUTSET
+ * - stub:   a point a bit farther along the same outward direction (for a clean exit)
+ */
+function getAnchorOutside(blockId, towardPoint, staggerIdx = 0) {
+  const r = getBlockRect(blockId);
+  if (!r) return { anchor:{x:0,y:0}, stub:{x:0,y:0} };
+
+  const dx = towardPoint.x - r.cx;
+  const dy = towardPoint.y - r.cy;
+  const k = ((staggerIdx % EDGE.staggerSpan) - Math.floor(EDGE.staggerSpan/2)) * EDGE.staggerStep;
+
+  if (Math.abs(dx) > Math.abs(dy)) {
+    // left/right face
+    const xEdge = dx < 0 ? r.left  : r.right;
+    const dir   = dx < 0 ? -1 : 1;
+    const anchor = { x: xEdge + dir*ANCHOR_OUTSET, y: r.cy + k };
+    const stub   = { x: anchor.x + dir*STUB_LEN,   y: anchor.y };
+    return { anchor, stub };
+  } else {
+    // top/bottom face
+    const yEdge = dy < 0 ? r.top   : r.bottom;
+    const dir   = dy < 0 ? -1 : 1;
+    const anchor = { x: r.cx + k, y: yEdge + dir*ANCHOR_OUTSET };
+    const stub   = { x: anchor.x, y: anchor.y + dir*STUB_LEN };
+    return { anchor, stub };
+  }
+}
+
+
+// --- geometry & obstacles ---
+const ROUTE_PAD   = 10;  // how far we "inflate" blocks for clearance
+const MIN_CORNER  = 20;  // corner must be ≥ this manhattan from both ends
+
+function inflateRect(r, pad = ROUTE_PAD) {
+  return {
+    left:   r.left   - pad,
+    top:    r.top    - pad,
+    right:  r.right  + pad,
+    bottom: r.bottom + pad
+  };
+}
+
+
+// inclusive intersection (touching counts as blocked)
+function segIntersectsRectInclusive(a, b, r){
+  const minX = Math.min(a.x, b.x), maxX = Math.max(a.x, b.x);
+  const minY = Math.min(a.y, b.y), maxY = Math.max(a.y, b.y);
+  const rx1 = r.x, ry1 = r.y, rx2 = r.x + r.w, ry2 = r.y + r.h;
+
+  // axis-aligned segments only
+  if (a.x === b.x) {
+    const x = a.x;
+    if (x < rx1 || x > rx2) return false;
+    const iy1 = Math.max(minY, ry1), iy2 = Math.min(maxY, ry2);
+    return iy2 - iy1 >= 0; // inclusive
+  }
+  if (a.y === b.y) {
+    const y = a.y;
+    if (y < ry1 || y > ry2) return false;
+    const ix1 = Math.max(minX, rx1), ix2 = Math.min(maxX, rx2);
+    return ix2 - ix1 >= 0; // inclusive
+  }
+  return true; // we only route orthogonal; anything else treat as blocked
+}
+
+
+function manhattan(a,b){ return Math.abs(a.x-b.x) + Math.abs(a.y-b.y); }
+
+function farFromEnds(a,c,b,min=MIN_CORNER){
+  return manhattan(a,c) >= min && manhattan(c,b) >= min;
+}
+
+function stubPoint(from, to, d=STUB_LEN){
+  // push second point away along the axis of the first segment
+  if (Math.abs(to.x - from.x) >= Math.abs(to.y - from.y)) {
+    return { x: from.x + Math.sign(to.x - from.x || 1)*d, y: from.y };
+  } else {
+    return { x: from.x, y: from.y + Math.sign(to.y - from.y || 1)*d };
+  }
+}
+
+
+function buildPathD(pts){
+  if (!pts.length) return '';
+  let d = `M ${pts[0].x} ${pts[0].y}`;
+  for (let i=1; i<pts.length; i++){
+    d += ` L ${pts[i].x} ${pts[i].y}`;
+  }
+  return d;
+}
+
+function rectFromSegment(a, b, pad) {
+  if (a.x === b.x) {
+    // vertical
+    const x1 = a.x - pad, x2 = a.x + pad;
+    const y1 = Math.min(a.y, b.y) - pad, y2 = Math.max(a.y, b.y) + pad;
+    return { left: x1, top: y1, right: x2, bottom: y2 };
+  } else if (a.y === b.y) {
+    // horizontal
+    const y1 = a.y - pad, y2 = a.y + pad;
+    const x1 = Math.min(a.x, b.x) - pad, x2 = Math.max(a.x, b.x) + pad;
+    return { left: x1, top: y1, right: x2, bottom: y2 };
+  }
+  // ignore non-orthogonal (your points are orthogonal pre-rounding)
+  return null;
+}
+
+function cablePolylineToObstacles(points, pad) {
+  const out = [];
+  for (let i = 0; i < points.length - 1; i++) {
+    const r = rectFromSegment(points[i], points[i+1], pad);
+    if (r) out.push(r);
+  }
+  return out;
+}
+
+
+// ---------- GEOMETRY ----------
+
+
+function pointInRect(p, r) {
+  return p.x >= r.left && p.x <= r.right && p.y >= r.top && p.y <= r.bottom;
+}
+function segmentsIntersect(p1, p2, q1, q2) {
+  const o1=orient(p1,p2,q1), o2=orient(p1,p2,q2), o3=orient(q1,q2,p1), o4=orient(q1,q2,p2);
+  if (o1!==o2 && o3!==o4) return true;
+  if (o1===0 && onSeg(p1,q1,p2)) return true;
+  if (o2===0 && onSeg(p1,q2,p2)) return true;
+  if (o3===0 && onSeg(q1,p1,q2)) return true;
+  if (o4===0 && onSeg(q1,p2,q2)) return true;
+  return false;
+}
+function orient(a,b,c){ const v=(b.y-a.y)*(c.x-b.x)-(b.x-a.x)*(c.y-b.y); return v===0?0:(v>0?1:2); }
+function onSeg(a,b,c){ return Math.min(a.x,c.x)<=b.x && b.x<=Math.max(a.x,c.x) && Math.min(a.y,c.y)<=b.y && b.y<=Math.max(a.y,c.y); }
+function segIntersectsRect(p1, p2, r) {
+  if (p1.x < r.left && p2.x < r.left) return false;
+  if (p1.x > r.right && p2.x > r.right) return false;
+  if (p1.y < r.top && p2.y < r.top) return false;
+  if (p1.y > r.bottom && p2.y > r.bottom) return false;
+  if (pointInRect(p1, r) || pointInRect(p2, r)) return true;
+  const edges = [
+    [{x:r.left,y:r.top},{x:r.right,y:r.top}],
+    [{x:r.right,y:r.top},{x:r.right,y:r.bottom}],
+    [{x:r.right,y:r.bottom},{x:r.left,y:r.bottom}],
+    [{x:r.left,y:r.bottom},{x:r.left,y:r.top}],
+  ];
+  return edges.some(([a,b]) => segmentsIntersect(p1,p2,a,b));
+}
+
+// ---------- OBSTACLES ----------
+function getObstacles(pad = 0, exclude = new Set(), extraRects = []) {
+  const canvas = document.getElementById('canvas');
+  const crect  = canvas.getBoundingClientRect();
+
+  // convert screen → world by subtracting the stage pan
+  const shiftX = -panX;
+  const shiftY = -panY;
+
+  const rects = [];
+
+  // blocks
+  blocks.forEach(b => {
+    const el = document.getElementById(b.id);
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    rects.push(inflateRect({
+      left:   (r.left   - crect.left),
+      top:    (r.top    - crect.top),
+      right:  (r.right  - crect.left),
+      bottom: (r.bottom - crect.top)
+    }, pad));
+  });
+
+  // grids
+  grids.forEach(g => {
+    const wrap = document.getElementById(g.id + '-wrap');
+    if (!wrap) return;
+    const r = wrap.getBoundingClientRect();
+    rects.push(inflateRect({
+      left:   (r.left   - crect.left),
+      top:    (r.top    - crect.top),
+      right:  (r.right  - crect.left),
+      bottom: (r.bottom - crect.top)
+    }, pad));
+  });
+
+  // previously drawn cable “soft” obstacles are already in world coords
+  for (const er of extraRects) rects.push(er);
+
+  return rects;
+}
+
+
+
+
+// ---------- GRID PROJECTION ----------
+function snapToCell(p, size){ return { x: Math.round(p.x/size)*size, y: Math.round(p.y/size)*size }; }
+function rectToCells(r, size){
+  const xs = [Math.floor(r.left/size), Math.ceil(r.right/size)];
+  const ys = [Math.floor(r.top/size),  Math.ceil(r.bottom/size)];
+  return { x0: xs[0], x1: xs[1], y0: ys[0], y1: ys[1] };
+}
+function buildWalkable(width, height, cell, obstacles){
+  const cols = Math.ceil(width / cell), rows = Math.ceil(height / cell);
+  const grid = new Array(rows); for (let y=0;y<rows;y++){ grid[y] = new Uint8Array(cols); }
+
+  // mark walls
+  for (const r of obstacles){
+    const rc = rectToCells(r, cell);
+    for (let y=rc.y0; y<=rc.y1; y++){
+      if (y<0||y>=rows) continue;
+      for (let x=rc.x0; x<=rc.x1; x++){
+        if (x<0||x>=cols) continue;
+        grid[y][x] = 1;
+      }
+    }
+  }
+  return { grid, cols, rows };
+}
+
+// distance to nearest wall (cheap) to add a penalty (avoids hugging)
+function nearWallPenalty(grid, x, y){
+  const R = 1;
+  for (let dy=-R; dy<=R; dy++){
+    for (let dx=-R; dx<=R; dx++){
+      const nx=x+dx, ny=y+dy;
+      if (ny<0||ny>=grid.length||nx<0||nx>=grid[0].length) continue;
+      if (grid[ny][nx] === 1) return ROUTE.hugPenalty;
+    }
+  }
+  return 0;
+}
+
+function astarGridWorld(startW, goalW, gridObj, cell) {
+  const { grid, cols, rows, originX, originY } = gridObj;
+
+  const s = worldToCell(startW, cell, originX, originY);
+  const g = worldToCell(goalW,  cell, originX, originY);
+
+  const key = (x,y)=> (y<<16)|x;
+  const open = new MinHeap((a,b)=>a.f-b.f);
+  const came = new Map(), gscore = new Map(), inOpen = new Set();
+
+  const h = (x,y)=> Math.abs(x-g.x)+Math.abs(y-g.y); // manhattan in cell space
+  const push = (n, gf, ff)=>{ const k=key(n.x,n.y); gscore.set(k,gf); open.push({...n,f:ff}); inOpen.add(k); };
+
+  push(s, 0, h(s.x,s.y));
+
+  while (open.size()) {
+    const cur = open.pop(); inOpen.delete(key(cur.x,cur.y));
+    if (cur.x===g.x && cur.y===g.y) {
+      // reconstruct in WORLD
+      const cells = reconstruct(came, cur);
+      return cells.map(c => cellToWorld(c, cell, originX, originY));
+    }
+    const neigh = [
+      {x:cur.x+1,y:cur.y}, {x:cur.x-1,y:cur.y},
+      {x:cur.x,y:cur.y+1}, {x:cur.x,y:cur.y-1}
+    ];
+    for (const n of neigh) {
+      if (n.x<0||n.x>=cols||n.y<0||n.y>=rows) continue;
+      if (grid[n.y][n.x]===1) continue;
+
+      const nk = key(n.x,n.y);
+      const tentative = (gscore.get(key(cur.x,cur.y)) ?? Infinity) + 1; // + penalties if you like
+      if (tentative < (gscore.get(nk) ?? Infinity)) {
+        came.set(nk, cur);
+        const f = tentative + h(n.x,n.y) + turnBias(came, cur, n); // you already have turnBias
+        push(n, tentative, f);
+      }
+    }
+  }
+  return null;
+}
+
+
+function reconstruct(came, cur){
+  const out = [cur]; let c = cur;
+  while (true){
+    const prev = came.get((c.y<<16)|c.x); if (!prev) break;
+    out.push(prev); c = prev;
+  }
+  return out.reverse();
+}
+
+// Stronger bend penalty (used by A*)
+function turnBias(came, cur, n){
+  const p = came.get((cur.y<<16)|cur.x);
+  if (!p) return 0;
+  const v1x = cur.x - p.x, v1y = cur.y - p.y;
+  const v2x = n.x   - cur.x, v2y = n.y   - cur.y;
+  return (v1x!==v2x || v1y!==v2y) ? 2 : 0; // was ~0.1
+}
+
+// remove consecutive collinear points
+function mergeCollinear(pts){
+  if (pts.length < 3) return pts.slice();
+  const out = [pts[0]];
+  for (let i=1;i<pts.length-1;i++){
+    const a = out[out.length-1], b = pts[i], c = pts[i+1];
+    const col = (a.x===b.x && b.x===c.x) || (a.y===b.y && b.y===c.y);
+    if (!col) out.push(b);
+  }
+  out.push(pts[pts.length-1]);
+  return out;
+}
+
+// check Manhattan L-shape (two axis segments) clears obstacles using the better corner
+function bestOrthogonalCorner(a, b, obstacles){
+  const c1 = { x: a.x, y: b.y };
+  const c2 = { x: b.x, y: a.y };
+  const clear1 = lineClear(a, c1, obstacles) && lineClear(c1, b, obstacles);
+  const clear2 = lineClear(a, c2, obstacles) && lineClear(c2, b, obstacles);
+  if (clear1 && clear2) {
+    // pick shorter corner (tie is fine)
+    const d1 = Math.abs(a.x-c1.x)+Math.abs(a.y-c1.y)+Math.abs(c1.x-b.x)+Math.abs(c1.y-b.y);
+    const d2 = Math.abs(a.x-c2.x)+Math.abs(a.y-c2.y)+Math.abs(c2.x-b.x)+Math.abs(c2.y-b.y);
+    return d1 <= d2 ? c1 : c2;
+  } else if (clear1) return c1;
+  else if (clear2) return c2;
+  return null;
+}
+
+// greedily reduce bends: replace long subsequences with a ≤2-bend orthogonal connection
+function shortcutOrthogonal(pts, obstacles){
+  if (pts.length < 3) return pts.slice();
+  let i = 0;
+  const out = [];
+  while (i < pts.length-1){
+    let j = pts.length-1;
+    let used = false;
+    while (j > i+1){
+      // try 0-bend
+      if ((pts[i].x===pts[j].x || pts[i].y===pts[j].y) && lineClear(pts[i], pts[j], obstacles)){
+        out.push(pts[i]);
+        i = j;
+        used = true;
+        break;
+      }
+      // try 1-bend (L)
+      const corner = bestOrthogonalCorner(pts[i], pts[j], obstacles);
+      if (corner){
+        out.push(pts[i], corner);
+        i = j;
+        used = true;
+        break;
+      }
+      j--;
+    }
+    if (!used){
+      out.push(pts[i]);
+      i++;
+    }
+  }
+  out.push(pts[pts.length-1]);
+  // collapse any collinear created by insertions
+  return mergeCollinear(out);
+}
+
+// draw only axis-aligned segments with rounded right-angle joins
+function orthogonalRoundedPath(points, radius=10) {
+  points = mergeCollinear(points);
+  if (points.length < 2) {
+    const p = points[0] || {x:0,y:0};
+    return `M ${p.x} ${p.y}`;
+  }
+  let d = `M ${points[0].x} ${points[0].y}`;
+  for (let i=1;i<points.length;i++){
+    const p0 = points[i-1], p1 = points[i];
+    // if there is a next point, create a rounded corner
+    if (i < points.length-1){
+      const p2 = points[i+1];
+      // we assume axis-aligned; compute corner trim
+      const isH = p0.y === p1.y; // coming horizontally
+      const segLen = Math.abs(isH ? (p1.x - p0.x) : (p1.y - p0.y));
+      const nextLen = Math.abs(p2.x === p1.x ? (p2.y - p1.y) : (p2.x - p1.x));
+      const r = Math.min(radius, Math.floor(segLen/2), Math.floor(nextLen/2));
+
+      const pre = isH
+        ? { x: p1.x - Math.sign(p1.x - p0.x)*r, y: p1.y }
+        : { x: p1.x, y: p1.y - Math.sign(p1.y - p0.y)*r };
+
+      const post = (p2.x === p1.x)
+        ? { x: p1.x, y: p1.y + Math.sign(p2.y - p1.y)*r }
+        : { x: p1.x + Math.sign(p2.x - p1.x)*r, y: p1.y };
+
+      d += ` L ${pre.x} ${pre.y} Q ${p1.x} ${p1.y} ${post.x} ${post.y}`;
+    } else {
+      d += ` L ${p1.x} ${p1.y}`;
+    }
+  }
+  return d;
+}
+
+// ---------- smoothing & rounding ----------
+function lineClear(a, b, obstacles){
+  for (const r of obstacles) if (segIntersectsRect(a,b,r)) return false;
+  return true;
+}
+function simplifyPolyline(pts, obstacles){
+  if (!pts || pts.length<3) return pts.slice();
+  const out = [pts[0]];
+  let i = 0, j = 2;
+  while (j < pts.length){
+    if (lineClear(out[out.length-1], pts[j], obstacles)){
+      // can skip pts[j-1]
+      j++;
+    } else {
+      out.push(pts[j-1]);
+      i = j-1; j = i+2;
+    }
+  }
+  out.push(pts[pts.length-1]);
+  return out;
+}
+function roundedPath(points, radius=10) {
+  if (points.length < 2) {
+    const p = points[0] || {x:0,y:0};
+    return `M ${p.x} ${p.y}`;
+  }
+  let d = `M ${points[0].x} ${points[0].y}`;
+  for (let i=1;i<points.length;i++){
+    const p0 = points[i-1];
+    const p1 = points[i];
+    if (i < points.length-1) {
+      const p2 = points[i+1];
+      const v1 = { x: p1.x - p0.x, y: p1.y - p0.y };
+      const v2 = { x: p2.x - p1.x, y: p2.y - p1.y };
+      const len1 = Math.abs(v1.x)+Math.abs(v1.y);
+      const len2 = Math.abs(v2.x)+Math.abs(v2.y);
+      const r = Math.min(radius, Math.max(1, Math.min(len1/2, len2/2)));
+      const p1a = { x: p1.x - Math.sign(v1.x)*r, y: p1.y - Math.sign(v1.y)*r };
+      const p1b = { x: p1.x + Math.sign(v2.x)*r, y: p1.y + Math.sign(v2.y)*r };
+      d += ` L ${p1a.x} ${p1a.y} Q ${p1.x} ${p1.y} ${p1b.x} ${p1b.y}`;
+    } else {
+      d += ` L ${p1.x} ${p1.y}`;
+    }
+  }
+  return d;
+}
+
+// ---------- tiny heap ----------
+function MinHeap(cmp){ this.a=[]; this.cmp=cmp; }
+MinHeap.prototype.size=function(){return this.a.length;};
+MinHeap.prototype.push=function(v){ const a=this.a, c=this.cmp; a.push(v); let i=a.length-1;
+  while(i){ let p=(i-1)>>1; if(c(a[p],a[i])<=0) break; [a[p],a[i]]=[a[i],a[p]]; i=p; } };
+MinHeap.prototype.pop=function(){ const a=this.a, c=this.cmp; const top=a[0], v=a.pop();
+  if(a.length){ a[0]=v; let i=0; for(;;){ let l=i*2+1, r=l+1, m=i;
+    if(l<a.length && c(a[l],a[m])<0) m=l; if(r<a.length && c(a[r],a[m])<0) m=r;
+    if(m===i) break; [a[m],a[i]]=[a[i],a[m]]; i=m; } } return top; };
+
+function getSmartAnchor(blockId, towardPoint) {
+  const b = blocks.find(x => x.id === blockId);
+  if (!b) return {x:0,y:0};
+  const cx = b.x + 64, cy = b.y + 32;
+  const dx = towardPoint.x - cx, dy = towardPoint.y - cy;
+  if (Math.abs(dx) > Math.abs(dy)) {
+    return { x: dx < 0 ? b.x : b.x + 128, y: cy };
+  } else {
+    return { x: cx, y: dy < 0 ? b.y : b.y + 64 };
+  }
+}
+
 function updateConnections() {
   const svg = document.getElementById('connectionsSvg');
-  svg.innerHTML = ''; // no defs, no arrowheads
+  svg.innerHTML = '';
+  svg.style.zIndex = 3;
 
-  connections.forEach(connection => {
-    const from = getBlockTopAnchor(connection.fromId);
-    const to = getBlockTopAnchor(connection.toId);
-    const controlY = Math.min(from.y, to.y) - 50;
+  // we’ll add each cable as a soft obstacle (WORLD)
+  const extraCableObstacles = [];
 
-    const path = `M ${from.x} ${from.y} Q ${from.x} ${controlY} ${(from.x + to.x) / 2} ${controlY} Q ${to.x} ${controlY} ${to.x} ${to.y}`;
-
-    // Invisible, wide, clickable path
-    const clickablePath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    clickablePath.setAttribute('d', path);
-    clickablePath.setAttribute('stroke', 'transparent');
-    clickablePath.setAttribute('stroke-width', '30');
-    clickablePath.setAttribute('fill', 'none');
-    // only clickable in eraser mode
-    if (selectedTool === 'eraser') {
-      clickablePath.classList.add('connection-clickable');
-    }
-
-    clickablePath.onclick = (e) => handleConnectionClick(connection.id, e);
-    clickablePath.onmouseenter = () => handleConnectionMouseEnter(connection.id);
-    clickablePath.onmouseleave = () => handleConnectionMouseLeave();
-
-    // Thin, visible curve (styled via CSS class)
-    const visiblePath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    visiblePath.setAttribute('d', path);
-    visiblePath.setAttribute('vector-effect', 'non-scaling-stroke');
-    visiblePath.classList.add('connection-visible');
-    visiblePath.id = `vis-${connection.id}`;
-    if (selectedTool === 'eraser' && hoveredConnection === connection.id) {
-      visiblePath.classList.add('hover');
-    }
-
-    svg.appendChild(clickablePath);
-    svg.appendChild(visiblePath);
+  const ordered = connections.slice().sort((c1, c2) => {
+    const a1 = getBlockRect(c1.fromId), b1 = getBlockRect(c1.toId);
+    const a2 = getBlockRect(c2.fromId), b2 = getBlockRect(c2.toId);
+    const d1 = (!a1 || !b1) ? Infinity : Math.abs(a1.cx - b1.cx) + Math.abs(a1.cy - b1.cy);
+    const d2 = (!a2 || !b2) ? Infinity : Math.abs(a2.cx - b2.cx) + Math.abs(a2.cy - b2.cy);
+    return d1 - d2;
   });
+
+  for (let idx = 0; idx < ordered.length; idx++) {
+    const connection = ordered[idx];
+    const fromB = blocks.find(b => b.id === connection.fromId);
+    const toB   = blocks.find(b => b.id === connection.toId);
+    if (!fromB || !toB) continue;
+
+    // 1) anchors & stubs in WORLD
+    const toCenterW = { x: toB.x + 64, y: toB.y + 32 };
+    const { anchor: fromAnchorW, stub: fromStubW } = getAnchorOutside(connection.fromId, toCenterW, idx);
+
+    const fromCenterW = { x: fromB.x + 64, y: fromB.y + 32 };
+    const { anchor: toAnchorW,   stub: toStubW   } = getAnchorOutside(connection.toId, fromCenterW, idx);
+
+    // 2) obstacles in WORLD with padding
+    const obstacles = getWorldObstacles(INFLATE_WORLD, extraCableObstacles);
+
+    // 3) world extent around endpoints + obstacles
+    const ext = computeWorldExtent([fromStubW, toStubW], obstacles, 200);
+
+    // 4) build world grid and route in WORLD
+    const walk = buildWalkableWorld(ext, CELL_WORLD, obstacles);
+    let core = astarGridWorld(fromStubW, toStubW, walk, CELL_WORLD);
+    if (!core) core = [fromStubW, { x: fromStubW.x, y: toStubW.y }, toStubW];
+
+    // 5) assemble WORLD polyline
+    let ptsWorld = [
+      fromAnchorW,
+      fromStubW,
+      ...core.slice(1, -1),
+      toStubW,
+      toAnchorW
+    ];
+
+    // 6) simplify and orthogonalize (WORLD)
+    ptsWorld = mergeCollinear(ptsWorld);
+    ptsWorld = shortcutOrthogonal(ptsWorld, obstacles);
+    ptsWorld = mergeCollinear(ptsWorld);
+
+    // 7) add cable as a soft obstacle (WORLD)
+    const cableRects = cablePolylineToObstacles(ptsWorld, CABLEPAD_WORLD); // same helper, now WORLD
+    extraCableObstacles.push(...cableRects);
+
+    // 8) draw (SVG is already scaled with the stage transform)
+    const d = orthogonalRoundedPath(ptsWorld, CORNER_RADIUS);
+
+    const clickPath = document.createElementNS('http://www.w3.org/2000/svg','path');
+    clickPath.setAttribute('d', d);
+    clickPath.setAttribute('fill', 'none');
+    clickPath.setAttribute('stroke', 'transparent');
+    clickPath.setAttribute('stroke-width', '28');  // wide hit area (scales visually with non-scaling stroke)
+    if (selectedTool === 'eraser') clickPath.classList.add('connection-clickable');
+    clickPath.onclick = (e) => handleConnectionClick(connection.id, e);
+    clickPath.onmouseenter = () => handleConnectionMouseEnter(connection.id);
+    clickPath.onmouseleave = () => handleConnectionMouseLeave();
+
+    const visPath = document.createElementNS('http://www.w3.org/2000/svg','path');
+    visPath.setAttribute('d', d);
+    visPath.setAttribute('fill', 'none');
+    visPath.setAttribute('vector-effect', 'non-scaling-stroke'); // keeps line width constant on zoom
+    visPath.setAttribute('stroke-linejoin', 'round');
+    visPath.setAttribute('stroke-linecap', 'round');
+    visPath.classList.add('connection-visible');
+    visPath.id = `vis-${connection.id}`;
+    if (selectedTool === 'eraser' && hoveredConnection === connection.id) visPath.classList.add('hover');
+
+    svg.appendChild(clickPath);
+    svg.appendChild(visPath);
+  }
 }
+
+
+
+
+
 
 
         // Get block top anchor
@@ -1896,6 +2779,7 @@ function handleConnectionMouseLeave() {
             updateConnectionCount();
         }
 
+let dividerInited = false;
 function openBlockPopup(blockId) {
   openPopup = { blockId: blockId, isOpen: true };
   const block = blocks.find(b => b.id === blockId);
@@ -1915,6 +2799,9 @@ function openBlockPopup(blockId) {
   updateDividerPosition();
   updateConnectionCount();
   loadChatMessages();
+
+    if (!dividerInited) { initDividerDrag(); dividerInited = true; }
+
 }
 
 
@@ -2096,65 +2983,23 @@ function saveVersion() {
         // Initialize
         updateConnections();
 
-        function renderBlock(block) {
-    const blockEl = document.createElement('div');
-    blockEl.className = 'block';
-    blockEl.id = block.id;
-    blockEl.style.left = block.x + 'px';
-    blockEl.style.top = block.y + 'px';
-
-    const nameEl = document.createElement('span');
-    nameEl.className = 'block-name';
-    nameEl.textContent = block.name;
-    blockEl.appendChild(nameEl);
-
-    blockEl.onclick = (e) => handleBlockClick(block.id, e);
-    blockEl.onmousedown = (e) => handleBlockMouseDown(block.id, e);
-
-    // NEW: show red style while erasing + hovering
-    blockEl.onmouseenter = () => {
-        if (selectedTool === 'eraser') {
-            blockEl.classList.add('eraser-hover');
-        }
-    };
-    blockEl.onmouseleave = () => {
-        blockEl.classList.remove('eraser-hover');
-    };
-
-    document.getElementById('canvas').appendChild(blockEl);
-
-const divider = document.getElementById('divider');
-const chatSection = document.getElementById('chatSection');
-const outcomesSection = document.getElementById('outcomesSection');
-let isDragging = false;
-
-divider.addEventListener('mousedown', () => {
-  isDragging = true;
-  document.body.style.cursor = 'col-resize';
-});
-
-document.addEventListener('mousemove', e => {
-  if (!isDragging) return;
-  const container = chatSection.parentElement;
-  const containerRect = container.getBoundingClientRect();
-  // Calculate width for the left panel
-  let newWidth = e.clientX - containerRect.left;
-  // Optional: set min and max width
-  const minWidth = 200;
-  const maxWidth = containerRect.width - 200;
-  newWidth = Math.max(minWidth, Math.min(maxWidth, newWidth));
-  chatSection.style.flexBasis = `${newWidth}px`;
-});
-
-document.addEventListener('mouseup', () => {
-  if (isDragging) {
-    isDragging = false;
-    document.body.style.cursor = 'default';
-  }
-});
-
-    
+      function renderBlock(block) {
+  const blockEl = document.createElement('div');
+  blockEl.className = 'block';
+  blockEl.id = block.id;
+  blockEl.style.left = block.x + 'px';
+  blockEl.style.top  = block.y + 'px';
+  const nameEl = document.createElement('span');
+  nameEl.className = 'block-name';
+  nameEl.textContent = block.name;
+  blockEl.appendChild(nameEl);
+  blockEl.onclick = (e) => handleBlockClick(block.id, e);
+  blockEl.onmousedown = (e) => handleBlockMouseDown(block.id, e);
+  blockEl.onmouseenter = () => { if (selectedTool === 'eraser') blockEl.classList.add('eraser-hover'); };
+  blockEl.onmouseleave = () => blockEl.classList.remove('eraser-hover');
+  stageEl.appendChild(blockEl);               // ← was canvas
 }
+
 
 
 
@@ -2201,7 +3046,64 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('blur', closePopover);
   })();
 });
+
+
+// --- NEW: simple gate ---
+function hasPlacements() {
+  return (blocks && blocks.length > 0) || (grids && grids.length > 0);
+}
+
+/* =========================
+   1) Wheel → Zoom (gated)
+   ========================= */
+// REPLACE your current wheel listener with this:
+canvasEl.addEventListener('wheel', (e) => {
+  // always prevent page scroll
+  e.preventDefault();
+
+  // block zooming until something is placed
+  if (!hasPlacements()) return;
+
+  // Normalize delta across mice/trackpads
+  let dy = e.deltaY;
+  if (e.deltaMode === 1) dy *= 16;   // lines → px
+  if (e.deltaMode === 2) dy *= 400;  // pages → px
+
+  const intensity = 0.0015;
+  const factor = Math.exp(-dy * intensity);
+  zoomAtPointer(e, scale * factor);
+}, { passive: false });
+
+
+document.addEventListener('keydown', (e) => {
+  const isAccel = e.ctrlKey || e.metaKey;
+  if (!isAccel) return;
+
+  // block keyboard zoom until something is placed
+  if (!hasPlacements()) return;
+
+  if (e.key === '=' || e.key === '+') {
+    e.preventDefault();
+    const r = canvasEl.getBoundingClientRect();
+    const fake = { clientX: r.left + r.width/2, clientY: r.top + r.height/2 };
+    zoomAtPointer(fake, scale * 1.1);
+  } else if (e.key === '-') {
+    e.preventDefault();
+    const r = canvasEl.getBoundingClientRect();
+    const fake = { clientX: r.left + r.width/2, clientY: r.top + r.height/2 };
+    zoomAtPointer(fake, scale / 1.1);
+  } else if (e.key === '0') {
+    e.preventDefault();
+    const r = canvasEl.getBoundingClientRect();
+    const fake = { clientX: r.left + r.width/2, clientY: r.top + r.height/2 };
+    panX = 0; panY = 0;
+    zoomAtPointer(fake, 1);
+  }
+});
+
 </script>
+
+
 
 <!-- Project View trigger tab -->
 <div id="projectTab" class="project-tab" title="Project View">
