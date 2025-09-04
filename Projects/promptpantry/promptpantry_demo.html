@@ -3120,6 +3120,292 @@ document.addEventListener('keydown', (e) => {
   </div>
 </aside>
 
+<!-- === Block Diagram Editor: Guided Tutorial (drop-in) === -->
+<style>
+  /* Overlay & layers */
+  .tour-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);backdrop-filter:blur(1px);z-index:1000;display:none;}
+  .tour-svg{position:absolute;inset:0;pointer-events:none;z-index:1001}
+  .tour-target-ring{
+    position:relative; z-index:1002; pointer-events:none;
+    border-radius:8px;
+    box-shadow:0 0 0 3px var(--ring);
+    animation:tourPulse 1.6s infinite;
+  }
+  @keyframes tourPulse{
+    0%{box-shadow:0 0 0 3px var(--ring);}
+    70%{box-shadow:0 0 0 8px rgba(0,0,0,0);}
+    100%{box-shadow:0 0 0 3px var(--ring);}
+  }
+
+  /* Card */
+  .tour-card{
+    position:absolute; max-width:320px; z-index:1003;
+    background:var(--card); color:var(--foreground);
+    border:1px solid var(--border); border-radius:var(--radius);
+    box-shadow:0 20px 40px rgba(0,0,0,.20);
+    padding:12px 12px 8px;
+  }
+  .tour-card h4{margin:0 0 6px 0;font-size:14px}
+  .tour-card ul{margin:0 0 8px 16px;font-size:12px}
+  .tour-close{
+    position:absolute; top:6px; right:6px;
+    background:none; border:none; cursor:pointer;
+    font-size:16px; color:var(--muted-foreground);
+  }
+  .tour-controls{display:flex; gap:8px; justify-content:space-between; margin-top:8px}
+  .tour-controls button{
+    padding:6px 10px; border:1px solid var(--border);
+    background:var(--card); color:var(--card-foreground);
+    border-radius:calc(var(--radius) - 4px);
+    font-size:12px; cursor:pointer;
+  }
+  .tour-controls button[disabled]{opacity:.5; cursor:not-allowed}
+</style>
+
+<script>
+(function(){
+  // Define steps (targets are your existing toolbar IDs)
+  const STEPS = [
+    { sel:'#blockTool',   title:'Blocks', bullets:[
+      'Click canvas to place a block',
+      'Click a block to open its chat and prompt an output',
+      
+    ]},
+    { sel:'#connectTool', title:'Connect', bullets:[
+      'Click a source block, then a target block',
+      'Connections add context-sharing between blocks',
+    ]},
+    { sel:'#gridTool',    title:'Grids', bullets:[
+      'Click canvas to place a resizable grid',
+      'Name it and pick a color from the mini palette',
+      'Drag the custom handle to resize'
+    ]},
+    { sel:'#eraserTool',  title:'Cut', bullets:[
+      'Delete blocks, grids, or cables by clicking'
+    ]},
+    { sel:'#panTool',     title:'Pan & Zoom', bullets:[
+      'Drag the canvas with Pan ',
+      'Scroll to zoom in and out'
+    ]},
+  ];
+
+  let overlay, svg, card, idx=0, activeTarget=null;
+
+  function ensureUI(){
+    if (overlay) return;
+
+    // Create overlay + arrow layer + card
+    overlay = document.createElement('div');
+    overlay.className = 'tour-overlay'; overlay.id = 'tourOverlay';
+    svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+    svg.classList.add('tour-svg'); svg.setAttribute('width','100%'); svg.setAttribute('height','100%');
+    card = document.createElement('div'); card.className = 'tour-card';
+
+    overlay.appendChild(svg);
+    overlay.appendChild(card);
+    document.body.appendChild(overlay);
+
+    // Close on backdrop click (advance), ESC, or buttons
+    overlay.addEventListener('click', e => { if (e.target === overlay) goto(idx+1); });
+    window.addEventListener('resize', positionStep);
+    window.addEventListener('keydown', e => {
+      if (overlay.style.display!=='block') return;
+      if (e.key === 'Escape') return end();
+      if (e.key === 'ArrowRight' || e.key === 'Enter') return goto(idx+1);
+      if (e.key === 'ArrowLeft') return goto(idx-1);
+    });
+
+    // Add a "❓ Tutorial" button to the toolbar if not present
+    const tb = document.querySelector('.toolbar');
+    if (tb && !document.getElementById('tutorialTool')) {
+      const btn = document.createElement('button');
+      btn.id = 'tutorialTool';
+      btn.innerHTML = '<span>❓</span>';
+      btn.addEventListener('click', start);
+      tb.appendChild(btn);
+    }
+  }
+
+  function start(){
+    ensureUI();
+    overlay.style.display = 'block';
+    document.body.style.overflow = 'hidden'; // freeze interactions under overlay
+    idx = 0; goto(0);
+  }
+
+  function end(){
+    overlay.style.display = 'none';
+    svg.innerHTML = '';
+    document.body.style.overflow = '';
+    if (activeTarget){ activeTarget.classList.remove('tour-target-ring'); activeTarget = null; }
+    localStorage.setItem('bdx_tour_dismissed','1');
+  }
+
+  function goto(nextIndex){
+    // find nearest available target step (skip missing)
+    let i = nextIndex;
+    while (i >= 0 && i < STEPS.length && !document.querySelector(STEPS[i].sel)){
+      i += (nextIndex > idx) ? 1 : -1;
+    }
+    if (i < 0 || i >= STEPS.length) return end();
+    idx = i;
+    renderStep(STEPS[idx]);
+  }
+
+  function renderStep(step){
+    if (activeTarget) activeTarget.classList.remove('tour-target-ring');
+    activeTarget = document.querySelector(step.sel);
+    if (!activeTarget) return end();
+    activeTarget.classList.add('tour-target-ring');
+
+    const list = step.bullets.map(li=>`<li>${li}</li>`).join('');
+    card.innerHTML = `
+      <button class="tour-close" aria-label="Close">✕</button>
+      <h4>${step.title}</h4>
+      <ul>${list}</ul>
+      <div class="tour-controls">
+        <button id="tourPrev"${idx===0?' disabled':''}>‹ Prev</button>
+        <div style="flex:1"></div>
+        <button id="tourNext">${idx===STEPS.length-1?'Finish':'Next ›'}</button>
+      </div>
+    `;
+    card.querySelector('.tour-close').onclick = end;
+    card.querySelector('#tourPrev').onclick   = ()=>goto(idx-1);
+    card.querySelector('#tourNext').onclick   = ()=>goto(idx+1);
+
+    positionStep();
+  }
+
+  function positionStep(){
+    if (!activeTarget) return;
+    svg.innerHTML = '';
+
+    // target & viewport
+    const t = activeTarget.getBoundingClientRect();
+    const vw = innerWidth, vh = innerHeight;
+
+    // Try to place card: bottom, top, right, left
+    // (compute once card has basic size)
+    card.style.left = '12px'; card.style.top = '12px'; // temp to get size
+    const cw = card.offsetWidth, ch = card.offsetHeight;
+
+    const placements = [
+      {x: clamp(t.left + t.width/2 - cw/2, 12, vw - cw - 12), y: t.bottom + 12 },
+      {x: clamp(t.left + t.width/2 - cw/2, 12, vw - cw - 12), y: Math.max(12, t.top - ch - 12) },
+      {x: Math.min(t.right + 12, vw - cw - 12),               y: clamp(t.top, 12, vh - ch - 12) },
+      {x: Math.max(12, t.left - cw - 12),                     y: clamp(t.top, 12, vh - ch - 12) },
+    ];
+    const pos = placements.find(p => p.y >= 0 && p.y + ch <= vh) || placements[0];
+    card.style.left = `${Math.round(pos.x)}px`;
+    card.style.top  = `${Math.round(pos.y)}px`;
+
+    // Draw smooth arrow from card center to target center
+    const c = card.getBoundingClientRect();
+    const from = { x: c.left + c.width/2, y: c.top + c.height/2 };
+    const to   = { x: t.left + t.width/2, y: t.top + t.height/2 };
+
+    const defs = document.createElementNS('http://www.w3.org/2000/svg','defs');
+    const marker = document.createElementNS('http://www.w3.org/2000/svg','marker');
+    marker.setAttribute('id','tourArrow'); marker.setAttribute('markerWidth','10');
+    marker.setAttribute('markerHeight','7'); marker.setAttribute('refX','9');
+    marker.setAttribute('refY','3.5'); marker.setAttribute('orient','auto');
+    const poly = document.createElementNS('http://www.w3.org/2000/svg','polygon');
+    poly.setAttribute('points','0 0, 10 3.5, 0 7'); poly.setAttribute('fill','var(--ring)');
+    marker.appendChild(poly); defs.appendChild(marker); svg.appendChild(defs);
+
+    const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+    const d = `M ${from.x} ${from.y} C ${from.x} ${to.y}, ${to.x} ${from.y}, ${to.x} ${to.y}`;
+    path.setAttribute('d', d);
+    path.setAttribute('fill','none'); path.setAttribute('stroke','var(--ring)'); path.setAttribute('stroke-width','2');
+    path.setAttribute('marker-end','url(#tourArrow)');
+    svg.appendChild(path);
+  }
+
+  function clamp(v, min, max){ return Math.max(min, Math.min(max, v)); }
+
+  // Auto-start once per browser (can be re-opened via ❓ button)
+  document.addEventListener('DOMContentLoaded', ()=>{
+    ensureUI();
+    if (!localStorage.getItem('bdx_tour_dismissed')) {
+      setTimeout(start, 350);
+    }
+  });
+})();
+</script>
+
+<style>
+  /* Top-right floating Tutorial button */
+  #tutorialTool{
+    position: fixed !important;
+    top: 12px;
+    right: 12px;
+    z-index: 1004; /* above toolbar/overlay */
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: calc(var(--radius) - 2px);
+    background: var(--card);
+    color: var(--card-foreground);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    box-shadow: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -2px rgba(0,0,0,.05);
+  }
+  #tutorialTool:hover{
+    background: var(--accent);
+    color: var(--accent-foreground);
+  }
+</style>
+
+<script>
+  // Re-parent the existing tutorial button out of the toolbar to the body
+  (function moveTutorialButton(){
+    function place(){
+      const btn = document.getElementById('tutorialTool');
+      if (!btn) return; // tutorial not injected yet
+      if (btn.parentElement !== document.body) {
+        btn.parentElement.removeChild(btn);
+        document.body.appendChild(btn);
+      }
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', place, { once:true });
+    } else {
+      place();
+    }
+  })();
+</script>
+
+<script>
+  // Always start the tutorial when this demo loads
+  (function startTutorialOnOpen(){
+    function kick() {
+      try { localStorage.removeItem('bdx_tour_dismissed'); } catch(e){}
+      const btn = document.getElementById('tutorialTool');
+      if (btn) { btn.click(); return true; }
+      return false;
+    }
+    function attemptKick() {
+      if (kick()) return;
+      // Wait briefly if the tutorial button hasn't been injected yet
+      let tries = 0;
+      const id = setInterval(() => {
+        tries++;
+        if (kick() || tries > 60) clearInterval(id); // up to ~3s
+      }, 50);
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', attemptKick, { once:true });
+    } else {
+      attemptKick();
+    }
+    // Also handle bfcache restores (back/forward navigation)
+    window.addEventListener('pageshow', attemptKick);
+  })();
+</script>
 
 
 </body>
