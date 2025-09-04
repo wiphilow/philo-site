@@ -570,14 +570,33 @@ body.project-open .project-tab .arrow {
             flex-direction: column;
         }
 
-        .popup-header {
-            padding: 16px;
-            border-bottom: 1px solid var(--border);
-            background: var(--muted);
-            display: flex;
-            align-items: center;
-            justify-content:space-between;
-        }
+.popup-header {
+  padding: 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--muted);
+  display: flex;
+  align-items: center;
+  justify-content: flex-start; /* push content to the left */
+  gap: 8px;
+}
+
+#blockNameInput {
+  background: transparent;     /* no white background */
+  border: none;
+  outline: none;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--foreground);
+  padding: 0;
+  margin: 0;
+  flex: 0 1 auto;
+}
+
+#blockNameInput::placeholder {
+  color: var(--muted-foreground);
+  opacity: 0.8;
+}
+
 
         .popup-header input {
             width: 128px;
@@ -950,6 +969,12 @@ body.chat-open .toolbar {
   display: none; 
 }
 
+/* hide these while a conversation popup is open */
+body.chat-open .login-button,
+body.chat-open .active-users {
+  display: none !important;
+}
+
     </style>
 </head>
 <body>
@@ -1058,7 +1083,7 @@ function getCannedReply(block, userText) {
   return `${block.name}: This demo does not currently connect with ChatGPT or any LLMs. When implemented, this chatspace will allow you to prompt the
    construction of some subsection of a project. This could be a specific page on an website, a feature on an app, an abstract of a research paper, or
     a chapter in a book. The returned output (rendered code in website/app development cases) will appear on the right and can be iteratively updated, saved,
-    and restored with version control histroy.`;
+    and restored with version control history.`;
 }
 
 
@@ -1121,7 +1146,6 @@ async function sendMessage() {
         <div class="popup">
             <div class="chat-section" id="chatSection">
                 <div class="popup-header">
-                    <span style="font-size: 14px; color: var(--muted-foreground);"></span>
                     <input type="text" id="blockNameInput" placeholder="Enter block name">
                 </div>
                 
@@ -1165,7 +1189,7 @@ async function sendMessage() {
 
             <div class="outcomes-section" id="outcomesSection">
                 <div class="popup-header">
-                    <h3 style="font-weight: 600; font-size: 14px; color: var(--foreground);">Output</h3>
+                    <h3 style="font-weight: 600; font-size: 14px; color: var(--foreground);">Rendered Block</h3>
                     <button class="close-button" onclick="closePopup()">✕</button>
                 </div>
                 
@@ -1876,15 +1900,23 @@ function openBlockPopup(blockId) {
   openPopup = { blockId: blockId, isOpen: true };
   const block = blocks.find(b => b.id === blockId);
 
-  document.getElementById('blockNameInput').value = block.name;
-  document.getElementById('popup').classList.remove('hidden');
+  const nameInput = document.getElementById('blockNameInput');
+  if (block.name === 'New Block') {
+    nameInput.value = '';  // leave empty
+    nameInput.placeholder = 'Enter block name';  // show placeholder
+  } else {
+    nameInput.value = block.name;
+    nameInput.placeholder = 'Enter block name';  // still show this as placeholder
+  }
 
-  document.body.classList.add('chat-open');   // <-- add this line
+  document.getElementById('popup').classList.remove('hidden');
+  document.body.classList.add('chat-open');
 
   updateDividerPosition();
   updateConnectionCount();
   loadChatMessages();
 }
+
 
 
 function closePopup() {
@@ -2182,7 +2214,7 @@ document.addEventListener('DOMContentLoaded', () => {
   <div class="panel-header">Rendered Project</div>
   <div class="panel-body">
     <!-- put whatever you want here: tree, files, versions, etc. -->
-    <p style="font-size:12px;color:var(--muted-foreground)">Your project overview lives here.</p>
+    <p style="font-size:12px;color:var(--muted-foreground)">The entire project rendering will be viewable here.</p>
   </div>
 </aside>
 
