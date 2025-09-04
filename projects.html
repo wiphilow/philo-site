@@ -102,47 +102,72 @@
             font-size: 1.125rem;
         }
 
-        .projects-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-            gap: 2rem;
-        }
+      .projects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 2rem;
+}
 
-        .project-card {
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(10px);
-            border-radius: 1rem;
-            overflow: hidden;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s;
-        }
+.project-card {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s;
+}
 
-        .project-card:hover {
-            background: rgba(255, 255, 255, 0.9);
-            transform: translateY(-2px);
-        }
+.project-card:hover {
+  background: rgba(255, 255, 255, 0.9);
+  transform: translateY(-2px);
+}
 
-        .project-header {
-            height: 8rem;
-            position: relative;
-            overflow: hidden;
-        }
+.project-header {
+  height: 14rem;              /* adjust as you like */
+  position: relative;
+  overflow: hidden;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
 
-        .project-header.red { background: linear-gradient(to bottom right, #ef4444, #ec4899); }
-        .project-header.purple { background: linear-gradient(to bottom right, #8b5cf6, #6366f1); }
-        .project-header.orange { background: linear-gradient(to bottom right, #f97316, #ef4444); }
-        .project-header.green { background: linear-gradient(to bottom right, #10b981, #14b8a6); }
+/* Individual project images */
+.project-preview-pantry {
+  background-image: url("Projects/promptpantry/preview.png");
+}
 
-        .project-status {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            background: rgba(255, 255, 255, 0.9);
-            padding: 0.25rem 0.5rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 500;
-        }
+.project-preview-metaru {
+  background-image: url("Projects/metaru/preview.png");
+}
+
+.project-status {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+@media (max-width: 768px) {
+  .projects-grid { grid-template-columns: 1fr; }
+}
+
+
+
+/* Individual project images */
+.project-preview-pantry {
+  background-image: url("Projects/promptpantry/preview.png");
+}
+
+.project-preview-metaru {
+  background-image: url("Projects/metaru/preview.png");
+}
+
+/* Add more projects as needed */
+
 
         .project-content {
             padding: 1.5rem;
@@ -219,10 +244,18 @@
 .modal.open { display: block; }
 .modal-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,.45); }
 .modal-dialog {
-  position: relative; margin: 5vh auto 0; width: min(90vw, 1200px); height: 85vh;
-  background: #fff; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,.3);
-  display: flex; flex-direction: column; overflow: hidden;
+  position: fixed;
+  inset: 0;                 /* take up the whole screen */
+  margin: 0;                /* no margins */
+  width: 100vw;             /* full width */
+  height: 100vh;            /* full height */
+  background: #fff;         /* background behind iframe */
+  border-radius: 0;         /* remove rounded corners */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
+
 .modal-header {
   display: flex; align-items: center; justify-content: space-between;
   padding: 10px 14px; border-bottom: 1px solid #e5e7eb; background: #fafafa;
@@ -241,6 +274,19 @@
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
+.modal-body {
+  position: relative;
+  flex: 1;          /* take all available space */
+}
+
+#demoFrame {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+}
+
+
     </style>
 </head>
 <body>
@@ -257,60 +303,74 @@
 
             <div class="intro-card">
                 <p>
-                    I have way too many startup ideas.
+                    I have too many startup ideas.
                 </p>
             </div>
 
-            <div class="projects-grid">
-                <div class="project-card">
-                    <div class="project-header red">
-                        <div class="project-status">Live</div>
-                    </div>
-                    <div class="project-content">
-                        <h3 class="project-title">PromptPantry</h3>
-                        <p class="project-description">
-                             Making big projects with LLMs is messy. Copying and pasting ChatGPT outputs from a code editor and back,
+
+<div class="projects-grid"> <!-- ✅ added missing '>' -->
+  <div class="project-card">
+    <div class="project-header project-preview-pantry">
+      <div class="project-status">Live</div>
+    </div>
+    <div class="project-content">
+      <h3 class="project-title">PromptPantry</h3>
+      <p class="project-description">
+ Making big projects with LLMs is messy. Copying and pasting ChatGPT outputs from a code editor and back,
                              scrolling through lines of AI-generated output to make small tweaks, and trying to find previous outputs in
                               AI chats is a hastle. This is espcially true for unexperienced developers who want to build without setting
-                              up an IDE or understanding a variety of language syntax. PromptPantry is a wesbite/app developer and paper writing tool 
+                              up an IDE or understanding a variety of syntax. PromptPantry is a wesbite/app developer and paper writing tool 
                               that allows for organized chats with toggled context-sharing between chats.
-                        </p>
-                        <div class="tech-tags">
-                            <span class="tech-tag">context-controlled prompting</span>
-                            <span class="tech-tag">project organization</span>
-                            <span class="tech-tag">live rendering</span>
-                            <span class="tech-tag">chat version control</span>
+                              </p>
+      <div class="tech-tags">
+        <span class="tech-tag">context-controlled prompting</span>
+        <span class="tech-tag">project organization</span>
+        <span class="tech-tag">live rendering</span>
+        <span class="tech-tag">chat version control</span>
+      </div>
+      <div class="project-buttons">
+        <a href="construction.html" class="btn">About</a>
+        <a href="Projects/promptpantry/promptpantry_demo.html" class="btn"
+           onclick="openDemo(this.getAttribute('href'),'PromptPantry Demo'); return false;">
+          Demo
+        </a>
+      </div>
+    </div>
+  </div>
 
-                        </div>
-                        <div class="project-buttons">
-                            <a href="construction.html" class="btn">
-                                
-                                About
-                            </a>
+  <div class="project-card">
+    <div class="project-header project-preview-metaru">
+      <div class="project-status">Graduated</div>
+    </div>
+    <div class="project-content">
+      <h3 class="project-title">Metaru</h3>
+      <p class="project-description">Coming Soon</p>
+      <a href="construction.html" class="btn">About</a>
+    </div>
+  </div>
 
-                            <a href="Projects/promptpantry/promptpantry_demo.html" class="btn"
-                            onclick="openDemo(this.getAttribute('href'),'PromptPantry Demo'); return false;">
-                            Demo
-                            </a>
 
-                        </div>
-                    </div>
-                </div>
 
-                <div class="project-card">
-                    <div class="project-header purple">
-                        <div class="project-status">Graduated</div>
-                    </div>
-                    <div class="project-content">
-                        <h3 class="project-title">Metaru</h3>
-                        <p class="project-description">
-                        Coming Soon                        </p>
+  <div class="project-card">
+    <div class="project-header ">
+      <div class="project-status">Graduated</div>
+    </div>
+    <div class="project-content">
+      <h3 class="project-title">DigitOS</h3>
+      <p class="project-description">Coming Soon</p>
+      <a href="construction.html" class="btn">About</a>
+    </div>
+  </div>
+</div>
 
-                      
-                            </a>
-                        </div>
-                    </div>
-                </div>
+
+</div>
+
+</div>
+
+
+ 
+
 <!--
                 <div class="project-card">
                     <div class="project-header orange">
@@ -398,35 +458,56 @@ const frame   = document.getElementById('demoFrame');
 const spinner = document.getElementById('demoSpinner');
 const titleEl = document.getElementById('demoTitle');
 
+// Close modal when the user hits Back on the pushed-state
+function handlePopForDemo() {
+  if (modal.classList.contains('open')) {
+    closeDemo({ skipHistory: true }); // don't call history.back() again
+  }
+  // remove the handler after it's used once
+  window.removeEventListener('popstate', handlePopForDemo);
+}
+
 function openDemo(path, title = 'Demo') {
   lastFocus = document.activeElement;
   titleEl.textContent = title;
   spinner.style.display = 'grid';
-  frame.src = path;                        // relative path to your demo
+  frame.src = path;
   modal.classList.add('open');
   modal.setAttribute('aria-hidden', 'false');
-  document.body.style.overflow = 'hidden'; // prevent background scroll
+  document.body.style.overflow = 'hidden';
+
+  // Push a history state so the first Back closes the modal
+  history.pushState({ demoOpen: true }, '', '#demo');
+  window.addEventListener('popstate', handlePopForDemo);
 
   frame.addEventListener('load', () => { spinner.style.display = 'none'; }, { once: true });
   modal.querySelector('.modal-close').focus();
+
+  return false; // in case called from an <a onclick="return openDemo(...);">
 }
 
-function closeDemo() {
-  frame.src = 'about:blank';               // release the loaded page
+function closeDemo(opts = {}) {
+  frame.src = 'about:blank';
   modal.classList.remove('open');
   modal.setAttribute('aria-hidden', 'true');
   document.body.style.overflow = '';
   if (lastFocus) lastFocus.focus();
+
+  // If we initiated the close (✕, backdrop, Esc), also step back once
+  if (!opts.skipHistory && history.state && history.state.demoOpen) {
+    history.back();
+  }
 }
 
 modal.addEventListener('click', (e) => {
-  if (e.target.dataset.close === 'true') closeDemo();   // backdrop or ✕
+  if (e.target.dataset.close === 'true') closeDemo();
 });
 
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape' && modal.classList.contains('open')) closeDemo();
 });
 </script>
+
 
 </body>
 </html>
