@@ -2073,8 +2073,8 @@ const CELL_WORLD     = 14;   // routing grid size
 const INFLATE_WORLD  = 12;   // obstacle padding
 const CABLEPAD_WORLD = 8;    // cable-as-obstacle thickness
 const CORNER_RADIUS  = 10;   // rounding when drawing
-const ANCHOR_OUTSET = 10;   // how far outside the block the cable starts/ends
-const STUB_LEN      = 18;   // short straight segment before first bend
+const ANCHOR_OUTSET = 2;   // how far outside the block the cable starts/ends
+const STUB_LEN      =20;   // short straight segment before first bend
 
 
 function getWorldObstacles(pad = 0, extraRects = []) {
@@ -3174,9 +3174,10 @@ document.addEventListener('keydown', (e) => {
     { sel:'#connectTool', title:'Connect', bullets:[
       'Click a source block, then a target block',
       'Connections add context-sharing between blocks',
+      'Connections also identify and place intended references between blocks. This connects project subsets into one cohesive project.'
     ]},
     { sel:'#gridTool',    title:'Grids', bullets:[
-      'Click canvas to place a resizable grid',
+      'Grids help organize blocks and project subsets',
       'Name it and pick a color from the mini palette',
       'Drag the custom handle to resize'
     ]},
