@@ -1310,6 +1310,15 @@ background: none;
       
     ];
 
+    // Preload all photos so they’re cached by the browser
+const preloadedImages = [];
+photos.forEach(photo => {
+  const img = new Image();
+  img.src = photo.src;
+  preloadedImages.push(img);
+});
+
+
     let currentIndex = 0;
 
     function updateCarousel() {
