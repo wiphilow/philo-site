@@ -373,6 +373,12 @@
                 this.filterProgress = 0;
                 this.animationId = null;
                 this.linkHitBoxes = []; // Store hit boxes for links
+                this._prefetchLinkEl = null;
+                this._navFetchCtrl = null;
+                this._fetchProgress = 0;   // 0..1 based on bytes
+                this._fetchDone = false;
+                this._fetchUrl = null;
+
                 
                 // Store the original decomposition bounds when filtering starts
                 this.originalDecompositionStart = 0;
@@ -567,6 +573,9 @@
             }
 
             startBandpassFilter(waveIndex, clickX, clickY) {
+                const targetUrl = this.waveComponents[waveIndex].page;
+                this._prefetchDuringAnimation(targetUrl);
+
                 this.selectedWave = waveIndex;
                 this.isFiltering = true;
                 this.filterProgress = 0;
@@ -604,7 +613,7 @@ this.originalDecompositionEnd = decompositionEnd;
 
                 // Animate smooth transition
                 const startTime = Date.now();
-                const transitionDuration = 2500; // Smooth 2.5 second transition
+                const transitionDuration = 2000; // Smooth 2.5 second transition
                 const navigationDelay = 500; // Additional delay before navigation
 
                 const animateTransition = () => {
@@ -615,15 +624,17 @@ this.originalDecompositionEnd = decompositionEnd;
                     const easeInOutCubic = (t) => t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1;
                     this.filterProgress = easeInOutCubic(rawProgress);
                     
-                    progressFill.style.width = (rawProgress * 100) + '%';
+                    // Blend: ensure the bar reflects whichever is further along
+                    const blended = Math.max(rawProgress, this._fetchProgress * 0.95); // cap fetch at ~95% until animate completes
+                    progressFill.style.width = (blended * 100) + '%';
 
                     if (rawProgress < 1) {
                         requestAnimationFrame(animateTransition);
                     } else {
                         // Wait a bit more before navigation for visual completion
                         setTimeout(() => {
-                            window.location.href = this.waveComponents[waveIndex].page;
-                        }, navigationDelay);
+                            window.location.href = targetUrl;
+                        });
                     }
                 };
 
@@ -1016,6 +1027,52 @@ if (!isTouchDevice) {
                 this.ctx.fillText(component.label, centerX - exactTextWidth / 2, waveY);
                 this.ctx.shadowBlur = 0;
             }
+
+            _prefetchDuringAnimation(url) {
+                if (!url) return;
+
+                // Clear previous
+                if (this._prefetchLinkEl?.parentNode) this._prefetchLinkEl.parentNode.removeChild(this._prefetchLinkEl);
+                if (this._navFetchCtrl) this._navFetchCtrl.abort();
+                this._fetchProgress = 0;
+                this._fetchDone = false;
+                this._fetchUrl = url;
+
+                // Hint the browser to prefetch the *document* for upcoming navigation
+                const link = document.createElement('link');
+                link.rel = 'prefetch';
+                link.as = 'document';
+                link.href = url;
+                document.head.appendChild(link);
+                this._prefetchLinkEl = link;
+
+                // Streaming fetch to warm cache + expose byte progress (same-origin recommended)
+                const ctrl = new AbortController();
+                this._navFetchCtrl = ctrl;
+
+                fetch(url, { credentials: 'same-origin', signal: ctrl.signal, cache: 'force-cache' })
+                    .then(res => {
+                    // If no body (e.g., cross-origin without CORS), just mark as "in flight"
+                    if (!res.body) { this._fetchProgress = 0.6; return; }
+
+                    const lenHeader = res.headers.get('Content-Length');
+                    const total = lenHeader ? parseInt(lenHeader, 10) : 0;
+                    const reader = res.body.getReader();
+                    let received = 0;
+
+                    const pump = () => reader.read().then(({ done, value }) => {
+                        if (done) { this._fetchProgress = 1; this._fetchDone = true; return; }
+                        received += value.byteLength;
+                        // If total unknown, ease toward 0.9 so the bar still feels alive
+                        this._fetchProgress = total ? Math.min(received / total, 1) : Math.min(0.9, this._fetchProgress + 0.05);
+                        return pump();
+                    });
+
+                    return pump();
+                    })
+                    .catch(() => { /* ignore aborts/errors; animation still proceeds */ });
+                }
+
         
             toggleNoise() {
                 const noiseIndex = this.waveComponents.findIndex(c => c.isNoise);
@@ -1025,6 +1082,8 @@ if (!isTouchDevice) {
                 }
             }
         }
+
+        
 
         // Initialize the portfolio when the page loads
         window.addEventListener('DOMContentLoaded', () => {
