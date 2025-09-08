@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Philo - Experiences</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(to bottom right, #fafafa, #f8f8f8);
+
+            min-height: 100vh;
+            color: #1f2937;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 3rem 1.5rem;
+        }
+
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            background: white;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            text-decoration: none;
+            color: #374151;
+            margin-bottom: 2rem;
+            transition: all 0.2s;
+        }
+        .plot-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            margin-bottom: 3rem;
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+            background: rgba(255, 255, 255, 0.8);
+              display: flex;
+  flex-direction: column;
+  height: 100%;
+
+            
+        }
+        #resume-plot {
+            width: 100%;
+            height: 100%;
+            min-height: 300px;
+            aspect-ratio: 2 / 1;
+            transition: all 0.3s ease;
+        }
+
+
+        
+        @media (max-width: 768px) {
+            .page-title {
+                font-size: 32px;
+            }
+            .page-header {
+                left: 24px;
+            }
+        }
+
+        .back-button:hover {
+            background: #f9fafb;
+            transform: translateY(-1px);
+        }
+
+        /* Header that matches the animation target */
+        .page-header {
+            position: fixed;
+            top: 80px;
+            left: 40px;
+
+            display: flex;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .frequency-dot {
+            width: 1rem;
+            height: 1rem;
+            background: #f59e0b;
+            border-radius: 50%;
+            margin-right: 1rem;
+        }
+
+        .page-title {
+            font-size: 40px;
+            font-weight: 900;
+            color: #f59e0b;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .frequency {
+            margin-left: 1rem;
+            color: #f59e0b;
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        /* Content starts below the fixed header */
+        .content {
+            margin-top: 160px;
+        }
+        .selected-placeholder {
+            margin-top: 2rem;
+            padding: 2rem;
+            border-radius: 1rem;
+            background: rgba(255, 255, 255, 0.85);
+            text-align: center;
+            min-height: 180px;  /* Adjust as needed */
+            justify-content: center; /* Horizontal centering */
+            align-items: center;     /* Vertical centering */
+            text-align: center;
+
+            font-size: 1.125rem;
+            color: #6b7280;
+            border: 2px dashed #f59e0b;
+            transition: all 0.3s ease;
+        }
+
+        .selected-placeholder.highlight {
+            border: 2px solid #f59e0b;
+            box-shadow: 0 0 15px rgba(245, 158, 11, 0.4);
+        }
+
+        .placeholder-text {
+            margin: 0;
+            font-weight: 500;
+        }
+
+        .intro-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            margin-bottom: 3rem;
+        }
+
+        .intro-card h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: #1f2937;
+        }
+
+        .intro-card p {
+            color: #4b5563;
+            line-height: 1.7;
+            font-size: 1.125rem;
+        }
+
+        .experience-list {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+
+        .experience-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+            word-wrap: break-word;
+            padding: 2rem;
+            transition: none;
+            padding: 1.25rem;
+            min-height: 1px;
+            background-color: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            will-change: transform, opacity;
+
+
+        }
+        @media (max-width: 768px) {
+            .experience-title {
+                font-size: 1.25rem;
+            }
+
+
+            .experience-description,
+            .achievements-list {
+                text-align: left;
+                margin-left: 0;
+                padding-left: 0;
+                font-size: .85rem;
+                
+            }
+
+        }
+        .experience-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+
+        .experience-title-block {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+
+
+        .experience-description{
+            text-align: left;
+            margin-left: 0;
+            font-size: .9rem;
+        }
+
+
+        .experience-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 0.25rem;
+        }
+
+        .experience-company {
+            font-size: .9rem;
+            color: #f59e0b;
+            font-weight: 600;
+            text-align: left;
+            margin-left: 0;
+            font-size: .9rem;
+        }
+
+
+        .experience-card.highlight {
+            border: 2px solid #f59e0b;
+            box-shadow: 0 0 15px rgba(245, 158, 11, 0.4);
+            transition: all 0.3s ease;
+        }
+
+
+
+        .experience-meta {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            text-align: left;
+            color: #6b7280;
+            font-size: .9rem;
+        }
+
+        .experience-meta div {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            margin-bottom: 0.25rem;
+        }
+
+        .experience-meta svg {
+            width: 1rem;
+            height: 1rem;
+            margin-right: 0.5rem;
+        }
+
+        .experience-description {
+            
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .achievements-title {
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 0.75rem;
+            font-size: .9rem;
+            text-align: left;
+            margin-left: 0;
+            padding-left: 0;
+
+        }
+
+        .achievements-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .achievements-list li {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 0.5rem;
+              font-size: 0.85rem;
+
+            line-height: 1.6;
+            padding-left: 0.5rem;
+
+        }
+        #selected-experience .experience-card {
+            text-align: left;
+            }
+
+            #selected-experience .achievements-list {
+            padding-left: 0;
+            margin-left: 0;
+            text-align: left;
+            }
+
+            #selected-experience .achievements-title {
+            text-align: left;
+            }
+
+            #selected-experience > .experience-card {
+  height: 100%;
+  margin: 0;
+  border-radius: 1rem;
+  box-shadow: none;
+}
+
+#selected-experience {
+  flex-grow: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+
+  padding: 0rem;
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.85);
+  text-align: center;
+  color: #6b7280;
+  border: 2px dashed #f59e0b;
+  transition: all 0.3s ease;
+}
+
+#selected-experience .experience-description {
+  color: #1f2937;
+}
+
+#selected-experience .achievements-list li span {
+  font-size: 0.85rem;
+  color: #1f2937;
+}
+
+
+
+
+        .achievement-dot {
+            width: 0.4rem;
+            height: 0.4rem;
+            background: #f59e0b;
+            border-radius: 50%;
+            margin-top: 0.5rem;
+            margin-right: 0.75rem;
+            flex-shrink: 0;
+            list-style: none;
+            ;
+        }
+        .meta-row {
+  display: flex;
+  justify-content: flex-start;
+  width: max-content;    /* Keep row only as wide as its contents */
+}
+
+.emoji {
+  width: 1.5em;           /* Fixed width to align all emojis */
+  display: inline-block;
+}
+        @media (max-width: 550px) {
+            .experience-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .experience-meta {
+                text-align: left;
+                margin-top: 0.5rem;
+                margin-left: auto;
+                
+            }
+            
+            .experience-meta div {
+                justify-content: flex-start;
+            }
+            
+            .page-title {
+                font-size: 32px;
+            }
+            
+            .page-header {
+                left: 24px;
+            }
+        }
+
+        #selected-experience .achievements-list li span {
+  font-size: 0.85rem;
+}
+
+.legend-container {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-top: 1.5rem;      /* ⬅️ This moves it down */
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+
+
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  font-size: 0.9rem;
+  color: #1f2937;
+}
+
+.legend-dot {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+  margin-right: 0.5rem;
+  display: inline-block;
+}
+
+
+    </style>
+</head>
+<body>
+
+  <div class="experience-meta"> ... </div>
+</div>
+
+    <div class="page-header">
+        <h1 class="page-title">Experience</h1>
+        <span class="frequency">f = 1.6Hz</span>
+    </div>
+
+    <div class="container">
+        <div class="content">
+            <a href="index.html" class="back-button">
+                ← Back to Signal
+            </a>
+
+            <div class="intro-card">
+                <p>
+I enjoy being in research and people-facing roles. </div>
+            <div class="plot-card plot-and-highlight">
+                <div class="legend-container">
+  <div class="legend-item">
+    <span class="legend-dot" style="background-color: #f6cd61;"></span>Work Experience
+  </div>
+  <div class="legend-item">
+    <span class="legend-dot" style="background-color: #3da4ab;"></span>Extracurricular
+  </div>
+  <div class="legend-item">
+    <span class="legend-dot" style="background-color: #fe8a71;"></span>Internship
+  </div>
+</div>
+
+                <div id="resume-plot"></div>
+                <div id="selected-experience" class="selected-placeholder">
+                    <p class="placeholder-text">Click on a point for experience details</p>
+                </div>
+            </div>
+            <h2 id="all-experiences-title" style="font-size: 1.5rem; font-weight: 700; color: #1f2937; margin-bottom: 1.5rem;">
+                All Experiences
+            </h2>
+            <div class="experience-list">
+                <div class="experience-list">
+
+                <!-- All Experience Cards -->
+
+
+                <div class="experience-card" id="card-Health-Medical-Device-RD">
+                <div class="experience-header">
+                    <div class="experience-title-block">
+                    <h3 class="experience-title">Health/Medical Device R&D</h3>
+                    <p class="experience-company">Starling (YC W22)</p>
+                    </div>
+                    <div class="experience-meta">
+                    <div>
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        2025 - Present
+                    </div>
+                    <div>
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        Houston, TX
+                    </div>
+                    </div>
+                </div>
+                <p class="experience-description">
+I design and run experiments to evaluate the effectiveness of UrinDx, a home urology device. This involves testing how accurately the device detects turbidity and estimates hydration, and how those measurements are influenced by confounding substances like blood. I analyze experimental data and build internal tools to gather feedback from urologists and normalize lighting/color in photos.
+
+                </p>
+                <div>
+                    <h4 class="achievements-title">Contributions:</h4>
+                    <ul class="achievements-list">
+                    <li><div class="achievement-dot"></div><span>I'm just getting started at Starling but some cool things are in the works :)</span></li>
+                    </ul>
+                </div>
+                </div>
+
+
+                <div class="experience-card" id="card-Researcher-Coordinator">
+                <div class="experience-header">
+                    <div class="experience-title-block">
+                    <h3 class="experience-title">Researcher/Coordinator</h3>
+                    <p class="experience-company">Yamagami Lab</p>
+                    </div>
+                    <div class="experience-meta">
+                    <div>
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        2024 – 2025
+                    </div>
+                    <div>
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        Houston, TX
+                    </div>
+                    </div>
+                </div>
+                <p class="experience-description">
+                     During my final year of undergrad, I worked on three studies focused on using biosignals to recognize gestures, identify exercises, and estimate physical exertion. Since two of these studies were early-stage, a big part of the work was deciding how to design the experiments and what data was worth collecting. For these studies, I designed and wrote protocols, collected data during participant sessions, and integrated smartwatches, motion capture systems, and EMG sensors into data collection pipelines. For the third study, I cleaned and processed EMG and IMU signals to demonstrate the cross-day stability of a novel gesture recognizer.
+                     
+                    
+                </p>
+                <div>
+                    <h4 class="achievements-title">Contributions:</h4>
+                    <ul class="achievements-list">
+                    <li><div class="achievement-dot"></div><span> “Data-driven modeling to predict prehabilitation adherence in frail individuals with ESKD” accepted by RESNA for publication in the <em>Assistive Technology Journal</em>. 
+ 
+</li>
+                    
+
+                    <li><div class="achievement-dot"></div><span> “Customized Mid-Air Gestures for Accessibility: A $B Recognizer for Multi-Dimensional Biosignal Gestures” submitted for publication. 
+ 
+</li>
+
+</ul>
+                </div>
+                </div>
+
+                <div class="experience-card" id="card-Teaching-Assistant">
+                <div class="experience-header">
+                    <div class="experience-title-block">
+                    <h3 class="experience-title">Teaching Assistant</h3>
+                    <p class="experience-company">
+  Rice University - BIOS 385: Mechanisms of Neurons
+
+
+
+                    </div>
+                    <div class="experience-meta">
+                         <div>
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        Fall 2024
+                    </div>
+                                        <div>
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        Houston, TX
+                    </div>
+                    </div>
+                </div>
+                <p class="experience-description">
+                After taking the course the previous year, I came back as a TA to run discussion sections for a subset of the course's students. We spent our time unpacking primary research articles by talking through figures, experimental design, and how each paper tied into key ideas of the course. Topics included persistent sodium currents in apteronotids (a slightly electric fish), the cAMP/PKA signaling pathway, short/long term habituation in zebrafish, and optogenetics. It was great teaching practice: I prepped slides each week, dug into readings and figures, and worked on walking students through each paper’s story in a way that felt more like conversation than lecture.
+                </p>
+                <div>
+                   
+                </div>
+                </div>
+
+                <div class="experience-card" id="card-MRI-Research-Assistant">
+                <div class="experience-header">
+                    <div class="experience-title-block">
+                    <h3 class="experience-title">MRI Research Assistant</h3>
+                    <p class="experience-company">UTHealth Science Center</p>
+                    </div>
+                    <div class="experience-meta">
+                    <div>
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        2023 – 2024
+                    </div>
+                                        <div>
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        Houston, TX
+                    </div>
+                    </div>
+                </div>
+                <p class="experience-description">
+Over four months as an MRI research assistant, I carved out a research project looking at brain scans from preterm children to explore possible neural links to developmental delays. I used neuroimaging tools like iBEAT and FSL’s FEAT and DTI pipelines, which meant spending a lot of time flipping between colorful brain slices on my screen and equally colorful research papers. Along the way, I built a Python pipeline to check if we had the right imaging and behavioral data, calculate behavior scores, and wrangle MRI data into a usable format. It all came together in a paper I presented to the director of the neuroscience program at Rice (basically the research equivalent of showing your parents a macaroni necklace).
+
+                </p>
+                <div>
+                    <h4 class="achievements-title">Achievements:</h4>
+                    <ul class="achievements-list">
+                    <li><div class="achievement-dot"></div><span>"Exploring Brain Volume Variations and Their Implications for
+Socio-Emotional Development in Preterm Children" <a href="/philo-site/pdfs/Brain_Development_in_Preterm_Children.pdf" target="_blank" rel="noopener noreferrer">View Paper</a></span>
+</li>
+                    </ul>
+                </div>
+                </div>
+               
+
+                <div class="experience-card" id="card-Director-of-Events-Planning">
+                <div class="experience-header">
+                    <div class="experience-title-block">
+                    <h3 class="experience-title">Director of Events Planning</h3>
+                    <p class="experience-company">Boston University</p>
+                    </div>
+                    <div class="experience-meta">
+                    <div>
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        2020 – 2021
+                    </div>
+                                        <div>
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        Boston, MA
+                    </div>
+                    </div>
+                </div>
+                <p class="experience-description">
+There weren’t many events happening at BU during the COVID lockdown and after having caught COVID twice and feeling awful for weeks I was feeling fairly cautious. Since I wasn’t finding many events that felt safe and interesting, I joined a group that planned them. And, woudn't you know it, what started as my intention to create good, safe events ended up being a consitent social activity of its own.         <div>
+                    <h4 class="achievements-title">Achievements:</h4>
+                    <ul class="achievements-list">
+                    <li><div class="achievement-dot"></div><span>Created 13 social events including a university-wide speed dating event, informal out-off-class professor "TED Talks", a wellness week, and a white elephant gift exchange. </span></li>
+                    <li><div class="achievement-dot"></div><span>Developed a hybrid graduation banquet for 200+ people while meeting strict university COVID safety standards.</span></li>
+                    </ul>
+                </div>
+                </div>
+
+                <div class="experience-card" id="card-President-Japanese-Club">
+                <div class="experience-header">
+                    <div class="experience-title-block">
+                    <h3 class="experience-title">President - Japanese Club</h3>
+                    <p class="experience-company">Rice University</p>
+                    </div>
+                    <div class="experience-meta">
+                    <div>
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        2022 – 2024
+                    </div>
+                                        <div>
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        Houston, TX
+                    </div>
+                    </div>
+                </div>
+                <p class="experience-description">
+Club involvement at a new university felt like a good way to dive into something new, meet people, and share Japanese culture on a campus where the community was pretty small. It turned out to be a lot of fun and came with a fair amount of responsibility. I kept the club in good standing with the university, fundraised to cover event costs, and built connections with local businesses and other student orgs. Our four-person board aimed to host one event each month, so we got into a rhythm of setting deadlines, advertising on campus and on social media, and staying in sync to keep everything manageable alongside school. As the club expanded, we grew to a six-person board and organized a steady stream of club events.                 
+   <h4 class="achievements-title">Achievements:</h4>
+                    <ul class="achievements-list">
+                    <li><div class="achievement-dot"></div><span>Grew club membership from ~70 students to 450 students.</span></li>
+                    <li><div class="achievement-dot"></div><span>Held 16 events including restaurant outings, study socials, movie and trivia nights, hands-on food workshops (Takoyaki, Ramen, Kakigori), a Lunar New Year celebration, and collaborations with cafés and other student clubs.</span></li>
+                    </ul>
+                </div>
+                </div>
+
+                <div class="experience-card" id="card-Physical-Therapy-Aide">
+                <div class="experience-header">
+                    <div class="experience-title-block">
+                    <h3 class="experience-title">Physical Therapy Aide</h3>
+                    <p class="experience-company">Balance Physical Therapy</p>
+                    </div>
+                    <div class="experience-meta">
+                    <div>
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        2021 – 2022
+                    </div>
+                    <div>
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        Monterey, CA
+                    </div>
+                    </div>
+                </div>
+                <p class="experience-description">
+While transferring from Boston University to Rice, I worked as a PT aide at a clinic that focused on joint replacement prehabilitation and recovery for older adults. At the time, I was planning to pursue physical therapy as a career. I worked with over a hundred patients and taught/tracked PT-prescribed exercises. My biggest takeaway was that small acts like listening, talking, and offering encouragement aided recovery and helped turn routine into something that felt more human.
+
+
+           </p>
+                <div>
+             
+                </div>
+                </div>
+
+
+    <script>
+        
+const experiences = [
+  { experience: "Researcher/Coordinator", company: "Yamagami Lab",id: "Researcher-Coordinator", dimension: "Work Experience", research: 5, people: 6 },
+  { experience: "Teaching Assistant",company: "Rice University", id: "Teaching-Assistant", dimension: "Activities", research: 4, people: 7.4 },
+  { experience: "MRI Research Assistant", company: "UTHealth Science Center",id: "MRI-Research-Assistant", dimension: "Internship", research: 5.4, people: 5 },
+  { experience: "Health/Medical Device R&D", company: "Starling Medical",id: "Health-Medical-Device-RD", dimension: "Work Experience", research: 6, people: 1 },
+  { experience: "Director of Events Planning", company: "Boston University",id: "Director-of-Events-Planning", dimension: "Work Experience", research: 2, people: 8 },
+  { experience: "President - Japanese Club", company: "Rice University",id: "President-Japanese-Club", dimension: "Activities", research: 1, people: 8.3 },
+  { experience: "Physical Therapy Aide", company: "Balance Physical Therapy",id: "Physical-Therapy-Aide", dimension: "Work Experience", research: 1, people: 10 }
+];
+
+
+        const colorMap = {
+            "Activities": "#3da4ab",
+            "Work Experience": "#f6cd61",
+            "Internship": "#fe8a71"
+        };
+
+                // ⬇️ ⬅️ Place helper functions here
+        function updateMarkerHighlight(index) {
+            selectedPointIndex = index;
+
+            const newSizes = experiences.map((_, i) => i === index ? 22 : 15);
+            const newLineWidths = experiences.map((_, i) => i === index ? 3 : 1);
+            const newLineColors = experiences.map((_, i) => i === index ? '#000000' : '#e5e7eb');
+
+            Plotly.restyle('resume-plot', {
+                'marker.size': [newSizes],
+                'marker.line.width': [newLineWidths],
+                'marker.line.color': [newLineColors]
+            });
+        }
+     
+
+        function clearMarkerHighlight() {
+            selectedPointIndex = null;
+
+            const baseSizes = experiences.map(() => 15);
+            const baseLineWidths = experiences.map(() => 1);
+            const baseLineColors = experiences.map(() => '#e5e7eb');
+
+            Plotly.restyle('resume-plot', {
+                'marker.size': [baseSizes],
+                'marker.line.width': [baseLineWidths],
+                'marker.line.color': [baseLineColors]
+            });
+        }
+            
+
+        let selectedPointIndex = null;
+
+        const invisibleTrace = {
+        x: experiences.map(d => d.people),
+        y: experiences.map(d => d.research),
+        mode: 'markers',
+        type: 'scatter',
+        marker: {
+            size: 140,                  // Larger clickable area
+            color: 'rgba(0,0,0,0)',    // Fully transparent
+        },
+        hoverinfo: 'skip',             // Prevent hover popup
+        showlegend: false
+    };
+
+
+        const trace = {
+            x: experiences.map(d => d.people),
+            y: experiences.map(d => d.research),
+            text: experiences.map(d => `<b>${d.experience}</b> <br> @ ${d.company}`),
+            mode: 'markers',
+            type: 'scatter',
+            marker: {
+                size: 15,
+                color: experiences.map(d => colorMap[d.dimension]),
+                line: {
+                    width: experiences.map(() => 1),
+                    color: experiences.map(() => '#e5e7eb')
+                },
+                },
+hovertemplate: '%{text}<extra></extra>'
+            };
+
+const layout = {
+    paper_bgcolor: 'rgba(255, 255, 255, 0.8)',
+    plot_bgcolor: 'rgba(255, 255, 255, 0.8)',
+    
+xaxis: {
+  range: [-0.5, 10.2],
+  fixedrange: true,
+  showgrid: false,
+  zeroline: false,
+  showline: false,
+  showticklabels: false
+},
+yaxis: {
+  range: [-0.5, 6.5],  // shorter y-axis
+  fixedrange: true,
+  showgrid: false,
+  zeroline: false,
+  showline: false,
+  showticklabels: false
+},
+cliponaxis: false,
+margin: { l: 40, r: 40, t: 40, b: 40 },
+
+
+annotations: [
+  // X-axis label — centered and below the plot
+  {
+    xref: 'paper',
+    yref: 'paper',
+    x: 0.5,
+    y: -0.05,  // slightly below the bottom of the plot
+    text: 'People Focus',
+    showarrow: false,
+    font: {
+      size: 14,
+      color: '#1f2937',
+      family: 'Inter, sans-serif'
+    },
+    xanchor: 'center',
+    yanchor: 'top'
+  },
+
+  // Y-axis label — left of the plot and centered vertically
+  {
+    xref: 'paper',
+    yref: 'paper',
+    x: 0,      // exactly left edge of the plot
+    y: 0.5,
+    text: 'Research Focus',
+    showarrow: false,
+    font: {
+      size: 14,
+      color: '#1f2937',
+      family: 'Inter, sans-serif'
+    },
+    xanchor: 'right',
+    yanchor: 'middle',
+    textangle: -90
+  }
+],
+
+
+
+
+shapes: [
+  // X-axis shaft
+  {
+    type: 'path',
+    path: `
+      M 0,0
+      L 9.5,0.3
+      L 9.5,-0.3
+      Z
+    `,
+    fillcolor: '#f59e0b',  // <--- Orange
+    line: { width: 0 },
+    layer: 'below'
+  },
+  // X-axis arrowhead
+  {
+    type: 'path',
+    path: `
+      M 9.5,0.4
+      L 10,0
+      L 9.5,-0.4
+      Z
+    `,
+    fillcolor: '#f59e0b',  // <--- Orange
+    line: { width: 0 },
+    layer: 'below'
+  },
+
+  // Y-axis shaft (scaled width)
+  {
+    type: 'path',
+    path: `
+      M 0,0
+      L 0.18,5.5
+      L -0.18,5.5
+      Z
+    `,
+    fillcolor: '#f59e0b',  // <--- Orange
+    line: { width: 0 },
+    layer: 'below'
+  },
+  // Y-axis arrowhead (scaled width)
+  {
+    type: 'path',
+    path: `
+      M 0.24,5.5
+      L 0,6
+      L -0.24,5.5
+      Z
+    `,
+    fillcolor: '#f59e0b',  // <--- Orange
+    line: { width: 0 },
+    layer: 'below'
+  }
+],
+
+
+  cliponaxis: false,  // <– this is key
+
+
+
+
+    margin: { l: 60, r: 60, t: 60, b: 60 },
+    showlegend: false,
+    hovermode: 'closest',
+    responsive: true,
+    autosize: true
+
+
+    
+};
+
+
+
+ 
+
+        Plotly.newPlot('resume-plot', [trace, invisibleTrace], layout, { displayModeBar: false });
+        window.addEventListener('resize', () => {
+        Plotly.Plots.resize(document.getElementById('resume-plot'));
+        });
+        
+
+        const plotContainer = document.getElementById('resume-plot');
+
+
+        // Automatically resize Plotly when its container changes size
+        const resizeObserver = new ResizeObserver(() => {
+            Plotly.Plots.resize(plotContainer);
+        });
+
+        resizeObserver.observe(plotContainer);
+        plotContainer.on('plotly_click', function(eventData) {
+        if (!eventData || !eventData.points || eventData.points.length === 0) {
+            // Clicked on whitespace inside the plot
+            clearMarkerHighlight();
+            document.querySelectorAll('.experience-card').forEach(c => c.classList.remove('highlight'));
+
+            const selectedContainer = document.getElementById('selected-experience');
+            selectedContainer.innerHTML = '<p class="placeholder-text">Click on a point for experience details</p>';
+            selectedContainer.classList.remove('highlight');
+            return;
+        }
+
+        const point = eventData.points[0];
+        const index = point.pointIndex;
+        const experienceName = point.text;
+        const selectedContainer = document.getElementById('selected-experience');
+        const cardId = `card-${experiences[index].id}`;
+        const card = document.getElementById(cardId);
+
+        if (card && selectedContainer) {
+            const clonedCard = card.cloneNode(true);
+            selectedContainer.innerHTML = ''; // Clear placeholder
+            selectedContainer.appendChild(clonedCard);
+            selectedContainer.classList.add('highlight');
+
+        }
+
+
+        updateMarkerHighlight(index);
+    });
+
+
+
+
+
+
+
+
+
+
+
+
+    </script>
+
+                
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+document.querySelectorAll('.achievements-list a').forEach(link => {
+    link.setAttribute('target', '_blank');
+    link.setAttribute('rel', 'noopener noreferrer');
+});
+</script>
+
+</body>
+</html>
