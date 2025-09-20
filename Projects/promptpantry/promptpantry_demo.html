@@ -396,6 +396,11 @@ body.project-open .project-tab .arrow {
   font-size: 13px;
 }
 
+/* Hide the global Project History toggle while a block chat popup is open */
+body.chat-open .project-history-btn { 
+  display: none !important; 
+}
+
 .status-red {
   width: 10px;
   height: 10px;
@@ -1032,6 +1037,155 @@ body.pan-dragging .canvas { cursor: grabbing; }
   will-change: transform;
 }
 
+.project-history-btn{
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 65; /* above panel */
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) - 2px);
+  background: var(--card);
+  color: var(--card-foreground);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(0,0,0,.10);
+  transition: background .2s ease,color .2s ease, transform .08s ease;
+}
+.project-history-btn:hover{ background: var(--accent); color: var(--accent-foreground); }
+.project-history-btn:active{ transform: translateY(1px); }
+
+/* show only in "full version tab" (i.e., when project panel is open) */
+.project-history-btn{ display:none; }
+body.project-open .project-history-btn{ display:inline-flex; }
+
+/* ⬇ NEW: sheet inside the right panel for project history ⬇ */
+#projectHistorySheet{
+  position: absolute;
+  inset: 0;
+  background: var(--card);
+  color: var(--foreground);
+  border-left: 1px solid var(--border);
+  display: none;
+  z-index: 66; /* above panel content */
+  overflow: hidden;
+}
+#projectHistorySheet.open{ display: block; }
+
+/* PATCH: ensure the floating toggle sits above the history sheet */
+#projectHistorySheet { z-index: 70; }       /* was 66 */
+.project-history-btn { z-index: 80; }       /* was 65 */
+
+
+#phsHeader{
+  display: flex; align-items: center; gap: 8px;
+  padding: 12px 16px;
+  background: var(--muted);
+  border-bottom: 1px solid var(--border);
+}
+#phsHeader h3{ font-size: 14px; font-weight: 600; margin:0; }
+#phsClose{
+  margin-left:auto; background:none; border:0; cursor:pointer;
+  color: var(--muted-foreground); font-size: 16px;
+  border-radius: calc(var(--radius) - 4px);
+}
+#phsClose:hover{ background: var(--accent); color: var(--accent-foreground); }
+
+#phsBody{ height: calc(100% - 50px); display:flex; flex-direction: column; }
+
+#phsToolbar{
+  display:flex; gap:8px; align-items:center;
+  padding:10px 12px; border-bottom:1px solid var(--border);
+  background: var(--card);
+}
+#phsToolbar button{
+  padding:6px 10px; border:1px solid var(--border);
+  background: var(--card); color: var(--card-foreground);
+  border-radius: calc(var(--radius) - 4px);
+  font-size:12px; cursor:pointer;
+}
+#phsToolbar button:hover{ background: var(--accent); color: var(--accent-foreground); }
+
+#phsList{
+  flex:1; overflow:auto; padding: 10px 12px;
+}
+.phs-item{
+  border:1px solid var(--border);
+  border-radius: calc(var(--radius) - 4px);
+  padding:10px; margin-bottom:10px; background: var(--background);
+}
+.phs-title{ font-size:13px; font-weight:600; margin-bottom:4px; }
+.phs-sub{ font-size:12px; color: var(--muted-foreground); margin-bottom:8px; }
+.phs-actions{ display:flex; gap:8px; }
+.phs-actions button{
+  padding:6px 10px; border:1px solid var(--border);
+  background: var(--card); color: var(--card-foreground);
+  border-radius: calc(var(--radius) - 4px);
+  font-size:12px; cursor:pointer;
+}
+.phs-actions button:hover{ background: var(--accent); color: var(--accent-foreground); }
+
+/* === Project History: 5x4 changes matrix === */
+#phsMatrixWrap{
+  border-top:1px solid var(--border);
+  padding:12px;
+}
+#phsMatrixHead{
+  display:flex; align-items:center; gap:8px; margin-bottom:8px;
+}
+#phsMatrixHead h4{ margin:0; font-size:13px; font-weight:600; }
+
+.phs-matrix{
+  display:grid;
+  grid-template-columns: 120px repeat(4, 1fr); /* row header + 4 cols */
+  gap:8px;
+}
+.phs-matrix .mh, .phs-matrix .rh{
+  font-size:12px; color:var(--muted-foreground);
+  display:flex; align-items:center; justify-content:center;
+}
+.phs-matrix .rh{ justify-content:flex-start; padding-left:6px; font-weight:600; color:var(--foreground); }
+
+.phs-thumb{
+  border:1px solid var(--border);
+  background: var(--background);
+  border-radius: calc(var(--radius) - 4px);
+  height: 96px;   /* thumbnail height */
+  position:relative;
+  overflow:hidden;
+  display:flex; align-items:center; justify-content:center;
+}
+.phs-thumb svg{ width:100%; height:100%; display:block; }
+.phs-thumb .empty{
+  font-size:11px; color:var(--muted-foreground);
+}
+
+.edge-unchanged{ stroke:#888; stroke-width:1.5; }
+.edge-added{ stroke:#10b981; stroke-width:2; }   /* green */
+.edge-removed{ stroke:#ef4444; stroke-width:2; stroke-dasharray:3 2; } /* red dashed */
+.block-node{ fill:var(--card); stroke:var(--border); stroke-width:.8; }
+
+/* kill the empty snapshot UI */
+#phsToolbar,
+#phsList { display: none !important; }
+
+/* let the matrix fill the body */
+#phsMatrixWrap { flex: 1 1 auto; overflow: auto; }
+
+/* (optional) remove any extra gap above the matrix */
+#phsMatrixWrap { border-top: none; padding-top: 1; }
+
+/* overlay that draws the merge/split paths over the matrix */
+#phsMatrixWrap { position: relative; }
+#phsMatrixOverlay {
+  position: absolute; inset: 0;
+  pointer-events: none; z-index: 2;
+}
+.flow-edge { stroke: var(--ring); stroke-width: 2; fill: none; opacity: .9; }
+.flow-edge.split { }
+.flow-edge.merge { stroke-dasharray: 4 3; }
+
 
     </style>
 </head>
@@ -1052,8 +1206,8 @@ body.pan-dragging .canvas { cursor: grabbing; }
 
   <!-- Popover is inside the same container, but absolutely positioned -->
   <div class="active-popover hidden" id="moreActivePopover">
-    <div class="active-item"><span>🧑 Alex</span><span class="status-red"></span></div>
-    <div class="active-item"><span>👩 Jamie</span><span class="status-red"></span></div>
+    <div class="active-item"><span>🧑 Philo</span><span class="status-red"></span></div>
+    <div class="active-item"><span>👩 Alex</span><span class="status-red"></span></div>
     <div class="active-item"><span>🧔 Sam</span><span class="status-red"></span></div>
     <div class="active-item"><span>👩‍💻 Taylor</span><span class="status-red"></span></div>
   </div>
@@ -1259,7 +1413,7 @@ async function sendMessage() {
 
                     <div class="version-controls">
                         <button onclick="saveVersion()">Save Version</button>
-                        <button onclick="showVersionHistory()">View History</button>
+<button id="viewHistoryBtn" onclick="toggleVersionHistory(event)">View History</button>
                     </div>
                 </div>
             </div>
@@ -1267,6 +1421,22 @@ async function sendMessage() {
     </div>
 
     <script>
+
+      // --- FIX: centralize Project History toggle label/state ---
+function setHistoryButtonMode(mode){
+  const histBtn = document.getElementById('projectHistoryBtn');
+  if (!histBtn) return;
+  if (mode === 'history'){
+    histBtn.textContent = 'Rendered Project';
+    histBtn.dataset.mode = 'history';
+    histBtn.setAttribute('aria-label','Back to Rendered Project');
+  } else {
+    histBtn.textContent = 'Version History';
+    histBtn.dataset.mode = 'project';
+    histBtn.setAttribute('aria-label','Open Version History');
+  }
+}
+
         // Global state
         let blocks = [];
         let connections = [];
@@ -1287,6 +1457,152 @@ let gridDragOffset = { x: 0, y: 0 };
 let dragJustEndedUntil = 0;
 const DRAG_CLICK_GUARD_MS = 220; // tune 150–300 ms if you like
 
+
+let projectVersions = [];
+
+/** Deep-ish clone without DOM nodes */
+function cloneProjectState() {
+  // Note: blocks contain chatMessages, versions (we won't keep per-block versions in project snapshot)
+  const cleanBlocks = blocks.map(b => ({
+    id: b.id, x: b.x, y: b.y, name: b.name,
+    chatMessages: (b.chatMessages || []).map(m => ({...m})),
+    // omit b.versions to avoid huge nesting; optional:
+    versions: [] 
+  }));
+  const cleanConnections = connections.map(c => ({...c}));
+  const cleanGrids = grids.map(g => ({...g}));
+  return { blocks: cleanBlocks, connections: cleanConnections, grids: cleanGrids,
+           panX, panY, scale };
+}
+
+function restoreProjectState(state){
+  // 1) Replace globals
+  blocks = state.blocks.map(b => ({...b}));
+  connections = state.connections.map(c => ({...c}));
+  grids = state.grids.map(g => ({...g}));
+  panX = state.panX ?? 0;
+  panY = state.panY ?? 0;
+  scale = state.scale ?? 1;
+
+  // 2) Re-render stage
+  stageEl.innerHTML = '';         // remove all blocks & grid wrappers
+  // (connectionsSvg is separate)
+  grids.forEach(g => renderGrid(g));
+  blocks.forEach(b => renderBlock(b));
+  applyStageTransform();
+  updateConnections();
+
+  // 3) Close any open popups/tool states
+  closePopup();
+  connectingFrom = null;
+  updateBlockStyles();
+  renderGrids();
+}
+
+/** Create a snapshot entry */
+function saveProjectSnapshot(reason = 'Manual snapshot') {
+  const snap = {
+    id: 'ps-' + Date.now(),
+    name: reason,
+    timestamp: new Date(),
+    state: cloneProjectState()
+  };
+  projectVersions.unshift(snap); // newest first
+}
+
+/** Render the list into the sheet */
+function renderProjectHistoryList(){
+  const list = document.getElementById('phsList');
+  list.innerHTML = '';
+  if (projectVersions.length === 0){
+    list.innerHTML = `<div style="color:var(--muted-foreground);font-size:12px;padding:8px;">Example Project Version Control:</div>`;
+    return;
+  }
+  projectVersions.forEach((v, idx) => {
+    const item = document.createElement('div');
+    item.className = 'phs-item';
+    item.innerHTML = `
+      <div class="phs-title">${v.name}</div>
+      <div class="phs-sub">${new Date(v.timestamp).toLocaleString()}</div>
+      <div class="phs-actions">
+        <button data-action="preview" data-id="${v.id}">Preview</button>
+        <button data-action="revert"  data-id="${v.id}">Revert</button>
+        <button data-action="delete"  data-id="${v.id}">Delete</button>
+      </div>
+    `;
+    list.appendChild(item);
+  });
+
+  // wire actions
+  list.querySelectorAll('button[data-action]').forEach(btn=>{
+    btn.addEventListener('click', (e)=>{
+      const id = e.currentTarget.getAttribute('data-id');
+      const action = e.currentTarget.getAttribute('data-action');
+      const snap = projectVersions.find(s => s.id === id);
+      if (!snap) return;
+
+      if (action === 'preview'){
+        // lightweight: temporarily restore, then let user undo via browser back isn't ideal.
+        // Here we just show a confirm preview -> revert, or cancel -> do nothing.
+        if (confirm('Preview this snapshot? This will replace the current view (you can make a new snapshot first to preserve your current state).')) {
+          restoreProjectState(snap.state);
+        }
+      } else if (action === 'revert'){
+        if (confirm('Revert the project to this snapshot? This will replace the current state.')) {
+          restoreProjectState(snap.state);
+        }
+      } else if (action === 'delete'){
+        const i = projectVersions.findIndex(s => s.id === id);
+        if (i >= 0) { projectVersions.splice(i,1); renderProjectHistoryList(); }
+      }
+    });
+  });
+}
+
+function openProjectHistorySheet(){
+  const sheet = document.getElementById('projectHistorySheet');
+  sheet.classList.add('open');
+  sheet.setAttribute('aria-hidden','false');
+  renderProjectHistory();          // renders the 5x4 matrix
+  setHistoryButtonMode('history'); // <-- label now flips
+}
+
+function closeProjectHistorySheet(){
+  const sheet = document.getElementById('projectHistorySheet');
+  sheet.classList.remove('open');
+  sheet.setAttribute('aria-hidden','true');
+  setHistoryButtonMode('project'); // <-- label flips back
+}
+
+
+document.addEventListener('DOMContentLoaded', () => {
+  const histBtn = document.getElementById('projectHistoryBtn');
+  const closeBtn = document.getElementById('phsClose');
+
+  if (histBtn) {
+    setHistoryButtonMode('project'); // initialize label + data-mode
+    histBtn.addEventListener('click', () => {
+      if (histBtn.dataset.mode === 'project') openProjectHistorySheet();
+      else closeProjectHistorySheet();
+    });
+  }
+  if (closeBtn) closeBtn.addEventListener('click', closeProjectHistorySheet);
+});
+
+
+function syncViewHistoryBtn(){
+  const btn = document.getElementById('viewHistoryBtn');
+  if (!btn) return;
+  const on = !!showingVersionHistory;
+  btn.textContent = on ? 'Rendered Project' : 'View History';
+  btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+}
+
+function toggleVersionHistory(ev){
+  if (ev) { ev.preventDefault(); ev.stopPropagation(); }
+  if (showingVersionHistory) closeVersionHistory();
+  else showVersionHistory();
+}
 
 
 
@@ -2799,6 +3115,7 @@ function openBlockPopup(blockId) {
   updateDividerPosition();
   updateConnectionCount();
   loadChatMessages();
+  syncViewHistoryBtn();
 
     if (!dividerInited) { initDividerDrag(); dividerInited = true; }
 
@@ -2809,11 +3126,24 @@ function openBlockPopup(blockId) {
 function closePopup() {
   openPopup = null;
   document.getElementById('popup').classList.add('hidden');
-  document.body.classList.remove('chat-open');  // <-- and this line
+  document.body.classList.remove('chat-open');
   showingVersionHistory = false;
   document.getElementById('versionHistory').classList.add('hidden');
+  syncViewHistoryBtn();      // NEW: reset label on close
 }
 
+function syncViewHistoryBtn(){
+  const btn = document.getElementById('viewHistoryBtn');
+  if (!btn) return;
+  const on = !!showingVersionHistory;
+  btn.textContent = on ? 'Rendered Project' : 'View History';
+  btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+}
+
+function toggleVersionHistory(){
+  if (showingVersionHistory) closeVersionHistory();
+  else showVersionHistory();
+}
 
 function updateDividerPosition() {
     const chatSection = document.getElementById('chatSection');
@@ -2905,22 +3235,27 @@ function saveVersion() {
       data: { name: block.name, chatMessages: [...block.chatMessages] } // <-- per-block chat
     };
     block.versions.push(newVersion);
+
+
   }
 }
 
 
-        function showVersionHistory() {
-            showingVersionHistory = true;
-            selectedVersionIndex = 0;
-            document.getElementById('versionHistory').classList.remove('hidden');
-            updateVersionDisplay();
-        }
+function showVersionHistory() {
+  showingVersionHistory = true;
+  selectedVersionIndex = 0;
+  document.getElementById('versionHistory').classList.remove('hidden');
+  updateVersionDisplay();
+  syncViewHistoryBtn();   // NEW
+}
 
-        function closeVersionHistory() {
-            showingVersionHistory = false;
-            selectedVersionIndex = null;
-            document.getElementById('versionHistory').classList.add('hidden');
-        }
+function closeVersionHistory() {
+  showingVersionHistory = false;
+  selectedVersionIndex = null;
+  document.getElementById('versionHistory').classList.add('hidden');
+  syncViewHistoryBtn();   // NEW
+}
+
 
         function navigateVersion(direction) {
             if (!openPopup) return;
@@ -3406,8 +3741,279 @@ document.addEventListener('keydown', (e) => {
     // Also handle bfcache restores (back/forward navigation)
     window.addEventListener('pageshow', attemptKick);
   })();
+
+  // === Matrix config ===
+const MATRIX_ROWS = ['Alex','Philo','Sam','Taylor','You'];
+const MATRIX_COLS = 4;
+
+// Ensure snapshots carry an author (default "You")
+function saveProjectSnapshot(reason = 'Manual snapshot', author = 'You') {
+  const snap = {
+    id: 'ps-' + Date.now(),
+    name: reason,
+    author,
+    timestamp: new Date(),
+    state: cloneProjectState()
+  };
+  projectVersions.unshift(snap); // newest first
+}
+
+// Build matrix UI
+function renderProjectHistoryMatrix(){
+  const host = document.getElementById('phsMatrix');
+  if (!host) return;
+
+  // Seed demo examples the first time if empty
+  if (!projectVersions.some(s => s.author)) seedExampleSnapshots();
+
+  // Group snapshots by author, ascending time
+  const byAuthor = new Map();
+  MATRIX_ROWS.forEach(r => byAuthor.set(r,
+    projectVersions.filter(s => s.author === r)
+      .slice() // copy
+      .sort((a,b) => new Date(a.timestamp) - new Date(b.timestamp))
+  ));
+
+  // Clear grid
+  host.innerHTML = '';
+
+  // Header row (blank corner + col labels)
+  host.appendChild(headerCell('')); // corner
+  for (let c=0;c<MATRIX_COLS;c++) host.appendChild(headerCell(`Change ${c+1}`));
+
+  // Rows
+  MATRIX_ROWS.forEach(author => {
+    // row header
+    host.appendChild(rowHeader(author));
+
+    const snaps = byAuthor.get(author) || [];
+    // We want COLS thumbnails: each is a diff between consecutive snapshots for that author
+    for (let col=0; col<MATRIX_COLS; col++){
+      const prev = snaps[col] || null;
+      const curr = snaps[col+1] || null; // show evolution to next
+      const cell = document.createElement('div');
+      cell.className = 'phs-thumb';
+
+      if (!prev || !curr){
+        // Not enough data
+        const empty = document.createElement('div');
+        empty.className = 'empty';
+        empty.textContent = '—';
+        cell.appendChild(empty);
+      } else {
+        const svg = buildChangeThumb(prev.state, curr.state);
+        cell.appendChild(svg);
+        cell.title = `${author}: ${prev.name} → ${curr.name}`;
+      }
+      host.appendChild(cell);
+    }
+  });
+}
+
+function headerCell(text){
+  const div = document.createElement('div');
+  div.className = 'mh';
+  div.textContent = text;
+  return div;
+}
+function rowHeader(text){
+  const div = document.createElement('div');
+  div.className = 'rh';
+  div.textContent = text;
+  return div;
+}
+
+// Compute connection sets (as "fromId->toId" normalized)
+function edgeKey(e){ return `${e.fromId}->${e.toId}`; }
+function edgeSet(conns){ const s = new Set(); conns.forEach(c => s.add(edgeKey(c))); return s; }
+
+// Build a mini SVG thumbnail showing blocks and connection changes
+function buildChangeThumb(prevState, currState){
+  const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+  svg.setAttribute('viewBox','0 0 160 96'); // small canvas
+
+  // Map block centers by id in curr (fallback to prev)
+  const centers = new Map();
+  (currState.blocks || []).forEach(b => centers.set(b.id, {x:b.x+64, y:b.y+32}));
+  (prevState.blocks || []).forEach(b => { if (!centers.has(b.id)) centers.set(b.id, {x:b.x+64, y:b.y+32}); });
+
+  // Compute bounding box to scale into viewBox
+  const pts = Array.from(centers.values());
+  const bbox = pts.length ? {
+    minX: Math.min(...pts.map(p=>p.x)),
+    minY: Math.min(...pts.map(p=>p.y)),
+    maxX: Math.max(...pts.map(p=>p.x)),
+    maxY: Math.max(...pts.map(p=>p.y)),
+  } : {minX:0,minY:0,maxX:160,maxY:96};
+
+  const pad = 40;
+  const w = Math.max(80, bbox.maxX - bbox.minX + pad);
+  const h = Math.max(48, bbox.maxY - bbox.minY + pad);
+  const sx = 160 / w, sy = 96 / h;
+  const s = Math.min(sx, sy);
+  const ox = bbox.minX - (160/s - (bbox.maxX-bbox.minX))/2 - pad/2;
+  const oy = bbox.minY - (96/s  - (bbox.maxY-bbox.minY))/2 - pad/2;
+
+  function tx(p){ return (p.x - ox) * s; }
+  function ty(p){ return (p.y - oy) * s; }
+
+  // Diff edges
+  const prev = edgeSet(prevState.connections || []);
+  const curr = edgeSet(currState.connections || []);
+  const unchanged = [];
+  const added = [];
+  const removed = [];
+
+  curr.forEach(k => {
+    if (prev.has(k)) unchanged.push(k); else added.push(k);
+  });
+  prev.forEach(k => {
+    if (!curr.has(k)) removed.push(k);
+  });
+
+  // Helper: draw edge list
+  function drawEdges(list, cls){
+    list.forEach(k => {
+      const [fromId, toId] = k.split('->');
+      const a = centers.get(fromId), b = centers.get(toId);
+      if (!a || !b) return;
+      const line = document.createElementNS(svg.namespaceURI,'line');
+      line.setAttribute('x1', tx(a)); line.setAttribute('y1', ty(a));
+      line.setAttribute('x2', tx(b)); line.setAttribute('y2', ty(b));
+      line.setAttribute('class', cls);
+      line.setAttribute('fill','none');
+      line.setAttribute('stroke-linecap','round');
+      svg.appendChild(line);
+    });
+  }
+
+  // Draw edges (unchanged first, then removed/added on top)
+  drawEdges(unchanged, 'edge-unchanged');
+  drawEdges(removed,   'edge-removed');
+  drawEdges(added,     'edge-added');
+
+  // Draw nodes (from curr first, then prev-only)
+  const seen = new Set();
+  (currState.blocks || []).forEach(b => {
+    const c = {x:b.x+64, y:b.y+32}; seen.add(b.id);
+    const node = document.createElementNS(svg.namespaceURI,'rect');
+    node.setAttribute('x', tx({x:c.x-8,y:0})); // -8 horizontally
+    node.setAttribute('y', ty({x:0,y:c.y-6})); // -6 vertically
+    node.setAttribute('width', 16); node.setAttribute('height', 12);
+    node.setAttribute('class','block-node');
+    svg.appendChild(node);
+  });
+  (prevState.blocks || []).forEach(b => {
+    if (seen.has(b.id)) return;
+    const c = {x:b.x+64, y:b.y+32};
+    const node = document.createElementNS(svg.namespaceURI,'rect');
+    node.setAttribute('x', tx({x:c.x-8,y:0}));
+    node.setAttribute('y', ty({x:0,y:c.y-6}));
+    node.setAttribute('width', 16); node.setAttribute('height', 12);
+    node.setAttribute('class','block-node');
+    node.setAttribute('opacity','0.5'); // faded if only in prev
+    svg.appendChild(node);
+  });
+
+  return svg;
+}
+
+function renderProjectHistory(){
+  const list = document.getElementById('phsList');
+  if (list) list.innerHTML = '';   // keep empty
+  renderProjectHistoryMatrix();    // your 5 x 4 grid
+}
+
+
+// Drop-in demo data so you immediately see a 5x4 grid
+function seedExampleSnapshots(){
+  if (seedExampleSnapshots._done) return;
+  seedExampleSnapshots._done = true;
+
+  // Create 5 authors × 5 snapshots (so we get 4 diffs each)
+  const authors = MATRIX_ROWS;
+  const baseT = Date.now() - 1000*60*60*24; // start yesterday
+
+  authors.forEach((author, ai) => {
+    let state = randomState(6 + (ai%3)); // start with N blocks
+    for (let i=0;i<5;i++){
+      // mutate a little each step
+      state = mutateState(state, i);
+      const snap = {
+        id: `seed-${author}-${i}`,
+        name: `Snapshot ${i+1}`,
+        author,
+        timestamp: new Date(baseT + (ai*5+i)*60000),
+        state
+      };
+      projectVersions.push(snap);
+    }
+  });
+
+  // Newest-first order
+  projectVersions.sort((a,b)=> new Date(b.timestamp) - new Date(a.timestamp));
+}
+
+// Tiny helpers to make demo states
+function randomState(nBlocks){
+  const bs = [];
+  for (let i=0;i<nBlocks;i++){
+    const x = 60 + Math.random()*600;
+    const y = 60 + Math.random()*300;
+    const id = `b${Math.random().toString(36).slice(2,8)}`;
+    bs.push({id, x, y, name:`B${i+1}`, chatMessages:[], versions:[]});
+  }
+  const cs = [];
+  for (let k=0;k<nBlocks-1;k++){
+    if (Math.random() < 0.7) cs.push({fromId: bs[k].id, toId: bs[(k+1)%bs.length].id});
+  }
+  return { blocks: bs, connections: cs, grids: [], panX:0, panY:0, scale:1 };
+}
+function mutateState(prev, step){
+  // copy shallow
+  const s = {
+    blocks: prev.blocks.map(b=>({...b})),
+    connections: prev.connections.map(c=>({...c})),
+    grids: [], panX:0, panY:0, scale:1
+  };
+  // jitter a couple blocks
+  s.blocks.forEach((b,idx)=>{ if (idx%3===step%3) { b.x += (Math.random()*40-20); b.y += (Math.random()*30-15);} });
+  // sometimes add/remove a connection
+  if (Math.random()<0.5 && s.blocks.length>1){
+    const a = s.blocks[Math.floor(Math.random()*s.blocks.length)].id;
+    const b = s.blocks[Math.floor(Math.random()*s.blocks.length)].id;
+    if (a!==b) s.connections.push({fromId:a, toId:b});
+  } else if (s.connections.length){
+    s.connections.splice(Math.floor(Math.random()*s.connections.length),1);
+  }
+  return s;
+}
+
+  
 </script>
 
+<button id="projectHistoryBtn" class="project-history-btn" title="Project history">Version History</button>
+
+<!-- ⬇ NEW: history sheet that opens inside the Project View panel ⬇ -->
+<div id="projectHistorySheet" aria-hidden="true">
+  <div id="phsHeader">
+    <h3>Project History</h3>
+    <button id="phsClose" aria-label="Close">✕</button>
+  </div>
+<div id="phsBody">
+  <div id="phsList"></div>
+
+  <!-- NEW: Changes Matrix -->
+  <div id="phsMatrixWrap">
+    <div id="phsMatrixHead">
+      <h4>Example of Changes by Collaborator</h4>
+      <span style="font-size:12px;color:var(--muted-foreground)">(new = green, removed = red, unchanged = gray)</span>
+    </div>
+    <div id="phsMatrix" class="phs-matrix"></div>
+  </div>
+</div>
+
+</div>
 
 </body>
 </html>
